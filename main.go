@@ -20,7 +20,7 @@ var (
 func init() {
 	rootCmd = &cobra.Command{
 		Use:   "localci",
-		Short: fmt.Sprintf("localci is a tool to execute complex CI jobs on your local machine"),
+		Short: "localci is a tool to execute complex CI jobs on your local machine",
 	}
 
 	versionCmd := &cobra.Command{

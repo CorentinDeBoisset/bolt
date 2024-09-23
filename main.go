@@ -46,7 +46,6 @@ func init() {
 
 func main() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Printf("An error occured: %v", err)
 		os.Exit(1)
 	}
 }

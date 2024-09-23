@@ -13,10 +13,10 @@ all: ${BIN_DIR}/${PACKAGE_NAME}
 .PHONY: dev
 dev: ${BIN_DIR}/${PACKAGE_NAME}_dev
 
-${BIN_DIR}/${PACKAGE_NAME}:
+${BIN_DIR}/${PACKAGE_NAME}: ${GO_FILES}
 	go build ${RELEASE_BUILD_FLAGS} -o $@
 
-${BIN_DIR}/${PACKAGE_NAME}_dev:
+${BIN_DIR}/${PACKAGE_NAME}_dev: ${GO_FILES}
 	go build ${DEV_BUILD_FLAGS} -o $@
 
 .PHONY: clean

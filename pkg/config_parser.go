@@ -10,8 +10,9 @@ import (
 )
 
 type CiConfig struct {
-	basePath string       `yaml:"-"`
-	Steps    []StepConfig `yaml:"steps"`
+	basePath    string       `yaml:"-"`
+	LogFilePath string       `yaml:"log_file"`
+	Steps       []StepConfig `yaml:"steps"`
 }
 
 type StepConfig struct {

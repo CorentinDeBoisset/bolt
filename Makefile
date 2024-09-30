@@ -26,3 +26,14 @@ clean:
 .PHONY: install
 install:
 	go install ${RELEASE_BUILD_FLAGS}
+
+.PHONY: test
+test:
+	go test ./...
+
+_cover.out: ${GO_FILES}
+	go test ./... -coverprofile=_cover.out
+
+.PHONY: coverage
+coverage: _cover.out
+	go tool cover -html=_cover.out

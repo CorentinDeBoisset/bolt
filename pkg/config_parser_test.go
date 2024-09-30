@@ -7,6 +7,8 @@ import (
 )
 
 func TestConfigParse(t *testing.T) {
+	t.Parallel()
+
 	sampleConfig := `
 steps:
   - name: first_step
@@ -45,6 +47,8 @@ steps:
 }
 
 func TestConfigErrors(t *testing.T) {
+	t.Parallel()
+
 	invalidYaml := `this is some plaintext`
 	_, err := parseConfig([]byte(invalidYaml))
 	assert.ErrorContains(t, err, "the file could not be parsed from YAML")

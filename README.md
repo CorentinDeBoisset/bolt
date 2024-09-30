@@ -27,4 +27,14 @@ make dev
 
 ### Tests
 
-TODO
+If you want to run the tests, you can execute:
+
+```
+make test
+```
+
+Aditionnaly, if you want a coverage report:
+
+```
+make coverage
+```

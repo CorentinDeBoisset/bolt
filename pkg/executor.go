@@ -3,6 +3,7 @@ package pkg
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"sync"
@@ -161,6 +162,7 @@ func runTask(cmd, path, basePath string, output *SafeBuffer) bool {
 	output.Write([]byte(fmt.Sprintf("> %s\n", cmd)))
 	task := exec.Command("/bin/sh", "-c", cmd)
 	task.Dir = getCmdPath(basePath, path)
+	task.Env = os.Environ() // Pass the environment to the child processes
 	task.Stdout = output
 	task.Stderr = output
 

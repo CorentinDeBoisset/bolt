@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"fmt"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -14,15 +15,17 @@ import (
 )
 
 var (
-	placeholderStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("238"))
-
 	focusedBorderStyle = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("4"))
+				BorderForeground(lipgloss.Color("111"))
 
 	blurredBorderStyle = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("7"))
+
+	successFlag  = lipgloss.NewStyle().SetString("✓").Bold(true).Foreground(lipgloss.Color("082"))
+	spinnerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("226"))
+	failureFlag  = lipgloss.NewStyle().SetString("✗").Bold(true).Foreground(lipgloss.Color("196"))
 )
 
 type RefreshStatusMsg time.Time
@@ -87,8 +90,8 @@ func newModel(config *CiConfig, statuses []StepStatus) ifaceModel {
 		stepPanelWidth:  15,
 		statuses:        statuses,
 		spinner: spinner.New(
-			spinner.WithSpinner(spinner.Points),
-			// spinner.WithStyle() TODO: set the style of the spinner
+			spinner.WithSpinner(spinner.Dot),
+			spinner.WithStyle(spinnerStyle),
 		),
 		stepPanel:   viewport.New(15, 10),
 		outputPanel: viewport.New(30, 10),
@@ -139,15 +142,15 @@ func (m *ifaceModel) calculateMinPanelSize() {
 				maxLen = utf8.RuneCountInString(job.Name) + 2
 			}
 		}
-		if len(step.RunBefore) > 0 && maxLen < len("Pre-run hooks") {
-			maxLen = len("Pre-run hooks")
+		if len(step.RunBefore) > 0 && maxLen < 19 {
+			maxLen = 19
 		}
-		if len(step.RunAfter) > 0 && maxLen < len("Post-run hooks") {
-			maxLen = len("Post-run hooks")
+		if len(step.RunAfter) > 0 && maxLen < 18 {
+			maxLen = 18
 		}
 	}
 
-	m.stepPanelWidth = maxLen + 5
+	m.stepPanelWidth = maxLen + 8
 }
 
 func (m *ifaceModel) updateSizes() {
@@ -175,6 +178,22 @@ func (m ifaceModel) Init() tea.Cmd {
 		tickReadOutputsMsg(),
 		m.spinner.Tick,
 	)
+}
+
+func (m *ifaceModel) formatTask(padding int, state TaskState, name string) string {
+	paddingString := strings.Repeat(" ", padding)
+	switch state {
+	case STATE_NOT_STARTED:
+		return fmt.Sprintf("%s   %s", paddingString, name)
+	case STATE_RUNNING:
+		return fmt.Sprintf("%s%s %s", paddingString, m.spinner.View(), name)
+	case STATE_SUCCESSFUL:
+		return fmt.Sprintf("%s%s  %s", paddingString, successFlag, name)
+	case STATE_FAILED:
+		return fmt.Sprintf("%s%s  %s", paddingString, failureFlag, name)
+	}
+
+	return ""
 }
 
 func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -221,7 +240,6 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.updateSizes()
 	case RefreshStatusMsg:
-		// Read the statuses, and build the content of the step viewport
 		if !m.hideOutputPanel {
 			isAtBottom := m.outputPanel.AtBottom()
 			m.outputPanel.SetContent(m.taskOutputs[m.selectedTaskId].String())
@@ -233,6 +251,27 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case spinner.TickMsg:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
+
+		stepPanelLines := make([]string, 0, len(m.statuses)+len(m.taskOutputs))
+		for stepIdx, stepConfig := range m.globalConfig.Steps {
+			m.statuses[stepIdx].Mtx.Lock()
+			stepPanelLines = append(stepPanelLines, m.formatTask(1, m.statuses[stepIdx].state, stepConfig.Name))
+			if m.statuses[stepIdx].BeforeHooks != nil {
+				stepPanelLines = append(stepPanelLines, m.formatTask(3, m.statuses[stepIdx].BeforeHooks.state, "Run-Before hooks"))
+			}
+			for jobIdx, jobConfig := range stepConfig.Jobs {
+				stepPanelLines = append(stepPanelLines, m.formatTask(3, m.statuses[stepIdx].Jobs[jobIdx].state, jobConfig.Name))
+			}
+			if m.statuses[stepIdx].AfterHooks != nil {
+				stepPanelLines = append(stepPanelLines, m.formatTask(3, m.statuses[stepIdx].AfterHooks.state, "Run-After hooks"))
+			}
+			stepPanelLines = append(stepPanelLines, "")
+			m.statuses[stepIdx].Mtx.Unlock()
+		}
+
+		m.stepPanel.SetContent(strings.Join(stepPanelLines, "\n"))
+
+		// Build the side content
 		return m, cmd
 	}
 

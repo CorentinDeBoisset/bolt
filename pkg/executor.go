@@ -158,7 +158,7 @@ func getCmdPath(basePath, cmdPath string) string {
 }
 
 func runTask(cmd, path, basePath string, output *SafeBuffer) bool {
-	output.Write([]byte(fmt.Sprintf(" > %s\n", cmd)))
+	output.Write([]byte(fmt.Sprintf("> %s\n", cmd)))
 	task := exec.Command("/bin/sh", "-c", cmd)
 	task.Dir = getCmdPath(basePath, path)
 	task.Stdout = output

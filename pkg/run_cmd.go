@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"context"
 	"io"
 	"log"
 	"os"
@@ -33,16 +34,18 @@ func RunCmd(confPath string, selectedStep string) error {
 	readyToDisplay := make(chan struct{})
 	ciDone := make(chan struct{})
 
-	// TODO: add a cancellable context, to stop the commmands
+	ctx, cancelCtx := context.WithCancel(context.Background())
 
 	// Run the ci in a goroutine. The synchronisation is handled by the channels
-	go executeCi(config, stepStatuses, readyToDisplay, ciDone)
+	go executeCi(ctx, config, stepStatuses, readyToDisplay, ciDone)
 	<-readyToDisplay
 	if _, err := tea.NewProgram(newModel(config, stepStatuses), tea.WithAltScreen()).Run(); err != nil {
 		// TODO: Handle error
+		cancelCtx()
 		<-ciDone
 		return err
 	}
+	cancelCtx()
 	<-ciDone
 
 	return nil

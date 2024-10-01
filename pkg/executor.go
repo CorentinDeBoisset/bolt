@@ -2,11 +2,13 @@ package pkg
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sync"
+	"syscall"
 )
 
 type SafeBuffer struct {
@@ -60,7 +62,7 @@ type StepStatus struct {
 	Mtx   sync.Mutex
 }
 
-func executeCi(config *CiConfig, stepStatuses []StepStatus, readyToDisplay, done chan struct{}) {
+func executeCi(ctx context.Context, config *CiConfig, stepStatuses []StepStatus, readyToDisplay, done chan struct{}) {
 	// First, initialize the status structs
 	for stepIdx, step := range config.Steps {
 		if len(step.RunBefore) > 0 {
@@ -86,7 +88,7 @@ func executeCi(config *CiConfig, stepStatuses []StepStatus, readyToDisplay, done
 		stepStatuses[stepIdx].Mtx.Unlock()
 
 		for _, hook := range step.RunBefore {
-			if !runTask(hook.Cmd, hook.Path, config.basePath, &stepStatuses[stepIdx].BeforeHooks.Output) {
+			if !runTask(ctx, hook.Cmd, hook.Path, config.basePath, &stepStatuses[stepIdx].BeforeHooks.Output) {
 				stepStatuses[stepIdx].Mtx.Lock()
 				stepStatuses[stepIdx].BeforeHooks.state = STATE_FAILED
 				stepStatuses[stepIdx].state = STATE_FAILED
@@ -107,7 +109,7 @@ func executeCi(config *CiConfig, stepStatuses []StepStatus, readyToDisplay, done
 			jobsWg.Add(1)
 			go func() {
 				defer jobsWg.Done()
-				runJob(job, config, &stepStatuses[stepIdx].Jobs[jobIdx], &stepStatuses[stepIdx])
+				runJob(ctx, job, config, &stepStatuses[stepIdx].Jobs[jobIdx], &stepStatuses[stepIdx])
 			}()
 		}
 		jobsWg.Wait()
@@ -132,7 +134,7 @@ func executeCi(config *CiConfig, stepStatuses []StepStatus, readyToDisplay, done
 		stepStatuses[stepIdx].Mtx.Unlock()
 
 		for _, hook := range step.RunAfter {
-			if !runTask(hook.Cmd, hook.Path, config.basePath, &stepStatuses[stepIdx].AfterHooks.Output) {
+			if !runTask(ctx, hook.Cmd, hook.Path, config.basePath, &stepStatuses[stepIdx].AfterHooks.Output) {
 				stepStatuses[stepIdx].Mtx.Lock()
 				stepStatuses[stepIdx].AfterHooks.state = STATE_FAILED
 				stepStatuses[stepIdx].state = STATE_FAILED
@@ -158,13 +160,20 @@ func getCmdPath(basePath, cmdPath string) string {
 	}
 }
 
-func runTask(cmd, path, basePath string, output *SafeBuffer) bool {
+func runTask(ctx context.Context, cmd, path, basePath string, output *SafeBuffer) bool {
+	// Note: this setup only works on Unix
+	// TODO: maybe add support for windows (or not... :shrug:)
 	output.Write([]byte(fmt.Sprintf("> %s\n", cmd)))
-	task := exec.Command("/bin/sh", "-c", cmd)
+	task := exec.CommandContext(ctx, "/bin/sh", "-c", cmd)
 	task.Dir = getCmdPath(basePath, path)
 	task.Env = os.Environ() // Pass the environment to the child processes
 	task.Stdout = output
 	task.Stderr = output
+	task.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	task.Cancel = func() error {
+		// Kill the whole process group, killing the subprocesses as well
+		return syscall.Kill(-task.Process.Pid, syscall.SIGKILL)
+	}
 
 	if err := task.Start(); err != nil {
 		output.Write([]byte(fmt.Sprintf("\n\nThe command could not start due to the following error:\n%s", err.Error())))
@@ -181,7 +190,7 @@ func runTask(cmd, path, basePath string, output *SafeBuffer) bool {
 	return true
 }
 
-func runJob(config JobConfig, globalConfig *CiConfig, jobStatus *JobStatus, globalStatus *StepStatus) bool {
+func runJob(ctx context.Context, config JobConfig, globalConfig *CiConfig, jobStatus *JobStatus, globalStatus *StepStatus) bool {
 	globalStatus.Mtx.Lock()
 	jobStatus.BeforeHooksSuccess = false
 	jobStatus.MainJobSuccess = false
@@ -190,7 +199,7 @@ func runJob(config JobConfig, globalConfig *CiConfig, jobStatus *JobStatus, glob
 	globalStatus.Mtx.Unlock()
 
 	for _, hook := range config.RunBefore {
-		if !runTask(hook.Cmd, hook.Path, globalConfig.basePath, &jobStatus.Output) {
+		if !runTask(ctx, hook.Cmd, hook.Path, globalConfig.basePath, &jobStatus.Output) {
 			globalStatus.Mtx.Lock()
 			jobStatus.state = STATE_FAILED
 			globalStatus.Mtx.Unlock()
@@ -203,7 +212,7 @@ func runJob(config JobConfig, globalConfig *CiConfig, jobStatus *JobStatus, glob
 	globalStatus.Mtx.Unlock()
 
 	// run config.Cmd
-	if !runTask(config.Cmd, config.Path, globalConfig.basePath, &jobStatus.Output) {
+	if !runTask(ctx, config.Cmd, config.Path, globalConfig.basePath, &jobStatus.Output) {
 		globalStatus.Mtx.Lock()
 		jobStatus.state = STATE_FAILED
 		globalStatus.Mtx.Unlock()
@@ -215,7 +224,7 @@ func runJob(config JobConfig, globalConfig *CiConfig, jobStatus *JobStatus, glob
 	globalStatus.Mtx.Unlock()
 
 	for _, hook := range config.RunAfter {
-		if !runTask(hook.Cmd, hook.Path, globalConfig.basePath, &jobStatus.Output) {
+		if !runTask(ctx, hook.Cmd, hook.Path, globalConfig.basePath, &jobStatus.Output) {
 			globalStatus.Mtx.Lock()
 			jobStatus.state = STATE_FAILED
 			globalStatus.Mtx.Unlock()

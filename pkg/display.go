@@ -268,8 +268,8 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.stepPanel.GotoBottom()
 				} else {
 					m.focusedTask -= 1
-					// FIXME: This is too rough of an estimation of the scroll to apply
-					m.stepPanel.SetYOffset(m.stepPanel.TotalLineCount() * m.focusedTask / len(m.taskIds))
+					maxOffset := m.stepPanel.TotalLineCount() - m.stepPanel.Height + 4
+					m.stepPanel.SetYOffset(maxOffset * m.focusedTask / len(m.taskIds))
 				}
 			}
 		case "down", "j":
@@ -283,7 +283,8 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.focusedTask += 1
 					// FIXME: same as above
-					m.stepPanel.SetYOffset(m.stepPanel.TotalLineCount() * m.focusedTask / len(m.taskIds))
+					maxOffset := m.stepPanel.TotalLineCount() - m.stepPanel.Height + 4
+					m.stepPanel.SetYOffset(maxOffset * m.focusedTask / len(m.taskIds))
 				}
 			}
 		case "tab":

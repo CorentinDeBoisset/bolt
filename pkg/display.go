@@ -40,6 +40,11 @@ type keymap = struct {
 	up, down, tab, enter, quit key.Binding
 }
 
+type registeredTask struct {
+	Name   string
+	Output *SafeBuffer
+}
+
 type ifaceModel struct {
 	width           int
 	height          int
@@ -57,8 +62,7 @@ type ifaceModel struct {
 
 	globalConfig *CiConfig
 	statuses     []StepStatus
-	taskIds      []string
-	taskOutputs  map[string]*SafeBuffer
+	taskIds      []registeredTask
 }
 
 func tickReadOutputsMsg() tea.Cmd {
@@ -119,30 +123,26 @@ func newModel(config *CiConfig, statuses []StepStatus) ifaceModel {
 }
 
 func (m *ifaceModel) initializeTaskOutputs() {
-	m.taskOutputs = make(map[string]*SafeBuffer)
-	m.taskIds = make([]string, 0)
+	m.taskIds = make([]registeredTask, 0)
 	for stepIdx := range m.statuses {
 		m.statuses[stepIdx].Mtx.Lock()
 		if m.statuses[stepIdx].BeforeHooks != nil {
 			id := fmt.Sprintf("step#%d__bh", stepIdx)
-			m.taskIds = append(m.taskIds, id)
-			m.taskOutputs[id] = &m.statuses[stepIdx].BeforeHooks.Output
+			m.taskIds = append(m.taskIds, registeredTask{Name: id, Output: &m.statuses[stepIdx].BeforeHooks.Output})
 		}
 		for jobIdx := range m.statuses[stepIdx].Jobs {
 			id := fmt.Sprintf("step#%d__job#%d", stepIdx, jobIdx)
-			m.taskIds = append(m.taskIds, id)
-			m.taskOutputs[id] = &m.statuses[stepIdx].Jobs[jobIdx].Output
+			m.taskIds = append(m.taskIds, registeredTask{Name: id, Output: &m.statuses[stepIdx].Jobs[jobIdx].Output})
 		}
 		if m.statuses[stepIdx].AfterHooks != nil {
 			id := fmt.Sprintf("step#%d__ah", stepIdx)
-			m.taskIds = append(m.taskIds, id)
-			m.taskOutputs[id] = &m.statuses[stepIdx].AfterHooks.Output
+			m.taskIds = append(m.taskIds, registeredTask{Name: id, Output: &m.statuses[stepIdx].AfterHooks.Output})
 		}
 		m.statuses[stepIdx].Mtx.Unlock()
 	}
 
 	// If the first task is a before_run hook, select the next task
-	if len(m.taskIds) > 2 && strings.HasSuffix(m.taskIds[0], "__bh") {
+	if len(m.taskIds) > 2 && strings.HasSuffix(m.taskIds[0].Name, "__bh") {
 		m.selectedTask += 1
 	}
 	m.focusedTask = m.selectedTask
@@ -203,11 +203,11 @@ func (m ifaceModel) Init() tea.Cmd {
 }
 
 func (m *ifaceModel) formatTask(id string, padding int, state TaskState, name string) string {
-	if id == m.taskIds[m.focusedTask] && id == m.taskIds[m.selectedTask] {
+	if id == m.taskIds[m.focusedTask].Name && id == m.taskIds[m.selectedTask].Name {
 		name = focusedAndSelectedJobStyle.Render(name)
-	} else if id == m.taskIds[m.selectedTask] {
+	} else if id == m.taskIds[m.selectedTask].Name {
 		name = selectedJobStyle.Render(name)
-	} else if id == m.taskIds[m.focusedTask] {
+	} else if id == m.taskIds[m.focusedTask].Name {
 		name = focusedJobStyle.Render(name)
 	}
 
@@ -227,7 +227,7 @@ func (m *ifaceModel) formatTask(id string, padding int, state TaskState, name st
 }
 
 func (m *ifaceModel) calculateStepPanelContent() string {
-	stepPanelLines := make([]string, 0, len(m.statuses)+len(m.taskOutputs))
+	stepPanelLines := make([]string, 0, len(m.statuses)*2+len(m.taskIds)+1)
 	for stepIdx, stepConfig := range m.globalConfig.Steps {
 		m.statuses[stepIdx].Mtx.Lock()
 		stepPanelLines = append(stepPanelLines, m.formatTask("", 0, m.statuses[stepIdx].state, stepConfig.Name))
@@ -310,7 +310,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case RefreshStatusMsg:
 		if !m.hideOutputPanel {
 			isAtBottom := m.outputPanel.AtBottom()
-			m.outputPanel.SetContent(m.taskOutputs[m.taskIds[m.selectedTask]].String())
+			m.outputPanel.SetContent(m.taskIds[m.selectedTask].Output.String())
 			if isAtBottom {
 				m.outputPanel.GotoBottom()
 			}

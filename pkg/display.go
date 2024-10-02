@@ -261,7 +261,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up", "k":
 			// Scroll up the focused panel
 			if m.focusOutput {
-				// Scroll up in the logs
+				m.outputPanel.LineUp(3)
 			} else {
 				if m.focusedTask == 0 {
 					m.focusedTask = len(m.taskIds) - 1
@@ -275,7 +275,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "down", "j":
 			// Scroll down the focused panel
 			if m.focusOutput {
-				// Scroll down in the logs
+				m.outputPanel.LineDown(3)
 			} else {
 				if m.focusedTask == len(m.taskIds)-1 {
 					m.focusedTask = 0

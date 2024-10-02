@@ -173,14 +173,19 @@ func (m *ifaceModel) updateSizes() {
 	m.stepPanel.Height = m.height - 5
 	m.outputPanel.Height = m.height - 5
 
-	outputWidth := m.width - m.stepPanelWidth
+	stepPanelWidth := m.stepPanelWidth
+	if stepPanelWidth > (m.width/2 - 6) {
+		stepPanelWidth = m.width/2 - 6
+	}
+
+	outputWidth := m.width - stepPanelWidth
 	if outputWidth < 10 {
 		m.hideOutputPanel = true
 		m.stepPanel.Width = m.width
 		return
 	}
 	m.outputPanel.Width = outputWidth
-	m.stepPanel.Width = m.stepPanelWidth
+	m.stepPanel.Width = stepPanelWidth
 }
 
 func (m *ifaceModel) updateKeyBindings() {
@@ -259,8 +264,6 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.focusedTask -= 1
 				}
-				m.outputPanel.SetContent(m.taskOutputs[m.taskIds[m.selectedTask]].String())
-				m.outputPanel.GotoBottom()
 			}
 		case "down", "j":
 			// Scroll down the focused panel
@@ -272,8 +275,6 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.focusedTask += 1
 				}
-				m.outputPanel.SetContent(m.taskOutputs[m.taskIds[m.selectedTask]].String())
-				m.outputPanel.GotoBottom()
 			}
 		case "tab":
 			if !m.hideOutputPanel {

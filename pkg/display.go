@@ -109,7 +109,9 @@ func newModel(config *CiConfig, statuses []StepStatus) ifaceModel {
 	m.calculateMinPanelSize()
 	m.stepPanel.Width = m.stepPanelWidth
 	m.stepPanel.Style = focusedBorderStyle
+	m.stepPanel.MouseWheelEnabled = true
 	m.outputPanel.Style = blurredBorderStyle
+	m.outputPanel.MouseWheelEnabled = true
 
 	m.initializeTaskOutputs()
 
@@ -245,6 +247,8 @@ func (m *ifaceModel) calculateStepPanelContent() string {
 		m.statuses[stepIdx].Mtx.Unlock()
 	}
 
+	stepPanelLines = append(stepPanelLines, "")
+
 	return strings.Join(stepPanelLines, "\n")
 }
 
@@ -261,8 +265,11 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				if m.focusedTask == 0 {
 					m.focusedTask = len(m.taskIds) - 1
+					m.stepPanel.GotoBottom()
 				} else {
 					m.focusedTask -= 1
+					// FIXME: This is too rough of an estimation of the scroll to apply
+					m.stepPanel.SetYOffset(m.stepPanel.TotalLineCount() * m.focusedTask / len(m.taskIds))
 				}
 			}
 		case "down", "j":
@@ -272,8 +279,11 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				if m.focusedTask == len(m.taskIds)-1 {
 					m.focusedTask = 0
+					m.stepPanel.GotoTop()
 				} else {
 					m.focusedTask += 1
+					// FIXME: same as above
+					m.stepPanel.SetYOffset(m.stepPanel.TotalLineCount() * m.focusedTask / len(m.taskIds))
 				}
 			}
 		case "tab":
@@ -308,12 +318,28 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tickReadOutputsMsg()
 	case spinner.TickMsg:
 		var cmd tea.Cmd
+		// Build the side panel content
 		m.spinner, cmd = m.spinner.Update(msg)
-
 		m.stepPanel.SetContent(m.calculateStepPanelContent())
 
-		// Build the side content
 		return m, cmd
+	case tea.MouseMsg:
+		if msg.Action == tea.MouseActionPress {
+			switch msg.Button {
+			case tea.MouseButtonWheelUp:
+				if m.focusOutput {
+					m.outputPanel.LineUp(3)
+				} else {
+					m.stepPanel.LineUp(1)
+				}
+			case tea.MouseButtonWheelDown:
+				if m.focusOutput {
+					m.outputPanel.LineDown(3)
+				} else {
+					m.stepPanel.LineDown(1)
+				}
+			}
+		}
 	}
 
 	return m, nil

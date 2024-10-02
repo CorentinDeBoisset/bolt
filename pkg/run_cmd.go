@@ -39,7 +39,7 @@ func RunCmd(confPath string, selectedStep string) error {
 	// Run the ci in a goroutine. The synchronisation is handled by the channels
 	go executeCi(ctx, config, stepStatuses, readyToDisplay, ciDone)
 	<-readyToDisplay
-	if _, err := tea.NewProgram(newModel(config, stepStatuses), tea.WithAltScreen()).Run(); err != nil {
+	if _, err := tea.NewProgram(newModel(config, stepStatuses), tea.WithAltScreen(), tea.WithMouseCellMotion()).Run(); err != nil {
 		// TODO: Handle error
 		cancelCtx()
 		<-ciDone

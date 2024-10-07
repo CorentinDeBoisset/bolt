@@ -282,11 +282,33 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.stepPanel.GotoTop()
 				} else {
 					m.focusedTask += 1
-					// FIXME: same as above
 					maxOffset := m.stepPanel.TotalLineCount() - m.stepPanel.Height + 4
 					m.stepPanel.SetYOffset(maxOffset * m.focusedTask / len(m.taskIds))
 				}
 			}
+
+		// Other movement keys, not displayed in the help
+		case "pgup":
+			if m.focusOutput {
+				m.outputPanel.ViewUp()
+			}
+		case "pgdown":
+			if m.focusOutput {
+				m.outputPanel.ViewDown()
+			}
+		case "home":
+			if m.focusOutput {
+				m.outputPanel.GotoTop()
+			} else {
+				m.focusedTask = 0
+			}
+		case "end":
+			if m.focusOutput {
+				m.outputPanel.GotoBottom()
+			} else {
+				m.focusedTask = len(m.taskIds) - 1
+			}
+
 		case "tab":
 			if !m.hideOutputPanel {
 				m.focusOutput = !m.focusOutput

@@ -301,12 +301,14 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.outputPanel.GotoTop()
 			} else {
 				m.focusedTask = 0
+				m.stepPanel.GotoTop()
 			}
 		case "end":
 			if m.focusOutput {
 				m.outputPanel.GotoBottom()
 			} else {
 				m.focusedTask = len(m.taskIds) - 1
+				m.stepPanel.GotoBottom()
 			}
 
 		case "tab":

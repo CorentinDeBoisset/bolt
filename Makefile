@@ -1,10 +1,11 @@
-VERSION = 1.0.0
+ifeq ($(VERSION),)
+	VERSION = NoVersion
+endif
 
 PACKAGE_NAME := localci
 BIN_DIR := bin
 GO_FILES := $(shell find . -type f -name '*.go')
 
-DEV_BUILD_FLAGS = -ldflags "-X main.Version=${VERSION}"
 RELEASE_BUILD_FLAGS = -ldflags "-X main.Version=${VERSION} -s -w"
 
 .PHONY: all
@@ -13,15 +14,36 @@ all: ${BIN_DIR}/${PACKAGE_NAME}
 .PHONY: dev
 dev: ${BIN_DIR}/${PACKAGE_NAME}_dev
 
+
+${BIN_DIR}/${PACKAGE_NAME}_dev: ${GO_FILES}
+	go build -o $@
+
+# Standard build, for the current platform
 ${BIN_DIR}/${PACKAGE_NAME}: ${GO_FILES}
 	go build ${RELEASE_BUILD_FLAGS} -o $@
 
-${BIN_DIR}/${PACKAGE_NAME}_dev: ${GO_FILES}
-	go build ${DEV_BUILD_FLAGS} -o $@
+# Cross-platform builds
+.PHONY: cross-platform
+cross-platform: \
+	${BIN_DIR}/${PACKAGE_NAME}_linux_amd64 \
+	${BIN_DIR}/${PACKAGE_NAME}_linux_arm64 \
+	${BIN_DIR}/${PACKAGE_NAME}_darwin_amd64 \
+	${BIN_DIR}/${PACKAGE_NAME}_darwin_arm64
+
+${BIN_DIR}/${PACKAGE_NAME}_linux_amd64: ${GO_FILES}
+	GOOS=linux GOARCH=amd64 go build ${RELEASE_BUILD_FLAGS} -o $@
+${BIN_DIR}/${PACKAGE_NAME}_linux_arm64: ${GO_FILES}
+	GOOS=linux GOARCH=arm64 go build ${RELEASE_BUILD_FLAGS} -o $@
+
+${BIN_DIR}/${PACKAGE_NAME}_darwin_amd64: ${GO_FILES}
+	GOOS=darwin GOARCH=amd64 go build ${RELEASE_BUILD_FLAGS} -o $@
+${BIN_DIR}/${PACKAGE_NAME}_darwin_arm64: ${GO_FILES}
+	GOOS=darwin GOARCH=arm64 go build ${RELEASE_BUILD_FLAGS} -o $@
+
 
 .PHONY: clean
 clean:
-	rm -f ${BIN_DIR}/${PACKAGE_NAME} ${BIN_DIR}/${PACKAGE_NAME}_dev
+	rm -f ${BIN_DIR}/${PACKAGE_NAME}*
 
 .PHONY: install
 install:

@@ -1,0 +1,63 @@
+name: Branch CI
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.ref }}'
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+      - alpha
+      - '[0-9]\.[0-9]\.x'
+      - '[0-9]\.x\.x'
+      - '[0-9]\.x'
+
+jobs:
+  tests:
+    name: Lint and tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull the code
+        uses: actions/checkout@v4
+
+      - name: Install the golang environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.x
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.60
+
+      - name: Run tests
+        run: go test ./...
+
+  release:
+    name: Release a new version
+    runs-on: ubuntu-latest
+    needs: tests
+    permissions:
+      contents: write # Allow the job to write tags on the repo
+    steps:
+      - name: Pull the code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false # to avoid using GITHUB_TOKEN when pushing
+
+      - name: Install the golang environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.x
+
+      # It's required to avoid using the GITHUB_TOKEN, because we want an action to run on the tags that will be pushed.
+      # By default, github actions does not run on events triggered by other actions
+      - name: Run semantic release
+        uses: cycjimmy/semantic-release-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_PUSH_TOKEN }}
+          NPM_TOKEN: ""
+        with:
+          extra_plugins: |
+            @semantic-release/exec

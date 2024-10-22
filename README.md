@@ -4,15 +4,20 @@ Local-CI is an orchestrator to execute complex CI jobs locally.
 
 ## ❯ Installation steps
 
-Requirements:
+You can use a pre-built binary with:
 
-- golang v1.23+
+```bash
+wget https://github.com/CorentinDeBoisset/localci/releases/download/<version>/localci_<platform>_<arch> -O localci
 
-Run the following command:
+# On linux, you can install on /usr/local/bin (requires sudo), or in ~/bin
+install -m 0755 localci /path/to/install
+```
 
-    go install github.com/corentindeboisset/localci
+Alternatively, you can run the following command (you will need to install golang v1.23+):
 
-In the future, some precompiled binaries may be automatically built.
+```bash
+go install github.com/corentindeboisset/localci
+```
 
 ## ❯ Contributing
 

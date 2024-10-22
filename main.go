@@ -18,16 +18,21 @@ var (
 )
 
 func init() {
+	if Version == "" {
+		Version = "unknown (built from source)"
+	}
+
 	rootCmd = &cobra.Command{
-		Use:   "localci",
-		Short: "localci is a tool to execute complex CI jobs on your local machine",
+		Use:     "localci",
+		Version: Version,
+		Short:   "localci is a tool to execute complex CI jobs on your local machine",
 	}
 
 	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print version and exit",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("localci: %s\n", Version)
+			fmt.Printf("localci version %s\n", Version)
 		},
 	}
 	rootCmd.AddCommand(versionCmd)

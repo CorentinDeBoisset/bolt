@@ -1,5 +1,5 @@
 ifeq ($(VERSION),)
-	VERSION = NoVersion
+	VERSION =
 endif
 
 PACKAGE_NAME := localci

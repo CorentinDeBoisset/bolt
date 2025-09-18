@@ -24,7 +24,7 @@ jobs:
       - name: Install the golang environment
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23.x
+          go-version: 1.25.x
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
@@ -49,7 +49,7 @@ jobs:
       - name: Install the golang environment
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23.x
+          go-version: 1.25.x
 
       # It's required to avoid using the GITHUB_TOKEN, because we want an action to run on the tags that will be pushed.
       # By default, github actions does not run on events triggered by other actions

@@ -258,6 +258,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
+
 		case "up", "k":
 			// Scroll up the focused panel
 			if m.focusOutput {
@@ -272,6 +273,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.stepPanel.SetYOffset(maxOffset * m.focusedTask / len(m.taskIds))
 				}
 			}
+
 		case "down", "j":
 			// Scroll down the focused panel
 			if m.focusOutput {
@@ -292,18 +294,23 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focusOutput {
 				m.outputPanel.ViewUp()
 			}
+
 		case "pgdown":
 			if m.focusOutput {
 				m.outputPanel.ViewDown()
 			}
+
 		case "home":
+		case "cmd+up":
 			if m.focusOutput {
 				m.outputPanel.GotoTop()
 			} else {
 				m.focusedTask = 0
 				m.stepPanel.GotoTop()
 			}
+
 		case "end":
+		case "cmd+down":
 			if m.focusOutput {
 				m.outputPanel.GotoBottom()
 			} else {
@@ -323,6 +330,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.outputPanel.Style = blurredBorderStyle
 				}
 			}
+
 		case "enter":
 			if !m.focusOutput {
 				m.selectedTask = m.focusedTask

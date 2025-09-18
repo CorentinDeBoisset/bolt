@@ -301,7 +301,6 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "home":
-		case "cmd+up":
 			if m.focusOutput {
 				m.outputPanel.GotoTop()
 			} else {
@@ -310,7 +309,6 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "end":
-		case "cmd+down":
 			if m.focusOutput {
 				m.outputPanel.GotoBottom()
 			} else {

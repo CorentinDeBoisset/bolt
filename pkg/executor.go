@@ -163,7 +163,7 @@ func getCmdPath(basePath, cmdPath string) string {
 func runTask(ctx context.Context, cmd, path, basePath string, output *SafeBuffer) bool {
 	// Note: this setup only works on Unix
 	// TODO: maybe add support for windows (or not... :shrug:)
-	_, _ = output.Write([]byte(fmt.Sprintf("> %s\n", cmd)))
+	_, _ = fmt.Fprintf(output, "> %s\n", cmd)
 	task := exec.CommandContext(ctx, "/bin/sh", "-c", cmd)
 	task.Dir = getCmdPath(basePath, path)
 	task.Env = os.Environ() // Pass the environment to the child processes
@@ -176,16 +176,16 @@ func runTask(ctx context.Context, cmd, path, basePath string, output *SafeBuffer
 	}
 
 	if err := task.Start(); err != nil {
-		_, _ = output.Write([]byte(fmt.Sprintf("\n\nThe command could not start due to the following error:\n%s", err.Error())))
+		_, _ = fmt.Fprintf(output, "\n\nThe command could not start due to the following error:\n%s", err.Error())
 		return false
 	}
 
 	if err := task.Wait(); err != nil {
-		_, _ = output.Write([]byte(fmt.Sprintf("\n\nThe command failed with the following error:\n%s", err.Error())))
+		_, _ = fmt.Fprintf(output, "\n\nThe command failed with the following error:\n%s", err.Error())
 		return false
 	}
 
-	_, _ = output.Write([]byte("\n\n"))
+	_, _ = fmt.Fprintf(output, "\n\n")
 
 	return true
 }

@@ -262,7 +262,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up", "k":
 			// Scroll up the focused panel
 			if m.focusOutput {
-				m.outputPanel.LineUp(3)
+				m.outputPanel.ScrollUp(3)
 			} else {
 				if m.focusedTask == 0 {
 					m.focusedTask = len(m.taskIds) - 1
@@ -277,7 +277,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "down", "j":
 			// Scroll down the focused panel
 			if m.focusOutput {
-				m.outputPanel.LineDown(3)
+				m.outputPanel.ScrollDown(3)
 			} else {
 				if m.focusedTask == len(m.taskIds)-1 {
 					m.focusedTask = 0
@@ -292,12 +292,12 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Other movement keys, not displayed in the help
 		case "pgup":
 			if m.focusOutput {
-				m.outputPanel.ViewUp()
+				m.outputPanel.PageUp()
 			}
 
 		case "pgdown":
 			if m.focusOutput {
-				m.outputPanel.ViewDown()
+				m.outputPanel.PageDown()
 			}
 
 		case "home":
@@ -361,15 +361,15 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.Button {
 			case tea.MouseButtonWheelUp:
 				if m.focusOutput {
-					m.outputPanel.LineUp(3)
+					m.outputPanel.ScrollUp(3)
 				} else {
-					m.stepPanel.LineUp(1)
+					m.stepPanel.ScrollUp(1)
 				}
 			case tea.MouseButtonWheelDown:
 				if m.focusOutput {
-					m.outputPanel.LineDown(3)
+					m.outputPanel.ScrollDown(3)
 				} else {
-					m.stepPanel.LineDown(1)
+					m.stepPanel.ScrollDown(1)
 				}
 			}
 		}

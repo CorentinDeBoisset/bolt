@@ -7,12 +7,12 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type Line struct {
+type ListViewportLine struct {
 	Padding int
 	Content string
 }
 
-func (l *Line) Render(width int) []string {
+func (l *ListViewportLine) Render(width int) []string {
 	return strings.Split(
 		lipgloss.NewStyle().
 			Padding(0, 0, 0, l.Padding).
@@ -22,7 +22,7 @@ func (l *Line) Render(width int) []string {
 	)
 }
 
-func New(width, height int) (m ListViewportModel) {
+func NewListViewportModel(width, height int) (m ListViewportModel) {
 	m.width = width
 	m.height = height
 	m.focusedLine = 0
@@ -40,7 +40,7 @@ type ListViewportModel struct {
 
 	Style lipgloss.Style
 
-	sourceLines []Line
+	sourceLines []ListViewportLine
 
 	visibleLines [][]string
 }
@@ -57,7 +57,7 @@ func (m *ListViewportModel) AtBottom() bool {
 	return m.focusedLine >= len(m.sourceLines)-1
 }
 
-func (m *ListViewportModel) SetContent(lines []Line) {
+func (m *ListViewportModel) SetContent(lines []ListViewportLine) {
 	m.sourceLines = lines
 	m.recomputeVisibleLines()
 
@@ -124,12 +124,12 @@ func (m *ListViewportModel) SetYOffset(n int) {
 	m.yOffset = clamp(n, 0, m.maxYOffset())
 }
 
-func (m *ListViewportModel) PgDown() {
+func (m *ListViewportModel) PageDown() {
 	// FIXME: this should not use m.height
 	m.ScrollDown(m.height)
 }
 
-func (m *ListViewportModel) PgUp() {
+func (m *ListViewportModel) PageUp() {
 	// FIXME: this should not use m.height
 	m.ScrollUp(m.height)
 }

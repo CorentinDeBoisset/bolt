@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -21,7 +22,7 @@ func setupLogs(path string) {
 	}
 }
 
-func RunCmd(confPath string, selectedStep string) error {
+func RunCmd(confPath string, jobToRun string) error {
 	config, err := findAndParseConfig(confPath)
 	if err != nil {
 		return err
@@ -29,7 +30,21 @@ func RunCmd(confPath string, selectedStep string) error {
 
 	setupLogs(config.LogFilePath)
 
-	stepStatuses := make([]StepStatus, len(config.Steps))
+	var pickedJob *JobConfig
+	for _, job := range config.Jobs {
+		if (len(jobToRun) > 0 && job.Name == jobToRun) || job.Name == "default" {
+			pickedJob = &job
+		}
+	}
+
+	if pickedJob == nil {
+		if len(jobToRun) > 0 {
+			return fmt.Errorf("There is no job named \"%s\"", jobToRun)
+		}
+		return fmt.Errorf("There is no job named \"default\"")
+	}
+
+	stepStatuses := make([]StepStatus, len(pickedJob.Steps))
 
 	readyToDisplay := make(chan struct{})
 	ciDone := make(chan struct{})
@@ -37,9 +52,9 @@ func RunCmd(confPath string, selectedStep string) error {
 	ctx, cancelCtx := context.WithCancel(context.Background())
 
 	// Run the ci in a goroutine. The synchronisation is handled by the channels
-	go executeCi(ctx, config, stepStatuses, readyToDisplay, ciDone)
+	go executeCi(ctx, config.basePath, pickedJob, stepStatuses, readyToDisplay, ciDone)
 	<-readyToDisplay
-	if _, err := tea.NewProgram(newModel(config, stepStatuses), tea.WithAltScreen(), tea.WithMouseCellMotion()).Run(); err != nil {
+	if _, err := tea.NewProgram(newModel(pickedJob, stepStatuses), tea.WithAltScreen(), tea.WithMouseCellMotion()).Run(); err != nil {
 		// TODO: Handle error
 		cancelCtx()
 		<-ciDone

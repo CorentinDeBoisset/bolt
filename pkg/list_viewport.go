@@ -113,11 +113,11 @@ func (m *ListViewportModel) Focus(idx int) {
 	}
 
 	m.focusedLine = clamp(idx, 0, len(m.sourceLines)-1)
-	m.SetYOffset(m.getSourceLineOffset(m.focusedLine) - (m.height / 2))
+	m.SetYOffset(m.getSourceLineOffset(m.focusedLine) - (m.height / 2)) // FIXME: this is not the right height
 }
 
 func (m *ListViewportModel) maxYOffset() int {
-	return max(0, (m.ContentHeight() - m.height + m.Style.GetVerticalFrameSize()))
+	return max(0, (m.ContentHeight() - m.height + m.Style.GetVerticalFrameSize())) // FIXME: same
 }
 
 func (m *ListViewportModel) SetYOffset(n int) {
@@ -167,19 +167,21 @@ func (m *ListViewportModel) View() string {
 		h = min(h, sh)
 	}
 
-	visibleLines := make([]string, 0)
-	for _, visibleLine := range m.visibleLines {
-		visibleLines = append(visibleLines, visibleLine...)
-	}
-
 	innerWidth := w - m.Style.GetHorizontalFrameSize()
 	innerHeight := h - m.Style.GetVerticalFrameSize()
+
+	displayedLines := make([]string, 0)
+	for _, visibleLine := range m.visibleLines {
+		displayedLines = append(displayedLines, visibleLine...)
+	}
+	displayedLines = displayedLines[m.yOffset:min(m.yOffset+innerHeight, len(displayedLines))]
+
 	contents := lipgloss.NewStyle().
 		Width(innerWidth).      // pad to width
 		Height(innerHeight).    // pad to height
 		MaxHeight(innerHeight). // truncate height if taller
 		MaxWidth(innerWidth).   // truncate width if wider
-		Render(strings.Join(visibleLines, "\n"))
+		Render(strings.Join(displayedLines, "\n"))
 
 	// Style size already applied
 	return m.Style.UnsetWidth().UnsetHeight().Render(contents)

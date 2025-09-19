@@ -25,7 +25,7 @@ func init() {
 	rootCmd = &cobra.Command{
 		Use:     "localci",
 		Version: Version,
-		Short:   "localci is a tool to execute complex CI jobs on your local machine",
+		Short:   "localci is a tool to execute complex jobs on your local machine",
 	}
 
 	versionCmd := &cobra.Command{
@@ -38,14 +38,21 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 
 	runCmd := &cobra.Command{
-		Use:   "run",
-		Short: "Run the local ci",
+		Use:   "run [job-name]",
+		Short: "Run a job",
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return pkg.RunCmd(confPath, selectedStep)
+			jobToRun := ""
+			if len(args) >= 1 {
+				jobToRun = args[0]
+			}
+
+			return pkg.RunCmd(confPath, jobToRun)
 		},
 	}
 	runCmd.Flags().StringVarP(&confPath, "config", "c", "", "Path to a configuration file. If left empty, it will recursively search in the parent directories for a localci.yml file")
-	runCmd.Flags().StringVarP(&selectedStep, "limit", "l", "", "Limit the execution to a specified step. Can be in the format \"step_foo:job_bar\" to run a specific job from a given step")
+	runCmd.MarkFlagFilename("config", "yaml", "yml")
+
 	rootCmd.AddCommand(runCmd)
 }
 

@@ -9,20 +9,25 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type CiConfig struct {
-	basePath    string       `yaml:"-"`
-	LogFilePath string       `yaml:"log_file"`
-	Steps       []StepConfig `yaml:"steps"`
-}
-
-type StepConfig struct {
-	Name      string      `yaml:"name"`
-	Jobs      []JobConfig `yaml:"jobs"`
-	RunBefore []CmdConfig `yaml:"run_before,omitempty"`
-	RunAfter  []CmdConfig `yaml:"run_after,omitempty"`
+type ConfigFile struct {
+	basePath    string      `yaml:"-"`
+	LogFilePath string      `yaml:"log_file"`
+	Jobs        []JobConfig `yaml:"jobs"`
 }
 
 type JobConfig struct {
+	Name  string       `yaml:"name"`
+	Steps []StepConfig `yaml:"steps"`
+}
+
+type StepConfig struct {
+	Name      string       `yaml:"name"`
+	Tasks     []TaskConfig `yaml:"tasks"`
+	RunBefore []CmdConfig  `yaml:"run_before,omitempty"`
+	RunAfter  []CmdConfig  `yaml:"run_after,omitempty"`
+}
+
+type TaskConfig struct {
 	Name       string      `yaml:"name"`
 	Cmd        string      `yaml:"cmd"`
 	Path       string      `yaml:"path,omitempty"`
@@ -92,57 +97,69 @@ func validateCommands(configs []CmdConfig) error {
 	return nil
 }
 
-func validateConfig(cfg *CiConfig) error {
-	if len(cfg.Steps) == 0 {
-		return errors.New("no step is declared")
+func validateConfig(cfg *ConfigFile) error {
+	if len(cfg.Jobs) == 0 {
+		return errors.New("no job is declared")
 	}
 
-	stepNames := make(map[string]bool)
-
-	for stepIdx, step := range cfg.Steps {
-		if len(step.Name) == 0 {
-			return fmt.Errorf("the step #%d has no name declared", stepIdx)
+	jobNames := make(map[string]bool)
+	for jobIdx, job := range cfg.Jobs {
+		if len(job.Name) == 0 {
+			return fmt.Errorf("the job #%d has no name declared", jobIdx)
 		}
 
-		// Check all the step names are unique
-		if _, ok := stepNames[step.Name]; ok {
-			return fmt.Errorf("there are multiple steps named \"%s\"", step.Name)
+		// Check all the job names are unique
+		if _, ok := jobNames[job.Name]; ok {
+			return fmt.Errorf("there are multiple steps named \"%s\"", job.Name)
 		}
-		stepNames[step.Name] = true
+		jobNames[job.Name] = true
 
-		// Check the hooks
-		if err := validateCommands(step.RunBefore); err != nil {
-			return fmt.Errorf("the step \"%s\" has invalid run_before hooks: %w", step.Name, err)
-		}
-		if err := validateCommands(step.RunAfter); err != nil {
-			return fmt.Errorf("the step \"%s\" has invalid run_after hooks: %w", step.Name, err)
-		}
+		stepNames := make(map[string]bool)
+		for stepIdx, step := range job.Steps {
+			if len(step.Name) == 0 {
+				return fmt.Errorf("the step #%d has no name declared", stepIdx)
+			}
 
-		// Check all the jobs. Check that within a step, the names are unique
-		jobNames := make(map[string]bool)
-		if len(step.Jobs) == 0 {
-			return fmt.Errorf("the step \"%s\" has no job declared", step.Name)
-		}
-		for jobIdx, job := range step.Jobs {
-			if len(job.Name) == 0 {
-				return fmt.Errorf("the job #%d in the step \"%s\" has no name declared", jobIdx, step.Name)
+			// Check all the step names are unique
+			if _, ok := stepNames[step.Name]; ok {
+				return fmt.Errorf("there are multiple steps named \"%s\"", step.Name)
 			}
-			if _, ok := jobNames[job.Name]; ok {
-				return fmt.Errorf("there are multiple jobs named \"%s\" in the step \"%s\"", job.Name, step.Name)
-			}
-			jobNames[job.Name] = true
+			stepNames[step.Name] = true
 
-			if err := validateCommands(job.RunBefore); err != nil {
-				return fmt.Errorf("the job \"%s:%s\" has invalid run_before hooks: %w", step.Name, job.Name, err)
+			// Check the hooks
+			if err := validateCommands(step.RunBefore); err != nil {
+				return fmt.Errorf("the step \"%s\" has invalid run_before hooks: %w", step.Name, err)
 			}
-			if err := validateCommands(job.RunAfter); err != nil {
-				return fmt.Errorf("the job \"%s:%s\" has invalid run_after hooks: %w", step.Name, job.Name, err)
+			if err := validateCommands(step.RunAfter); err != nil {
+				return fmt.Errorf("the step \"%s\" has invalid run_after hooks: %w", step.Name, err)
 			}
-			if err := validateCommands(job.Background); err != nil {
-				return fmt.Errorf("the job \"%s:%s\" has invalid background tasks: %w", step.Name, job.Name, err)
+
+			// Check all the tasks. Check that within a step, the names are unique
+			taskNames := make(map[string]bool)
+			if len(step.Tasks) == 0 {
+				return fmt.Errorf("the step \"%s\" has no task declared", step.Name)
 			}
-			if len(job.Cmd) == 0 {
-				return fmt.Errorf("the job \"%s:%s\" has no command declared", step.Name, job.Name)
+			for taskIdx, task := range step.Tasks {
+				if len(task.Name) == 0 {
+					return fmt.Errorf("the task #%d in the step \"%s\" has no name declared", taskIdx, step.Name)
+				}
+				if _, ok := taskNames[task.Name]; ok {
+					return fmt.Errorf("there are multiple tasks named \"%s\" in the step \"%s\"", task.Name, step.Name)
+				}
+				taskNames[task.Name] = true
+
+				if err := validateCommands(task.RunBefore); err != nil {
+					return fmt.Errorf("the task \"%s:%s\" has invalid run_before hooks: %w", step.Name, task.Name, err)
+				}
+				if err := validateCommands(task.RunAfter); err != nil {
+					return fmt.Errorf("the task \"%s:%s\" has invalid run_after hooks: %w", step.Name, task.Name, err)
+				}
+				if err := validateCommands(task.Background); err != nil {
+					return fmt.Errorf("the task \"%s:%s\" has invalid background tasks: %w", step.Name, task.Name, err)
+				}
+				if len(task.Cmd) == 0 {
+					return fmt.Errorf("the task \"%s:%s\" has no command declared", step.Name, task.Name)
+				}
 			}
 		}
 	}
@@ -150,9 +167,9 @@ func validateConfig(cfg *CiConfig) error {
 	return nil
 }
 
-// parseConfig reads the content of the file at the absolute path given in argument, and extracts its yaml content into a CiConfig.
-func parseConfig(fileContent []byte) (*CiConfig, error) {
-	output := CiConfig{}
+// parseConfig reads the content of the file at the absolute path given in argument, and extracts its yaml content into a ConfigFile.
+func parseConfig(fileContent []byte) (*ConfigFile, error) {
+	output := ConfigFile{}
 	if err := yaml.Unmarshal(fileContent, &output); err != nil {
 		return nil, fmt.Errorf("the file could not be parsed from YAML: %w", err)
 	}
@@ -164,7 +181,7 @@ func parseConfig(fileContent []byte) (*CiConfig, error) {
 	return &output, nil
 }
 
-func findAndParseConfig(givenPath string) (*CiConfig, error) {
+func findAndParseConfig(givenPath string) (*ConfigFile, error) {
 	configPath, err := findConfig(givenPath)
 	if err != nil {
 		return nil, err

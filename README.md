@@ -1,6 +1,6 @@
 # Localci
 
-Local-CI is an orchestrator to execute complex CI jobs locally.
+Local-CI is an orchestrator to execute complex jobs locally.
 
 ## ❯ Installation steps
 

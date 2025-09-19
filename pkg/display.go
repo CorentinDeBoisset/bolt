@@ -25,9 +25,9 @@ var (
 				BorderForeground(lipgloss.Color("7")).
 				Padding(0, 2)
 
-	selectedJobStyle           = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("111")).Inline(true)
-	focusedJobStyle            = lipgloss.NewStyle().Underline(true).Inline(true)
-	focusedAndSelectedJobStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("111")).Underline(true).Inline(true)
+	selectedTaskStyle           = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("111")).Inline(true)
+	focusedTaskStyle            = lipgloss.NewStyle().Underline(true).Inline(true)
+	focusedAndSelectedTaskStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("111")).Underline(true).Inline(true)
 
 	successFlag  = lipgloss.NewStyle().SetString("✓").Bold(true).Foreground(lipgloss.Color("082"))
 	spinnerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("226"))
@@ -60,9 +60,9 @@ type ifaceModel struct {
 	stepPanel    ListViewportModel
 	outputPanel  viewport.Model
 
-	globalConfig *CiConfig
-	statuses     []StepStatus
-	taskIds      []registeredTask
+	jobConfig *JobConfig
+	statuses  []StepStatus
+	taskIds   []registeredTask
 }
 
 func tickReadOutputsMsg() tea.Cmd {
@@ -71,7 +71,7 @@ func tickReadOutputsMsg() tea.Cmd {
 	})
 }
 
-func newModel(config *CiConfig, statuses []StepStatus) ifaceModel {
+func newModel(config *JobConfig, statuses []StepStatus) ifaceModel {
 	m := ifaceModel{
 		help: help.New(),
 		keymap: keymap{
@@ -89,7 +89,7 @@ func newModel(config *CiConfig, statuses []StepStatus) ifaceModel {
 			),
 			enter: key.NewBinding(
 				key.WithKeys("enter"),
-				key.WithHelp("↵/Enter", "Select a job to display"),
+				key.WithHelp("↵/Enter", "Select a task to display"),
 			),
 			quit: key.NewBinding(
 				key.WithKeys("ctrl+c"),
@@ -98,7 +98,7 @@ func newModel(config *CiConfig, statuses []StepStatus) ifaceModel {
 		},
 		focusOutput:     false,
 		hideOutputPanel: false,
-		globalConfig:    config,
+		jobConfig:       config,
 		stepPanelWidth:  15,
 		statuses:        statuses,
 		spinner: spinner.New(
@@ -113,7 +113,6 @@ func newModel(config *CiConfig, statuses []StepStatus) ifaceModel {
 	m.calculateMinPanelSize()
 	m.stepPanel.Style = focusedBorderStyle
 	m.outputPanel.Style = blurredBorderStyle
-	m.outputPanel.MouseWheelEnabled = true
 
 	m.initializeTaskOutputs()
 
@@ -128,9 +127,9 @@ func (m *ifaceModel) initializeTaskOutputs() {
 			id := fmt.Sprintf("step#%d__bh", stepIdx)
 			m.taskIds = append(m.taskIds, registeredTask{Name: id, Output: &m.statuses[stepIdx].BeforeHooks.Output})
 		}
-		for jobIdx := range m.statuses[stepIdx].Jobs {
-			id := fmt.Sprintf("step#%d__job#%d", stepIdx, jobIdx)
-			m.taskIds = append(m.taskIds, registeredTask{Name: id, Output: &m.statuses[stepIdx].Jobs[jobIdx].Output})
+		for taskIdx := range m.statuses[stepIdx].Tasks {
+			id := fmt.Sprintf("step#%d__task#%d", stepIdx, taskIdx)
+			m.taskIds = append(m.taskIds, registeredTask{Name: id, Output: &m.statuses[stepIdx].Tasks[taskIdx].Output})
 		}
 		if m.statuses[stepIdx].AfterHooks != nil {
 			id := fmt.Sprintf("step#%d__ah", stepIdx)
@@ -148,13 +147,13 @@ func (m *ifaceModel) initializeTaskOutputs() {
 
 func (m *ifaceModel) calculateMinPanelSize() {
 	maxLen := 10
-	for _, step := range m.globalConfig.Steps {
+	for _, step := range m.jobConfig.Steps {
 		if maxLen < utf8.RuneCountInString(step.Name) {
 			maxLen = utf8.RuneCountInString(step.Name)
 		}
-		for _, job := range step.Jobs {
-			if maxLen < utf8.RuneCountInString(job.Name)+2 {
-				maxLen = utf8.RuneCountInString(job.Name) + 2
+		for _, task := range step.Tasks {
+			if maxLen < utf8.RuneCountInString(task.Name)+2 {
+				maxLen = utf8.RuneCountInString(task.Name) + 2
 			}
 		}
 		if len(step.RunBefore) > 0 && maxLen < 19 {
@@ -202,11 +201,11 @@ func (m ifaceModel) Init() tea.Cmd {
 
 func (m *ifaceModel) formatTask(id string, state TaskState, name string) string {
 	if id == m.taskIds[m.focusedTask].Name && id == m.taskIds[m.selectedTask].Name {
-		name = focusedAndSelectedJobStyle.Render(name)
+		name = focusedAndSelectedTaskStyle.Render(name)
 	} else if id == m.taskIds[m.selectedTask].Name {
-		name = selectedJobStyle.Render(name)
+		name = selectedTaskStyle.Render(name)
 	} else if id == m.taskIds[m.focusedTask].Name {
-		name = focusedJobStyle.Render(name)
+		name = focusedTaskStyle.Render(name)
 	}
 
 	switch state {
@@ -225,7 +224,7 @@ func (m *ifaceModel) formatTask(id string, state TaskState, name string) string 
 
 func (m *ifaceModel) calculateStepPanelContent() []ListViewportLine {
 	viewportLines := make([]ListViewportLine, 0, len(m.statuses)*2+len(m.taskIds))
-	for stepIdx, stepConfig := range m.globalConfig.Steps {
+	for stepIdx, stepConfig := range m.jobConfig.Steps {
 		m.statuses[stepIdx].Mtx.Lock()
 		viewportLines = append(viewportLines, ListViewportLine{
 			Padding: 0,
@@ -238,11 +237,11 @@ func (m *ifaceModel) calculateStepPanelContent() []ListViewportLine {
 				Content: m.formatTask(id, m.statuses[stepIdx].BeforeHooks.state, "Run-Before hooks"),
 			})
 		}
-		for jobIdx, jobConfig := range stepConfig.Jobs {
-			id := fmt.Sprintf("step#%d__job#%d", stepIdx, jobIdx)
+		for taskIdx, taskConfig := range stepConfig.Tasks {
+			id := fmt.Sprintf("step#%d__task#%d", stepIdx, taskIdx)
 			viewportLines = append(viewportLines, ListViewportLine{
 				Padding: 2,
-				Content: m.formatTask(id, m.statuses[stepIdx].Jobs[jobIdx].state, jobConfig.Name),
+				Content: m.formatTask(id, m.statuses[stepIdx].Tasks[taskIdx].state, taskConfig.Name),
 			})
 		}
 		if m.statuses[stepIdx].AfterHooks != nil {
@@ -261,30 +260,33 @@ func (m *ifaceModel) calculateStepPanelContent() []ListViewportLine {
 
 func (m *ifaceModel) calculateTaskLine(taskIdx int) int {
 	viewportOffset := 0
-	jobOffset := 0
-	for stepIdx, stepConfig := range m.globalConfig.Steps {
+	taskOffset := 0
+	for stepIdx, stepConfig := range m.jobConfig.Steps {
 		m.statuses[stepIdx].Mtx.Lock()
 		viewportOffset += 1
 		if m.statuses[stepIdx].BeforeHooks != nil {
-			if jobOffset == taskIdx {
+			if taskOffset == taskIdx {
+				m.statuses[stepIdx].Mtx.Unlock()
 				return viewportOffset
 			}
 			viewportOffset += 1
-			jobOffset += 1
+			taskOffset += 1
 		}
-		for range stepConfig.Jobs {
-			if jobOffset == taskIdx {
+		for range stepConfig.Tasks {
+			if taskOffset == taskIdx {
+				m.statuses[stepIdx].Mtx.Unlock()
 				return viewportOffset
 			}
 			viewportOffset += 1
-			jobOffset += 1
+			taskOffset += 1
 		}
 		if m.statuses[stepIdx].AfterHooks != nil {
-			if jobOffset == taskIdx {
+			if taskOffset == taskIdx {
+				m.statuses[stepIdx].Mtx.Unlock()
 				return viewportOffset
 			}
 			viewportOffset += 1
-			jobOffset += 1
+			taskOffset += 1
 		}
 		viewportOffset += 1
 		m.statuses[stepIdx].Mtx.Unlock()
@@ -404,13 +406,15 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.focusOutput {
 					m.outputPanel.ScrollUp(3)
 				} else {
-					m.stepPanel.ScrollUp(1)
+					m.focusedTask = max(m.focusedTask-1, 0)
+					m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
 				}
 			case tea.MouseButtonWheelDown:
 				if m.focusOutput {
 					m.outputPanel.ScrollDown(3)
 				} else {
-					m.stepPanel.ScrollDown(1)
+					m.focusedTask = min(m.focusedTask+1, len(m.taskIds)-1)
+					m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
 				}
 			}
 		}

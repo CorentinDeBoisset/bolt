@@ -37,41 +37,41 @@ const (
 	STATE_FAILED
 )
 
-type TaskStatus struct {
+type CmdStatus struct {
 	state TaskState
 
 	Output SafeBuffer
 }
 
-type JobStatus struct {
+type TaskStatus struct {
 	state TaskState
 
 	BeforeHooksSuccess bool
 	AfterHooksSuccess  bool
-	MainJobSuccess     bool
+	MainTaskStatus     bool
 
 	Output SafeBuffer
 }
 
 type StepStatus struct {
-	BeforeHooks *TaskStatus
-	Jobs        []JobStatus
-	AfterHooks  *TaskStatus
+	BeforeHooks *CmdStatus
+	Tasks       []TaskStatus
+	AfterHooks  *CmdStatus
 
 	state TaskState
 	Mtx   sync.Mutex
 }
 
-func executeCi(ctx context.Context, config *CiConfig, stepStatuses []StepStatus, readyToDisplay, done chan struct{}) {
+func executeCi(ctx context.Context, basePath string, config *JobConfig, stepStatuses []StepStatus, readyToDisplay, done chan struct{}) {
 	// First, initialize the status structs
 	for stepIdx, step := range config.Steps {
 		if len(step.RunBefore) > 0 {
-			stepStatuses[stepIdx].BeforeHooks = &TaskStatus{}
+			stepStatuses[stepIdx].BeforeHooks = &CmdStatus{}
 		}
 		if len(step.RunAfter) > 0 {
-			stepStatuses[stepIdx].AfterHooks = &TaskStatus{}
+			stepStatuses[stepIdx].AfterHooks = &CmdStatus{}
 		}
-		stepStatuses[stepIdx].Jobs = make([]JobStatus, len(step.Jobs))
+		stepStatuses[stepIdx].Tasks = make([]TaskStatus, len(step.Tasks))
 	}
 
 	// Notify that the statuses are ready to be displayed
@@ -88,7 +88,7 @@ func executeCi(ctx context.Context, config *CiConfig, stepStatuses []StepStatus,
 		stepStatuses[stepIdx].Mtx.Unlock()
 
 		for _, hook := range step.RunBefore {
-			if !runTask(ctx, hook.Cmd, hook.Path, config.basePath, &stepStatuses[stepIdx].BeforeHooks.Output) {
+			if !runCommand(ctx, basePath, hook.Path, hook.Cmd, &stepStatuses[stepIdx].BeforeHooks.Output) {
 				stepStatuses[stepIdx].Mtx.Lock()
 				stepStatuses[stepIdx].BeforeHooks.state = STATE_FAILED
 				stepStatuses[stepIdx].state = STATE_FAILED
@@ -103,27 +103,27 @@ func executeCi(ctx context.Context, config *CiConfig, stepStatuses []StepStatus,
 		}
 		stepStatuses[stepIdx].Mtx.Unlock()
 
-		// Within each step, the jobs are run asynchronously
-		var jobsWg sync.WaitGroup
-		for jobIdx, job := range step.Jobs {
-			jobsWg.Add(1)
+		// Within each step, the tasks are run asynchronously
+		var taskWg sync.WaitGroup
+		for taskIdx, task := range step.Tasks {
+			taskWg.Add(1)
 			go func() {
-				defer jobsWg.Done()
-				runJob(ctx, job, config, &stepStatuses[stepIdx].Jobs[jobIdx], &stepStatuses[stepIdx])
+				defer taskWg.Done()
+				runTask(ctx, basePath, task, &stepStatuses[stepIdx].Tasks[taskIdx], &stepStatuses[stepIdx])
 			}()
 		}
-		jobsWg.Wait()
+		taskWg.Wait()
 
-		// Read the status from the jobs
+		// Read the status from the tasks
 		stepStatuses[stepIdx].Mtx.Lock()
-		jobsOk := true
-		for jobIdx := range stepStatuses[stepIdx].Jobs {
-			js := &stepStatuses[stepIdx].Jobs[jobIdx]
+		tasksOk := true
+		for taskIdx := range stepStatuses[stepIdx].Tasks {
+			js := &stepStatuses[stepIdx].Tasks[taskIdx]
 			if js.state == STATE_FAILED {
-				jobsOk = false
+				tasksOk = false
 			}
 		}
-		if !jobsOk {
+		if !tasksOk {
 			stepStatuses[stepIdx].state = STATE_FAILED
 			stepStatuses[stepIdx].Mtx.Unlock()
 			return
@@ -134,7 +134,7 @@ func executeCi(ctx context.Context, config *CiConfig, stepStatuses []StepStatus,
 		stepStatuses[stepIdx].Mtx.Unlock()
 
 		for _, hook := range step.RunAfter {
-			if !runTask(ctx, hook.Cmd, hook.Path, config.basePath, &stepStatuses[stepIdx].AfterHooks.Output) {
+			if !runCommand(ctx, basePath, hook.Path, hook.Cmd, &stepStatuses[stepIdx].AfterHooks.Output) {
 				stepStatuses[stepIdx].Mtx.Lock()
 				stepStatuses[stepIdx].AfterHooks.state = STATE_FAILED
 				stepStatuses[stepIdx].state = STATE_FAILED
@@ -160,7 +160,7 @@ func getCmdPath(basePath, cmdPath string) string {
 	}
 }
 
-func runTask(ctx context.Context, cmd, path, basePath string, output *SafeBuffer) bool {
+func runCommand(ctx context.Context, basePath, path, cmd string, output *SafeBuffer) bool {
 	// Note: this setup only works on Unix
 	// TODO: maybe add support for windows (or not... :shrug:)
 	_, _ = fmt.Fprintf(output, "> %s\n", cmd)
@@ -190,51 +190,51 @@ func runTask(ctx context.Context, cmd, path, basePath string, output *SafeBuffer
 	return true
 }
 
-func runJob(ctx context.Context, config JobConfig, globalConfig *CiConfig, jobStatus *JobStatus, globalStatus *StepStatus) bool {
+func runTask(ctx context.Context, basePath string, config TaskConfig, taskStatus *TaskStatus, globalStatus *StepStatus) bool {
 	globalStatus.Mtx.Lock()
-	jobStatus.BeforeHooksSuccess = false
-	jobStatus.MainJobSuccess = false
-	jobStatus.AfterHooksSuccess = false
-	jobStatus.state = STATE_RUNNING
+	taskStatus.BeforeHooksSuccess = false
+	taskStatus.MainTaskStatus = false
+	taskStatus.AfterHooksSuccess = false
+	taskStatus.state = STATE_RUNNING
 	globalStatus.Mtx.Unlock()
 
 	for _, hook := range config.RunBefore {
-		if !runTask(ctx, hook.Cmd, hook.Path, globalConfig.basePath, &jobStatus.Output) {
+		if !runCommand(ctx, basePath, hook.Path, hook.Cmd, &taskStatus.Output) {
 			globalStatus.Mtx.Lock()
-			jobStatus.state = STATE_FAILED
+			taskStatus.state = STATE_FAILED
 			globalStatus.Mtx.Unlock()
 			return false
 		}
 	}
 
 	globalStatus.Mtx.Lock()
-	jobStatus.BeforeHooksSuccess = true
+	taskStatus.BeforeHooksSuccess = true
 	globalStatus.Mtx.Unlock()
 
 	// run config.Cmd
-	if !runTask(ctx, config.Cmd, config.Path, globalConfig.basePath, &jobStatus.Output) {
+	if !runCommand(ctx, basePath, config.Path, config.Cmd, &taskStatus.Output) {
 		globalStatus.Mtx.Lock()
-		jobStatus.state = STATE_FAILED
+		taskStatus.state = STATE_FAILED
 		globalStatus.Mtx.Unlock()
 		return false
 	}
 
 	globalStatus.Mtx.Lock()
-	jobStatus.MainJobSuccess = true
+	taskStatus.MainTaskStatus = true
 	globalStatus.Mtx.Unlock()
 
 	for _, hook := range config.RunAfter {
-		if !runTask(ctx, hook.Cmd, hook.Path, globalConfig.basePath, &jobStatus.Output) {
+		if !runCommand(ctx, basePath, hook.Path, hook.Cmd, &taskStatus.Output) {
 			globalStatus.Mtx.Lock()
-			jobStatus.state = STATE_FAILED
+			taskStatus.state = STATE_FAILED
 			globalStatus.Mtx.Unlock()
 			return false
 		}
 	}
 
 	globalStatus.Mtx.Lock()
-	jobStatus.state = STATE_SUCCESSFUL
-	jobStatus.AfterHooksSuccess = true
+	taskStatus.state = STATE_SUCCESSFUL
+	taskStatus.AfterHooksSuccess = true
 	globalStatus.Mtx.Unlock()
 
 	return true

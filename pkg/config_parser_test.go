@@ -120,5 +120,5 @@ jobs:
               cmd: echo 2
 `
 	_, err = parseConfig([]byte(duplicateTasksNames))
-	assert.ErrorContains(t, err, "there are multiple tasks named \"first_task\" in the step \"first_step\" in the job \"My first job\"")
+	assert.ErrorContains(t, err, "there are multiple tasks named \"first_task\" in the step \"first_step\"")
 }

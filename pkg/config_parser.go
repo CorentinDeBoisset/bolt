@@ -109,56 +109,60 @@ func validateConfig(cfg *ConfigFile) error {
 		}
 
 		// Check all the job names are unique
-		if _, ok := jobNames[job.Name]; ok {
-			return fmt.Errorf("there are multiple steps named \"%s\"", job.Name)
+		if _, exists := jobNames[job.Name]; exists {
+			return fmt.Errorf("there are multiple jobs named \"%s\"", job.Name)
 		}
 		jobNames[job.Name] = true
+
+		if len(job.Steps) == 0 {
+			return fmt.Errorf("no step is declared in the job \"%s\"", job.Name)
+		}
 
 		stepNames := make(map[string]bool)
 		for stepIdx, step := range job.Steps {
 			if len(step.Name) == 0 {
-				return fmt.Errorf("the step #%d has no name declared", stepIdx)
+				return fmt.Errorf("the step #%d in the job \"%s\" has no name declared", stepIdx, job.Name)
 			}
 
 			// Check all the step names are unique
 			if _, ok := stepNames[step.Name]; ok {
-				return fmt.Errorf("there are multiple steps named \"%s\"", step.Name)
+				return fmt.Errorf("there are multiple steps named \"%s\" in the job \"%s\"", step.Name, job.Name)
 			}
 			stepNames[step.Name] = true
 
 			// Check the hooks
 			if err := validateCommands(step.RunBefore); err != nil {
-				return fmt.Errorf("the step \"%s\" has invalid run_before hooks: %w", step.Name, err)
+				return fmt.Errorf("the step \"%s\" in the job \"%s\" has invalid run_before hooks: %w", step.Name, job.Name, err)
 			}
 			if err := validateCommands(step.RunAfter); err != nil {
-				return fmt.Errorf("the step \"%s\" has invalid run_after hooks: %w", step.Name, err)
+				return fmt.Errorf("the step \"%s\" in the job \"%s\" has invalid run_after hooks: %w", step.Name, job.Name, err)
 			}
 
 			// Check all the tasks. Check that within a step, the names are unique
 			taskNames := make(map[string]bool)
 			if len(step.Tasks) == 0 {
-				return fmt.Errorf("the step \"%s\" has no task declared", step.Name)
+				return fmt.Errorf("the step \"%s\" in the job \"%s\" has no task declared", step.Name, job.Name)
 			}
 			for taskIdx, task := range step.Tasks {
 				if len(task.Name) == 0 {
-					return fmt.Errorf("the task #%d in the step \"%s\" has no name declared", taskIdx, step.Name)
+					return fmt.Errorf("the task #%d in the step \"%s\" in the job \"%s\" has no name declared", taskIdx, step.Name, job.Name)
 				}
 				if _, ok := taskNames[task.Name]; ok {
-					return fmt.Errorf("there are multiple tasks named \"%s\" in the step \"%s\"", task.Name, step.Name)
+					return fmt.Errorf("there are multiple tasks named \"%s\" in the step \"%s\"in the job \"%s\"", task.Name, step.Name, job.Name)
 				}
 				taskNames[task.Name] = true
 
 				if err := validateCommands(task.RunBefore); err != nil {
-					return fmt.Errorf("the task \"%s:%s\" has invalid run_before hooks: %w", step.Name, task.Name, err)
+					return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has invalid run_before hooks: %w", step.Name, job.Name, task.Name, err)
 				}
 				if err := validateCommands(task.RunAfter); err != nil {
-					return fmt.Errorf("the task \"%s:%s\" has invalid run_after hooks: %w", step.Name, task.Name, err)
+					return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has invalid run_after hooks: %w", step.Name, job.Name, task.Name, err)
 				}
 				if err := validateCommands(task.Background); err != nil {
-					return fmt.Errorf("the task \"%s:%s\" has invalid background tasks: %w", step.Name, task.Name, err)
+					return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has invalid background tasks: %w", step.Name, job.Name, task.Name, err)
 				}
 				if len(task.Cmd) == 0 {
-					return fmt.Errorf("the task \"%s:%s\" has no command declared", step.Name, task.Name)
+					return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has no command declared", step.Name, job.Name, task.Name)
 				}
 			}
 		}

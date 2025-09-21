@@ -53,7 +53,7 @@ func init() {
 		},
 	}
 	runCmd.Flags().StringVarP(&confPath, "config", "c", "", "Path to a configuration file. If left empty, it will recursively search in the parent directories for a localci.yml file")
-	runCmd.MarkFlagFilename("config", "yaml", "yml")
+	_ = runCmd.MarkFlagFilename("config", "yaml", "yml")
 
 	rootCmd.AddCommand(runCmd)
 }

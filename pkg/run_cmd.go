@@ -53,9 +53,9 @@ func RunCmd(confPath string, jobToRun string) error {
 
 	if pickedJob == nil {
 		if len(jobToRun) > 0 {
-			return fmt.Errorf("There is no job named \"%s\"", jobToRun)
+			return fmt.Errorf("there is no job named \"%s\"", jobToRun)
 		}
-		return fmt.Errorf("There is no job named \"default\"")
+		return fmt.Errorf("there is no job named \"default\"")
 	}
 
 	stepStatuses := make([]StepStatus, len(pickedJob.Steps))

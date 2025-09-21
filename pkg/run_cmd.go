@@ -22,6 +22,20 @@ func setupLogs(path string) {
 	}
 }
 
+func RunAutocomplete(confPath string) []string {
+	config, err := findAndParseConfig(confPath)
+	if err != nil {
+		return nil
+	}
+
+	results := make([]string, 0, len(config.Jobs))
+	for _, job := range config.Jobs {
+		results = append(results, job.Name)
+	}
+
+	return results
+}
+
 func RunCmd(confPath string, jobToRun string) error {
 	config, err := findAndParseConfig(confPath)
 	if err != nil {

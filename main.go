@@ -13,8 +13,7 @@ var (
 	Version string
 	rootCmd *cobra.Command
 
-	confPath     string
-	selectedStep string
+	confPath string
 )
 
 func init() {
@@ -41,6 +40,9 @@ func init() {
 		Use:   "run [job-name]",
 		Short: "Run a job",
 		Args:  cobra.MaximumNArgs(1),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return pkg.RunAutocomplete(confPath), cobra.ShellCompDirectiveNoFileComp
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			jobToRun := ""
 			if len(args) >= 1 {

@@ -62,7 +62,7 @@ type StepStatus struct {
 	Mtx   sync.Mutex
 }
 
-func executeCi(ctx context.Context, basePath string, config *JobConfig, stepStatuses []StepStatus, readyToDisplay, done chan struct{}) {
+func executeJob(ctx context.Context, basePath string, config *JobConfig, stepStatuses []StepStatus, readyToDisplay, done chan struct{}) {
 	// First, initialize the status structs
 	for stepIdx, step := range config.Steps {
 		if len(step.RunBefore) > 0 {

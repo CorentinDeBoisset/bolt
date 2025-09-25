@@ -1,22 +1,22 @@
-# Localci
+# ⛈️ Bolt
 
-Local-CI is an orchestrator to execute complex jobs locally.
+Bolt is a task orchestrator to execute complex jobs.
 
 ## ❯ Installation steps
 
 You can use a pre-built binary with:
 
 ```bash
-wget https://github.com/CorentinDeBoisset/localci/releases/download/<version>/localci_<platform>_<arch> -O localci
+wget https://github.com/CorentinDeBoisset/bolt/releases/download/<version>/bolt_<platform>_<arch> -O bolt
 
 # On linux, you can install on /usr/local/bin (requires sudo), or in ~/bin
-install -m 0755 localci /path/to/install
+install -m 0755 bolt /path/to/install
 ```
 
 Alternatively, you can run the following command (you will need to install golang v1.25+):
 
 ```bash
-go install github.com/corentindeboisset/localci
+go install github.com/corentindeboisset/bolt
 ```
 
 ## ❯ Contributing
@@ -27,7 +27,7 @@ You can build the development binary:
 
 ```bash
 make dev
-./bin/localci_dev <args>
+./bin/bolt_dev <args>
 ```
 
 ### Tests

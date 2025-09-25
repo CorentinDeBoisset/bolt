@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/corentindeboisset/localci/pkg"
+	"github.com/corentindeboisset/bolt/pkg"
 )
 
 var (
@@ -22,16 +22,16 @@ func init() {
 	}
 
 	rootCmd = &cobra.Command{
-		Use:     "localci",
+		Use:     "bolt",
 		Version: Version,
-		Short:   "localci is a tool to execute complex jobs on your local machine",
+		Short:   "bolt is a tool to execute complex jobs on your local machine",
 	}
 
 	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print version and exit",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("localci version %s\n", Version)
+			fmt.Printf("bolt version %s\n", Version)
 		},
 	}
 	rootCmd.AddCommand(versionCmd)
@@ -52,7 +52,7 @@ func init() {
 			return pkg.RunCmd(confPath, jobToRun)
 		},
 	}
-	runCmd.Flags().StringVarP(&confPath, "config", "c", "", "Path to a configuration file. If left empty, it will recursively search in the parent directories for a localci.yml file")
+	runCmd.Flags().StringVarP(&confPath, "config", "c", "", "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file")
 	_ = runCmd.MarkFlagFilename("config", "yaml", "yml")
 
 	rootCmd.AddCommand(runCmd)

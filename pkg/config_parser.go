@@ -42,7 +42,7 @@ type CmdConfig struct {
 	// TODO: add a FailedWhen: a template calculated with the exit code, the stdout and stderr
 }
 
-// findConfig tries to find a configuration file. If no path is given in argument, it tries to find a localci.yml file in the parent directories of the current working directory.
+// findConfig tries to find a configuration file. If no path is given in argument, it tries to find a bolt.yml file in the parent directories of the current working directory.
 func findConfig(givenPath string) (ret string, err error) {
 	if len(givenPath) > 0 {
 		if filepath.IsAbs(givenPath) {
@@ -70,9 +70,9 @@ func findConfig(givenPath string) (ret string, err error) {
 		return "", fmt.Errorf("failed to get the current working directory: %w", err)
 	}
 	for {
-		stat, err := os.Stat(filepath.Join(curDir, "localci.yml"))
+		stat, err := os.Stat(filepath.Join(curDir, "bolt.yml"))
 		if err == nil && !stat.IsDir() {
-			return filepath.Join(curDir, "localci.yml"), nil
+			return filepath.Join(curDir, "bolt.yml"), nil
 		}
 
 		if curDir == filepath.Dir(curDir) {

@@ -61,21 +61,21 @@ func RunCmd(confPath string, jobToRun string) error {
 	stepStatuses := make([]StepStatus, len(pickedJob.Steps))
 
 	readyToDisplay := make(chan struct{})
-	ciDone := make(chan struct{})
+	jobDone := make(chan struct{})
 
-	ctx, cancelCtx := context.WithCancel(context.Background())
+	ctx, cancelJob := context.WithCancel(context.Background())
 
-	// Run the ci in a goroutine. The synchronisation is handled by the channels
-	go executeCi(ctx, config.basePath, pickedJob, stepStatuses, readyToDisplay, ciDone)
+	// Run the job in a goroutine. The synchronisation is handled by the channels
+	go executeJob(ctx, config.basePath, pickedJob, stepStatuses, readyToDisplay, jobDone)
 	<-readyToDisplay
 	if _, err := tea.NewProgram(newModel(pickedJob, stepStatuses), tea.WithAltScreen(), tea.WithMouseCellMotion()).Run(); err != nil {
 		// TODO: Handle error
-		cancelCtx()
-		<-ciDone
+		cancelJob()
+		<-jobDone
 		return err
 	}
-	cancelCtx()
-	<-ciDone
+	cancelJob()
+	<-jobDone
 
 	return nil
 }

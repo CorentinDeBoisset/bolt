@@ -1,4 +1,4 @@
-module github.com/corentindeboisset/localci
+module github.com/corentindeboisset/bolt
 
 go 1.25.1
 

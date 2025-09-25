@@ -2,7 +2,7 @@ ifeq ($(VERSION),)
 	VERSION =
 endif
 
-PACKAGE_NAME := localci
+PACKAGE_NAME := bolt
 BIN_DIR := bin
 GO_FILES := $(shell find . -type f -name '*.go')
 

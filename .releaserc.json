@@ -16,7 +16,7 @@
     [
       "@semantic-release/github",
       {
-        "assets": ["bin/localci_*"]
+        "assets": ["bin/bolt_*"]
       }
     ]
   ]

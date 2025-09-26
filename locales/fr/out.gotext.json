@@ -1,0 +1,45 @@
+{
+    "language": "fr",
+    "messages": [
+        {
+            "id": "unknown (built from source)",
+            "message": "unknown (built from source)",
+            "translation": "inconnue (compilation depuis les sources)"
+        },
+        {
+            "id": "Bolt is a task orchestrator to execute complex jobs",
+            "message": "Bolt is a task orchestrator to execute complex jobs",
+            "translation": "Bolt est un orchestrateur pour exécuter des séquences de tâches complexes"
+        },
+        {
+            "id": "Print version and exit",
+            "message": "Print version and exit",
+            "translation": "Afficher la version et quitter"
+        },
+        {
+            "id": "bolt version {Version}",
+            "message": "bolt version {Version}",
+            "translation": "bolt version {Version}",
+            "placeholders": [
+                {
+                    "id": "Version",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "Version"
+                }
+            ]
+        },
+        {
+            "id": "Run a job",
+            "message": "Run a job",
+            "translation": "Exécuter une séquence de tâches"
+        },
+        {
+            "id": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
+            "message": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
+            "translation": "Chemin vers un fichier de configuration. Si aucune valeur n'est saisie, une recherche dans les dossiers parents pour un fichier bolt.yml sera exécutée."
+        }
+    ]
+}

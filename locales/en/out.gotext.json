@@ -1,0 +1,57 @@
+{
+    "language": "en",
+    "messages": [
+        {
+            "id": "unknown (built from source)",
+            "message": "unknown (built from source)",
+            "translation": "unknown (built from source)",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Bolt is a task orchestrator to execute complex jobs",
+            "message": "Bolt is a task orchestrator to execute complex jobs",
+            "translation": "Bolt is a task orchestrator to execute complex jobs",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Print version and exit",
+            "message": "Print version and exit",
+            "translation": "Print version and exit",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "bolt version {Version}",
+            "message": "bolt version {Version}",
+            "translation": "bolt version {Version}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Version",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "Version"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Run a job",
+            "message": "Run a job",
+            "translation": "Run a job",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
+            "message": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
+            "translation": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        }
+    ]
+}

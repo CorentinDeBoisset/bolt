@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 
 	"github.com/corentindeboisset/bolt/pkg"
 )
+
+//go:generate gotext -srclang=en update -out catalog.go -lang=fr,en
 
 var (
 	Version string
@@ -17,28 +18,30 @@ var (
 )
 
 func init() {
+	i18n := pkg.GetI18nPrinter()
+
 	if Version == "" {
-		Version = "unknown (built from source)"
+		Version = i18n.Sprintf("unknown (built from source)")
 	}
 
 	rootCmd = &cobra.Command{
 		Use:     "bolt",
 		Version: Version,
-		Short:   "bolt is a tool to execute complex jobs on your local machine",
+		Short:   i18n.Sprintf("Bolt is a task orchestrator to execute complex jobs"),
 	}
 
 	versionCmd := &cobra.Command{
 		Use:   "version",
-		Short: "Print version and exit",
+		Short: i18n.Sprintf("Print version and exit"),
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("bolt version %s\n", Version)
+			i18n.Printf("bolt version %s\n", Version)
 		},
 	}
 	rootCmd.AddCommand(versionCmd)
 
 	runCmd := &cobra.Command{
 		Use:   "run [job-name]",
-		Short: "Run a job",
+		Short: i18n.Sprintf("Run a job"),
 		Args:  cobra.MaximumNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return pkg.RunAutocomplete(confPath), cobra.ShellCompDirectiveNoFileComp
@@ -52,7 +55,7 @@ func init() {
 			return pkg.RunCmd(confPath, jobToRun)
 		},
 	}
-	runCmd.Flags().StringVarP(&confPath, "config", "c", "", "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file")
+	runCmd.Flags().StringVarP(&confPath, "config", "c", "", i18n.Sprintf("Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file"))
 	_ = runCmd.MarkFlagFilename("config", "yaml", "yml")
 
 	rootCmd.AddCommand(runCmd)

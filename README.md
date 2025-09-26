@@ -43,3 +43,17 @@ Aditionnaly, if you want a coverage report:
 ```
 make coverage
 ```
+
+### Translation management
+
+Install the `gotext` excutable:
+
+```bash
+go install golang.org/x/text/cmd/gotext@latest
+```
+
+Then update the translation catalogs with:
+
+```bash
+go generate ./...
+```

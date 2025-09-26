@@ -106,11 +106,9 @@ func executeJob(ctx context.Context, basePath string, config *JobConfig, stepSta
 		// Within each step, the tasks are run asynchronously
 		var taskWg sync.WaitGroup
 		for taskIdx, task := range step.Tasks {
-			taskWg.Add(1)
-			go func() {
-				defer taskWg.Done()
+			taskWg.Go(func() {
 				runTask(ctx, basePath, task, &stepStatuses[stepIdx].Tasks[taskIdx], &stepStatuses[stepIdx])
-			}()
+			})
 		}
 		taskWg.Wait()
 

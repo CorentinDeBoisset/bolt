@@ -34,7 +34,7 @@ func init() {
 		Use:   "version",
 		Short: i18n.Sprintf("Print version and exit"),
 		Run: func(cmd *cobra.Command, args []string) {
-			i18n.Printf("bolt version %s\n", Version)
+			_, _ = i18n.Printf("bolt version %s\n", Version)
 		},
 	}
 	rootCmd.AddCommand(versionCmd)

@@ -25,6 +25,8 @@ var (
 				BorderForeground(lipgloss.Color("7")).
 				Padding(0, 2)
 
+	outputStyle = lipgloss.NewStyle().Width(30)
+
 	selectedTaskStyle           = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("111")).Inline(true)
 	focusedTaskStyle            = lipgloss.NewStyle().Underline(true).Inline(true)
 	focusedAndSelectedTaskStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("111")).Underline(true).Inline(true)
@@ -184,6 +186,7 @@ func (m *ifaceModel) updateSizes() {
 		return
 	}
 	m.outputPanel.Width = outputWidth
+	outputStyle = lipgloss.NewStyle().Width(outputWidth - m.outputPanel.Style.GetBorderLeftSize() - m.outputPanel.Style.GetBorderRightSize())
 	m.stepPanel.Resize(stepPanelWidth, panelsHeight)
 }
 
@@ -386,7 +389,8 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case RefreshStatusMsg:
 		if !m.hideOutputPanel {
 			isAtBottom := m.outputPanel.AtBottom()
-			m.outputPanel.SetContent(m.taskIds[m.selectedTask].Output.String())
+			outputContent := outputStyle.Render(m.taskIds[m.selectedTask].Output.String())
+			m.outputPanel.SetContent(outputContent)
 			if isAtBottom {
 				m.outputPanel.GotoBottom()
 			}

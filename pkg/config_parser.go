@@ -10,14 +10,23 @@ import (
 )
 
 type ConfigFile struct {
-	BasePath    string      `yaml:"-"`
-	LogFilePath string      `yaml:"log_file"`
-	Jobs        []JobConfig `yaml:"jobs"`
+	BasePath    string          `yaml:"-"`
+	LogFilePath string          `yaml:"log_file"`
+	Jobs        []JobConfig     `yaml:"jobs,omitempty"`
+	Services    []ServiceConfig `yaml:"services,omitempty"`
 }
 
 type JobConfig struct {
-	Name  string       `yaml:"name"`
-	Steps []StepConfig `yaml:"steps"`
+	Name     string       `yaml:"name"`
+	Steps    []StepConfig `yaml:"steps"`
+	RunAfter []CmdConfig  `yaml:"run_after,omitempty"`
+}
+
+type ServiceConfig struct {
+	Name      string      `yaml:"name"`
+	RunBefore []CmdConfig `yaml:"run_before,omitempty"`
+	Tasks     []CmdConfig `yaml:"tasks"`
+	RunAfter  []CmdConfig `yaml:"run_after,omitempty"`
 }
 
 type StepConfig struct {
@@ -28,12 +37,11 @@ type StepConfig struct {
 }
 
 type TaskConfig struct {
-	Name       string      `yaml:"name"`
-	Cmd        string      `yaml:"cmd"`
-	Path       string      `yaml:"path,omitempty"`
-	RunBefore  []CmdConfig `yaml:"run_before,omitempty"`
-	Background []CmdConfig `yaml:"background,omitempty"`
-	RunAfter   []CmdConfig `yaml:"run_after,omitempty"`
+	Name      string      `yaml:"name"`
+	Cmd       string      `yaml:"cmd"`
+	Path      string      `yaml:"path,omitempty"`
+	RunBefore []CmdConfig `yaml:"run_before,omitempty"`
+	RunAfter  []CmdConfig `yaml:"run_after,omitempty"`
 }
 
 type CmdConfig struct {
@@ -97,9 +105,82 @@ func validateCommands(configs []CmdConfig) error {
 	return nil
 }
 
+func validateJobConfig(job *JobConfig) error {
+	if len(job.Steps) == 0 {
+		return fmt.Errorf("no step is declared in the job \"%s\"", job.Name)
+	}
+
+	stepNames := make(map[string]bool)
+	for stepIdx, step := range job.Steps {
+		if len(step.Name) == 0 {
+			return fmt.Errorf("the step #%d in the job \"%s\" has no name declared", stepIdx, job.Name)
+		}
+
+		// Check all the step names are unique
+		if _, ok := stepNames[step.Name]; ok {
+			return fmt.Errorf("there are multiple steps named \"%s\" in the job \"%s\"", step.Name, job.Name)
+		}
+		stepNames[step.Name] = true
+
+		// Check the hooks
+		if err := validateCommands(step.RunBefore); err != nil {
+			return fmt.Errorf("the step \"%s\" in the job \"%s\" has invalid run_before hooks: %w", step.Name, job.Name, err)
+		}
+		if err := validateCommands(step.RunAfter); err != nil {
+			return fmt.Errorf("the step \"%s\" in the job \"%s\" has invalid run_after hooks: %w", step.Name, job.Name, err)
+		}
+
+		// Check all the tasks. Check that within a step, the names are unique
+		taskNames := make(map[string]bool)
+		if len(step.Tasks) == 0 {
+			return fmt.Errorf("the step \"%s\" in the job \"%s\" has no task declared", step.Name, job.Name)
+		}
+		for taskIdx, task := range step.Tasks {
+			if len(task.Name) == 0 {
+				return fmt.Errorf("the task #%d in the step \"%s\" in the job \"%s\" has no name declared", taskIdx, step.Name, job.Name)
+			}
+			if _, ok := taskNames[task.Name]; ok {
+				return fmt.Errorf("there are multiple tasks named \"%s\" in the step \"%s\"in the job \"%s\"", task.Name, step.Name, job.Name)
+			}
+			taskNames[task.Name] = true
+
+			if err := validateCommands(task.RunBefore); err != nil {
+				return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has invalid run_before hooks: %w", step.Name, job.Name, task.Name, err)
+			}
+			if err := validateCommands(task.RunAfter); err != nil {
+				return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has invalid run_after hooks: %w", step.Name, job.Name, task.Name, err)
+			}
+			if len(task.Cmd) == 0 {
+				return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has no command declared", step.Name, job.Name, task.Name)
+			}
+		}
+	}
+
+	return nil
+}
+
+func validateServiceConfig(service *ServiceConfig) error {
+	if len(service.Tasks) == 0 {
+		return fmt.Errorf("no task is declared in the service \"%s\"", service.Name)
+	}
+
+	// Check the hooks
+	if err := validateCommands(service.RunBefore); err != nil {
+		return fmt.Errorf("the service \"%s\" has invalid run_before hooks: %w", service.Name, err)
+	}
+	if err := validateCommands(service.RunAfter); err != nil {
+		return fmt.Errorf("the service \"%s\" has invalid run_after hooks: %w", service.Name, err)
+	}
+	if err := validateCommands(service.Tasks); err != nil {
+		return fmt.Errorf("the service \"%s\" has invalid tasks: %w", service.Name, err)
+	}
+
+	return nil
+}
+
 func validateConfig(cfg *ConfigFile) error {
-	if len(cfg.Jobs) == 0 {
-		return errors.New("no job is declared")
+	if len(cfg.Jobs) == 0 && len(cfg.Services) == 0 {
+		return errors.New("no job and no service is declared in the configuration")
 	}
 
 	jobNames := make(map[string]bool)
@@ -114,57 +195,25 @@ func validateConfig(cfg *ConfigFile) error {
 		}
 		jobNames[job.Name] = true
 
-		if len(job.Steps) == 0 {
-			return fmt.Errorf("no step is declared in the job \"%s\"", job.Name)
+		if err := validateJobConfig(&job); err != nil {
+			return err
+		}
+	}
+
+	serviceNames := make(map[string]bool)
+	for serviceIdx, service := range cfg.Services {
+		if len(service.Name) == 0 {
+			return fmt.Errorf("the service #%d has no name declared", serviceIdx)
 		}
 
-		stepNames := make(map[string]bool)
-		for stepIdx, step := range job.Steps {
-			if len(step.Name) == 0 {
-				return fmt.Errorf("the step #%d in the job \"%s\" has no name declared", stepIdx, job.Name)
-			}
+		// Check all the service names are unique
+		if _, exists := serviceNames[service.Name]; exists {
+			return fmt.Errorf("there are multiple services named \"%s\"", service.Name)
+		}
+		serviceNames[service.Name] = true
 
-			// Check all the step names are unique
-			if _, ok := stepNames[step.Name]; ok {
-				return fmt.Errorf("there are multiple steps named \"%s\" in the job \"%s\"", step.Name, job.Name)
-			}
-			stepNames[step.Name] = true
-
-			// Check the hooks
-			if err := validateCommands(step.RunBefore); err != nil {
-				return fmt.Errorf("the step \"%s\" in the job \"%s\" has invalid run_before hooks: %w", step.Name, job.Name, err)
-			}
-			if err := validateCommands(step.RunAfter); err != nil {
-				return fmt.Errorf("the step \"%s\" in the job \"%s\" has invalid run_after hooks: %w", step.Name, job.Name, err)
-			}
-
-			// Check all the tasks. Check that within a step, the names are unique
-			taskNames := make(map[string]bool)
-			if len(step.Tasks) == 0 {
-				return fmt.Errorf("the step \"%s\" in the job \"%s\" has no task declared", step.Name, job.Name)
-			}
-			for taskIdx, task := range step.Tasks {
-				if len(task.Name) == 0 {
-					return fmt.Errorf("the task #%d in the step \"%s\" in the job \"%s\" has no name declared", taskIdx, step.Name, job.Name)
-				}
-				if _, ok := taskNames[task.Name]; ok {
-					return fmt.Errorf("there are multiple tasks named \"%s\" in the step \"%s\"in the job \"%s\"", task.Name, step.Name, job.Name)
-				}
-				taskNames[task.Name] = true
-
-				if err := validateCommands(task.RunBefore); err != nil {
-					return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has invalid run_before hooks: %w", step.Name, job.Name, task.Name, err)
-				}
-				if err := validateCommands(task.RunAfter); err != nil {
-					return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has invalid run_after hooks: %w", step.Name, job.Name, task.Name, err)
-				}
-				if err := validateCommands(task.Background); err != nil {
-					return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has invalid background tasks: %w", step.Name, job.Name, task.Name, err)
-				}
-				if len(task.Cmd) == 0 {
-					return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has no command declared", step.Name, job.Name, task.Name)
-				}
-			}
+		if err := validateServiceConfig(&service); err != nil {
+			return err
 		}
 	}
 
@@ -201,7 +250,7 @@ func FindAndParseConfig(givenPath string) (*ConfigFile, error) {
 		return nil, err
 	}
 
-	config.basePath = filepath.Dir(configPath)
+	config.BasePath = filepath.Dir(configPath)
 
 	return config, nil
 }

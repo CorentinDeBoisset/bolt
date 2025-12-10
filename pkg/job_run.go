@@ -22,7 +22,7 @@ func setupLogs(path string) {
 	}
 }
 
-func RunAutocomplete(confPath string) []string {
+func GetJobList(confPath string) []string {
 	config, err := findAndParseConfig(confPath)
 	if err != nil {
 		return nil
@@ -36,7 +36,7 @@ func RunAutocomplete(confPath string) []string {
 	return results
 }
 
-func RunCmd(confPath string, jobToRun string) error {
+func ExecuteJob(confPath string, jobToRun string) error {
 	config, err := findAndParseConfig(confPath)
 	if err != nil {
 		return err

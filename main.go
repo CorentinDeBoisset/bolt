@@ -44,7 +44,7 @@ func init() {
 		Short: i18n.Sprintf("Run a job"),
 		Args:  cobra.MaximumNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return pkg.RunAutocomplete(confPath), cobra.ShellCompDirectiveNoFileComp
+			return pkg.GetJobList(confPath), cobra.ShellCompDirectiveNoFileComp
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			jobToRun := ""
@@ -52,7 +52,7 @@ func init() {
 				jobToRun = args[0]
 			}
 
-			return pkg.RunCmd(confPath, jobToRun)
+			return pkg.ExecuteJob(confPath, jobToRun)
 		},
 	}
 	runCmd.Flags().StringVarP(&confPath, "config", "c", "", i18n.Sprintf("Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file"))

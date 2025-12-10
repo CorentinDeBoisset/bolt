@@ -1,4 +1,4 @@
-package pkg
+package jobexec
 
 import (
 	"strings"

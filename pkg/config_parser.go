@@ -10,7 +10,7 @@ import (
 )
 
 type ConfigFile struct {
-	basePath    string      `yaml:"-"`
+	BasePath    string      `yaml:"-"`
 	LogFilePath string      `yaml:"log_file"`
 	Jobs        []JobConfig `yaml:"jobs"`
 }
@@ -185,7 +185,7 @@ func parseConfig(fileContent []byte) (*ConfigFile, error) {
 	return &output, nil
 }
 
-func findAndParseConfig(givenPath string) (*ConfigFile, error) {
+func FindAndParseConfig(givenPath string) (*ConfigFile, error) {
 	configPath, err := findConfig(givenPath)
 	if err != nil {
 		return nil, err

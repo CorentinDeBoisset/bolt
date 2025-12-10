@@ -1,4 +1,4 @@
-package pkg
+package jobexec
 
 import (
 	"bytes"
@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"sync"
 	"syscall"
+
+	"github.com/corentindeboisset/bolt/pkg"
 )
 
 type SafeBuffer struct {
@@ -62,7 +64,7 @@ type StepStatus struct {
 	Mtx   sync.Mutex
 }
 
-func executeJob(ctx context.Context, basePath string, config *JobConfig, stepStatuses []StepStatus, readyToDisplay, done chan struct{}) {
+func executeJob(ctx context.Context, basePath string, config *pkg.JobConfig, stepStatuses []StepStatus, readyToDisplay, done chan struct{}) {
 	// First, initialize the status structs
 	for stepIdx, step := range config.Steps {
 		if len(step.RunBefore) > 0 {
@@ -188,7 +190,7 @@ func runCommand(ctx context.Context, basePath, path, cmd string, output *SafeBuf
 	return true
 }
 
-func runTask(ctx context.Context, basePath string, config TaskConfig, taskStatus *TaskStatus, globalStatus *StepStatus) bool {
+func runTask(ctx context.Context, basePath string, config pkg.TaskConfig, taskStatus *TaskStatus, globalStatus *StepStatus) bool {
 	globalStatus.Mtx.Lock()
 	taskStatus.BeforeHooksSuccess = false
 	taskStatus.MainTaskStatus = false

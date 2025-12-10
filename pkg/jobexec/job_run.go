@@ -1,4 +1,4 @@
-package pkg
+package jobexec
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/corentindeboisset/bolt/pkg"
 )
 
 func setupLogs(path string) {
@@ -23,7 +24,7 @@ func setupLogs(path string) {
 }
 
 func GetJobList(confPath string) []string {
-	config, err := findAndParseConfig(confPath)
+	config, err := pkg.FindAndParseConfig(confPath)
 	if err != nil {
 		return nil
 	}
@@ -37,14 +38,14 @@ func GetJobList(confPath string) []string {
 }
 
 func ExecuteJob(confPath string, jobToRun string) error {
-	config, err := findAndParseConfig(confPath)
+	config, err := pkg.FindAndParseConfig(confPath)
 	if err != nil {
 		return err
 	}
 
 	setupLogs(config.LogFilePath)
 
-	var pickedJob *JobConfig
+	var pickedJob *pkg.JobConfig
 	for _, job := range config.Jobs {
 		if (len(jobToRun) > 0 && job.Name == jobToRun) || job.Name == "default" {
 			pickedJob = &job
@@ -66,7 +67,7 @@ func ExecuteJob(confPath string, jobToRun string) error {
 	ctx, cancelJob := context.WithCancel(context.Background())
 
 	// Run the job in a goroutine. The synchronisation is handled by the channels
-	go executeJob(ctx, config.basePath, pickedJob, stepStatuses, readyToDisplay, jobDone)
+	go executeJob(ctx, config.BasePath, pickedJob, stepStatuses, readyToDisplay, jobDone)
 	<-readyToDisplay
 	if _, err := tea.NewProgram(newModel(pickedJob, stepStatuses), tea.WithAltScreen(), tea.WithMouseCellMotion()).Run(); err != nil {
 		// TODO: Handle error

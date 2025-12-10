@@ -1,4 +1,4 @@
-package pkg
+package jobexec
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/corentindeboisset/bolt/pkg"
 )
 
 var (
@@ -62,7 +63,7 @@ type ifaceModel struct {
 	stepPanel    ListViewportModel
 	outputPanel  viewport.Model
 
-	jobConfig *JobConfig
+	jobConfig *pkg.JobConfig
 	statuses  []StepStatus
 	taskIds   []registeredTask
 }
@@ -73,7 +74,7 @@ func tickReadOutputsMsg() tea.Cmd {
 	})
 }
 
-func newModel(config *JobConfig, statuses []StepStatus) ifaceModel {
+func newModel(config *pkg.JobConfig, statuses []StepStatus) ifaceModel {
 	m := ifaceModel{
 		help: help.New(),
 		keymap: keymap{

@@ -28,7 +28,7 @@ func init() {
 	rootCmd = &cobra.Command{
 		Use:     "bolt",
 		Version: Version,
-		Short:   i18n.Sprintf("Bolt is a task orchestrator to execute complex jobs"),
+		Short:   i18n.Sprintf("Script management that rides the lighting."),
 	}
 
 	versionCmd := &cobra.Command{

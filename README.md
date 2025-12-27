@@ -1,6 +1,6 @@
 # ⛈️ Bolt
 
-Bolt is a task orchestrator to execute complex jobs.
+Script management that rides the lighting.
 
 ## ❯ Installation steps
 

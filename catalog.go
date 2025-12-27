@@ -39,36 +39,35 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
-	"Bolt is a task orchestrator to execute complex jobs":                                                                   1,
 	"Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file": 5,
-	"Print version and exit":      2,
-	"Run a job":                   4,
-	"bolt version %s\n":           3,
-	"unknown (built from source)": 0,
+	"Print version and exit": 2,
+	"Run a job":              4,
+	"Script management that rides the lighting.": 1,
+	"bolt version %s\n":                          3,
+	"unknown (built from source)":                0,
 }
 
 var enIndex = []uint32{ // 7 elements
-	0x00000000, 0x0000001c, 0x00000050, 0x00000067,
-	0x0000007f, 0x00000089, 0x000000ff,
+	0x00000000, 0x0000001c, 0x00000047, 0x0000005e,
+	0x00000076, 0x00000080, 0x000000f6,
 } // Size: 52 bytes
 
-const enData string = "" + // Size: 255 bytes
-	"\x02unknown (built from source)\x02Bolt is a task orchestrator to execut" +
-	"e complex jobs\x02Print version and exit\x04\x00\x01\x0a\x13\x02bolt ver" +
-	"sion %[1]s\x02Run a job\x02Path to a configuration file. If left empty, " +
-	"it will recursively search in the parent directories for a bolt.yml file"
+const enData string = "" + // Size: 246 bytes
+	"\x02unknown (built from source)\x02Script management that rides the ligh" +
+	"ting.\x02Print version and exit\x04\x00\x01\x0a\x13\x02bolt version %[1]" +
+	"s\x02Run a job\x02Path to a configuration file. If left empty, it will r" +
+	"ecursively search in the parent directories for a bolt.yml file"
 
 var frIndex = []uint32{ // 7 elements
-	0x00000000, 0x0000002a, 0x00000077, 0x00000096,
-	0x000000ae, 0x000000d1, 0x0000016b,
+	0x00000000, 0x0000002a, 0x00000058, 0x00000077,
+	0x0000008f, 0x000000b2, 0x0000014c,
 } // Size: 52 bytes
 
-const frData string = "" + // Size: 363 bytes
-	"\x02inconnue (compilation depuis les sources)\x02Bolt est un orchestrate" +
-	"ur pour exécuter des séquences de tâches complexes\x02Afficher la versio" +
-	"n et quitter\x04\x00\x01\x0a\x13\x02bolt version %[1]s\x02Exécuter une s" +
-	"équence de tâches\x02Chemin vers un fichier de configuration. Si aucune" +
-	" valeur n'est saisie, une recherche dans les dossiers parents pour un fi" +
-	"chier bolt.yml sera exécutée."
+const frData string = "" + // Size: 332 bytes
+	"\x02inconnue (compilation depuis les sources)\x02Lancez vos tâches plus " +
+	"vite que la lumière.\x02Afficher la version et quitter\x04\x00\x01\x0a" +
+	"\x13\x02bolt version %[1]s\x02Exécuter une séquence de tâches\x02Chemin " +
+	"vers un fichier de configuration. Si aucune valeur n'est saisie, une rec" +
+	"herche dans les dossiers parents pour un fichier bolt.yml sera exécutée."
 
-	// Total table size 722 bytes (0KiB); checksum: 39D1F496
+	// Total table size 682 bytes (0KiB); checksum: 92D78B7D

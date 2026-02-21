@@ -37,7 +37,7 @@ type ManagedService struct {
 	Dependencies []*ServiceDependency
 
 	ctx    context.Context
-	cancel context.CancelFunc
+	cancel context.CancelCauseFunc
 	Output cmdrunr.SafeBuffer
 
 	openPending bool
@@ -50,7 +50,7 @@ type ManagedService struct {
 
 type Orchestrator struct {
 	ctx         context.Context
-	cancel      context.CancelFunc
+	cancel      context.CancelCauseFunc
 	jobsDone    chan any
 	BasePath    string
 	ServiceList map[string]*ManagedService
@@ -115,7 +115,7 @@ func NewOrchestrator(basePath string, serviceConfigList map[string]cfg.ServiceCo
 		return nil, fmt.Errorf("a circular dependency have been detected between the services")
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancelCause(context.Background())
 
 	return &Orchestrator{BasePath: basePath, ServiceList: serviceList, ctx: ctx, cancel: cancel}, nil
 }
@@ -167,7 +167,7 @@ func (o *Orchestrator) SortedServices() []*ManagedService {
 // Kill all services, wait for all process to end and return.
 // If you call it in a goroutine, you can should a channel as an argument that will be closed once the shutdown is complete.
 func (o *Orchestrator) Shutdown(done chan any) {
-	o.cancel()
+	o.cancel(cmdrunr.PlannedKill)
 
 	// Wait for all services to be off
 	for _, service := range o.ServiceList {
@@ -269,7 +269,7 @@ func (s *ManagedService) Start(baseCtx context.Context) {
 		return
 	}
 
-	s.ctx, s.cancel = context.WithCancel(baseCtx)
+	s.ctx, s.cancel = context.WithCancelCause(baseCtx)
 	s.State = SERVICE_STARTING
 
 	go func() {
@@ -303,7 +303,7 @@ func (s *ManagedService) Start(baseCtx context.Context) {
 		log.Printf("The service %s has finished running", s.Id)
 
 		// Ensure the healthcheck routine is finished
-		s.cancel()
+		s.cancel(cmdrunr.PlannedKill)
 		<-healthcheckDone
 
 		// Post-run updates
@@ -341,7 +341,7 @@ func (s *ManagedService) Kill(appOnly bool) {
 	}
 	s.StateMtx.Unlock()
 
-	s.cancel()
+	s.cancel(cmdrunr.PlannedKill)
 
 	// Wait for the service to be done and broadcast it
 	s.StateMtx.Lock()

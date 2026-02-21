@@ -3,6 +3,7 @@ package cmdrunr
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,6 +11,8 @@ import (
 	"sync"
 	"syscall"
 )
+
+var PlannedKill = errors.New("process planned to be killed")
 
 type SafeBuffer struct {
 	buf bytes.Buffer
@@ -55,9 +58,15 @@ func RunCommand(ctx context.Context, basePath, path, cmd string, output *SafeBuf
 		return false
 	}
 
-	if err := task.Wait(); err != nil {
-		_, _ = fmt.Fprintf(output, "\n\nThe command failed with the following error:\n%s", err.Error())
-		return false
+	err := task.Wait()
+	if err != nil {
+		if errors.Is(context.Cause(ctx), PlannedKill) {
+			_, _ = fmt.Fprintf(output, "\nService killed\n\n")
+			return true
+		} else {
+			_, _ = fmt.Fprintf(output, "\n\nThe command failed with the following error:\n%s", err.Error())
+			return false
+		}
 	}
 
 	_, _ = fmt.Fprintf(output, "\n\n")

@@ -1,7 +1,6 @@
 package servicemgmt
 
 import (
-	"image/color"
 	"time"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -11,18 +10,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/corentindeboisset/bolt/pkg/iface"
 	"github.com/corentindeboisset/bolt/pkg/listviewport"
-)
-
-var (
-	focusedBorderStyle = iface.BaseSurfaceStyle.
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("111")).
-				Padding(0, 2)
-
-	blurredBorderStyle = iface.BaseSurfaceStyle.
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("7")).
-				Padding(0, 2)
 )
 
 type refreshStatusMsg time.Time
@@ -42,6 +29,7 @@ type keymap = struct {
 }
 
 type ifaceModel struct {
+	theme                 iface.Theme
 	width                 int
 	height                int
 	keymap                keymap
@@ -66,9 +54,10 @@ func tickReadOutputsMsg() tea.Cmd {
 	})
 }
 
-func newModel(orchestrator *Orchestrator) ifaceModel {
+func newModel(orchestrator *Orchestrator, theme iface.Theme) ifaceModel {
 	m := ifaceModel{
-		help: help.New(),
+		theme: theme,
+		help:  help.New(),
 		keymap: keymap{
 			up: key.NewBinding(
 				key.WithKeys("k", "up"),
@@ -116,11 +105,11 @@ func newModel(orchestrator *Orchestrator) ifaceModel {
 		hideOutputPanel:       false,
 		orchestrator:          orchestrator,
 		serviceListPanelWidth: BRICK_MIN_WIDTH,
-		serviceListPanel:      listviewport.New(30, 10, iface.BaseSurfaceStyle.Padding(1, 2)),
+		serviceListPanel:      listviewport.New(30, 10, lipgloss.NewStyle().Padding(1, 2)),
 		outputPanel:           viewport.New(30, 10),
 	}
 
-	m.outputPanel.Style = blurredBorderStyle
+	m.outputPanel.Style = iface.BlurredOutputStyle
 
 	m.initializeServiceList()
 
@@ -158,11 +147,11 @@ func (m *ifaceModel) initializeServiceList() {
 
 	idx := 0
 	for _, service := range serviceList {
-		brick := NewServiceBrick(service.Id, service, m.width, color.RGBA{0, 0, 0, 0})
+		brick := NewServiceBrick(service.Id, service, m.theme, m.width)
 		m.serviceBricks[idx] = brick
 		panelItems = append(panelItems, brick)
 		if idx < len(serviceList)-1 {
-			panelItems = append(panelItems, NewSeparator(m.width))
+			panelItems = append(panelItems, NewSeparator(m.width, m.theme))
 		}
 
 		idx++
@@ -253,9 +242,9 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.focusOutput = !m.focusOutput
 				// TODO: m.updateKeyBindings()
 				if m.focusOutput {
-					m.outputPanel.Style = focusedBorderStyle
+					m.outputPanel.Style = iface.FocusedOutputStyle
 				} else {
-					m.outputPanel.Style = blurredBorderStyle
+					m.outputPanel.Style = iface.BlurredOutputStyle
 				}
 			}
 
@@ -347,7 +336,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m ifaceModel) View() string {
-	panelsContent := iface.BaseSurfaceStyle.Render(lipgloss.JoinHorizontal(
+	panelsContent := lipgloss.NewStyle().Render(lipgloss.JoinHorizontal(
 		lipgloss.Top,
 		m.serviceListPanel.View(),
 		m.outputPanel.View()),

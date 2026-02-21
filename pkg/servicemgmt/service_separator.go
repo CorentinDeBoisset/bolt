@@ -14,10 +14,10 @@ type SeparatorModel struct {
 	width        int
 }
 
-func NewSeparator(width int) *SeparatorModel {
+func NewSeparator(width int, theme iface.Theme) *SeparatorModel {
 	return &SeparatorModel{
 		id:           uuid.NewString(),
-		currentStyle: iface.BaseSurfaceStyle.Foreground(iface.SeparatorColor).AlignHorizontal(lipgloss.Center).Width(width),
+		currentStyle: lipgloss.NewStyle().Foreground(theme.SeparatorColor).AlignHorizontal(lipgloss.Center).Width(width),
 		width:        width,
 	}
 }
@@ -36,18 +36,18 @@ func (m *SeparatorModel) Height() int {
 }
 
 func (m *SeparatorModel) View() string {
-	contentWidth := 0
+	var contentWidth int
 	if m.width < 10 {
-		contentWidth = m.width
+		return strings.Repeat("─", m.width)
 	} else if m.width < 30 {
 		contentWidth = m.width * 60 / 100
 	} else {
 		contentWidth = m.width * 35 / 100
 	}
 
-	contentHalfWidth := (contentWidth - 1) / 2
+	contentHalfWidth := (contentWidth - 3) / 2
 
-	content := strings.Repeat("─", contentHalfWidth) + "·" + strings.Repeat("─", contentHalfWidth)
+	content := strings.Repeat("─", contentHalfWidth) + " ⟡ " + strings.Repeat("─", contentHalfWidth)
 
 	return m.currentStyle.Render(content)
 }

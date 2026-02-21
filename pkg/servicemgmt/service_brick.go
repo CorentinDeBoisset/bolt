@@ -1,8 +1,6 @@
 package servicemgmt
 
 import (
-	"image/color"
-
 	"github.com/charmbracelet/lipgloss"
 	"github.com/corentindeboisset/bolt/pkg/iface"
 )
@@ -25,7 +23,7 @@ type ServiceBrickModel struct {
 
 	service *ManagedService
 
-	background   color.Color
+	theme        iface.Theme
 	width        int
 	focusLevel   int
 	cachedHeight int
@@ -40,12 +38,12 @@ type ServiceBrickModel struct {
 	errorStatusStyle    lipgloss.Style
 }
 
-func NewServiceBrick(id string, service *ManagedService, width int, background color.Color) *ServiceBrickModel {
+func NewServiceBrick(id string, service *ManagedService, theme iface.Theme, width int) *ServiceBrickModel {
 	model := ServiceBrickModel{
 		id:      id,
 		service: service,
 
-		background:   background,
+		theme:        theme,
 		width:        width,
 		focusLevel:   0,
 		cachedHeight: 0,
@@ -68,12 +66,12 @@ func (s *ServiceBrickModel) SetFocusLevel(level int) {
 }
 
 func (s *ServiceBrickModel) refreshStyles() {
-	brickStyle := iface.NoticeableSurfaceStyle
+	brickStyle := s.theme.NoticeableSurfaceStyle
 	switch s.focusLevel {
 	case 1:
-		brickStyle = iface.HighlightSurfaceStyle
+		brickStyle = s.theme.HighlightSurfaceStyle
 	case 2:
-		brickStyle = iface.AccentSurfaceStyle
+		brickStyle = s.theme.AccentSurfaceStyle
 	}
 
 	s.titleStyle = brickStyle.

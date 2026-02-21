@@ -7,6 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/corentindeboisset/bolt/pkg/cfg"
+	"github.com/corentindeboisset/bolt/pkg/iface"
 )
 
 func StartServiceManagement(confPath string) error {
@@ -22,7 +23,9 @@ func StartServiceManagement(confPath string) error {
 		return err
 	}
 
-	program := tea.NewProgram(newModel(orchestrator), tea.WithAltScreen(), tea.WithMouseCellMotion(), tea.WithoutSignalHandler())
+	theme := iface.LoadTheme()
+
+	program := tea.NewProgram(newModel(orchestrator, theme), tea.WithAltScreen(), tea.WithMouseCellMotion(), tea.WithoutSignalHandler())
 
 	programErr := make(chan error)
 	go func() {

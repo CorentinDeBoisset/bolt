@@ -21,9 +21,7 @@ func StartServiceManagement(confPath string) error {
 	_, err = tea.NewProgram(newModel(orchestrator), tea.WithAltScreen(), tea.WithMouseCellMotion()).Run()
 
 	// Shutdown all services
-	done := make(chan any)
-	orchestrator.Shutdown(done)
-	<-done
+	orchestrator.Shutdown(nil)
 
 	return err
 }

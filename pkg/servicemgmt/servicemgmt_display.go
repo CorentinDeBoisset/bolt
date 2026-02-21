@@ -105,7 +105,7 @@ func newModel(orchestrator *Orchestrator) ifaceModel {
 			),
 			standardStart: key.NewBinding(
 				key.WithKeys("enter"),
-				key.WithHelp("↵/Enter", "Start the service"),
+				key.WithHelp("↵/Enter", "Start (and open) the service"),
 			),
 			open: key.NewBinding(
 				key.WithKeys("o"),
@@ -281,7 +281,10 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "enter":
 			if !m.focusOutput {
-				go m.orchestrator.StartService(m.serviceBricks[m.focusedTask].id)
+				go func() {
+					m.orchestrator.StartService(m.serviceBricks[m.focusedTask].id)
+					m.orchestrator.OpenService(m.serviceBricks[m.focusedTask].id)
+				}()
 			}
 
 		case "o":
@@ -296,6 +299,13 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.refreshLayoutSizes()
 
 	case refreshStatusMsg:
+		if !m.hideOutputPanel {
+			isAtBottom := m.outputPanel.AtBottom()
+			m.outputPanel.SetContent(m.serviceBricks[m.focusedTask].service.Output.String())
+			if isAtBottom {
+				m.outputPanel.GotoBottom()
+			}
+		}
 		return m, tickReadOutputsMsg()
 
 	case tea.MouseMsg:
@@ -335,8 +345,7 @@ func (m ifaceModel) View() string {
 
 	help := m.help.FullHelpView([][]key.Binding{
 		{m.keymap.up, m.keymap.down, m.keymap.tab, m.keymap.quit},
-		{},
-		{m.keymap.standardStart, m.keymap.standardKill, m.keymap.open, m.keymap.standardRestart},
+		{m.keymap.standardStart, m.keymap.standardKill, m.keymap.standardRestart},
 	})
 
 	return panelsContent + "\n\n" + help

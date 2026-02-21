@@ -40,6 +40,8 @@ type ManagedService struct {
 	cancel context.CancelFunc
 	Output cmdrunr.SafeBuffer
 
+	openPending bool
+
 	State           ServiceState
 	StateMtx        sync.Mutex
 	DoneCond        *sync.Cond
@@ -162,6 +164,8 @@ func (o *Orchestrator) SortedServices() []*ManagedService {
 	})
 }
 
+// Kill all services, wait for all process to end and return.
+// If you call it in a goroutine, you can should a channel as an argument that will be closed once the shutdown is complete.
 func (o *Orchestrator) Shutdown(done chan any) {
 	o.cancel()
 
@@ -169,16 +173,19 @@ func (o *Orchestrator) Shutdown(done chan any) {
 	for _, service := range o.ServiceList {
 		service.StateMtx.Lock()
 
-		for service.IsRunning() {
+		for service.IsInExecution() {
 			service.DoneCond.Wait()
 		}
 
 		service.StateMtx.Unlock()
 	}
 
-	close(done)
+	if done != nil {
+		close(done)
+	}
 }
 
+// Calls start on a given service
 func (o *Orchestrator) StartService(id string) {
 	for _, service := range o.ServiceList {
 		if service.Id == id {
@@ -188,6 +195,7 @@ func (o *Orchestrator) StartService(id string) {
 	}
 }
 
+// Calls kill on a given service
 func (o *Orchestrator) KillService(id string, appOnly bool) {
 	for _, service := range o.ServiceList {
 		if service.Id == id {
@@ -197,6 +205,7 @@ func (o *Orchestrator) KillService(id string, appOnly bool) {
 	}
 }
 
+// Calls restart on a given service
 func (o *Orchestrator) RestartService(id string, appOnly bool) {
 	for _, service := range o.ServiceList {
 		if service.Id == id {
@@ -206,28 +215,27 @@ func (o *Orchestrator) RestartService(id string, appOnly bool) {
 	}
 }
 
+// Calls open on a given service
 func (o *Orchestrator) OpenService(id string) {
 	for _, service := range o.ServiceList {
 		if service.Id == id {
-			service.StateMtx.Lock()
-			defer service.StateMtx.Unlock()
-
-			if service.IsRunning() {
-				service.Open()
-			}
-
+			service.Open()
 			return
 		}
 	}
 }
 
-func (s *ManagedService) IsRunning() bool {
+// Check if the service is running.
+// Be careful, you should lock the service's StateMtx before calling this method
+func (s *ManagedService) IsInExecution() bool {
 	return s.State == SERVICE_RUNNING || s.State == SERVICE_STARTING
 }
 
+// This method starts all dependencies, waits for them to be up, then starts the service and returns
+// Be careful since this can block the routine for a while when waiting
 func (s *ManagedService) Start(baseCtx context.Context) {
 	s.StateMtx.Lock()
-	if s.IsRunning() {
+	if s.IsInExecution() {
 		log.Printf("The service %s is already started", s.Id)
 		s.StateMtx.Unlock()
 		return
@@ -257,17 +265,15 @@ func (s *ManagedService) Start(baseCtx context.Context) {
 	s.StateMtx.Lock()
 	defer s.StateMtx.Unlock()
 
-	if s.IsRunning() {
+	if s.IsInExecution() {
 		return
 	}
 
 	s.ctx, s.cancel = context.WithCancel(baseCtx)
+	s.State = SERVICE_STARTING
 
 	go func() {
 		log.Printf("Starting the service %s", s.Id)
-		s.StateMtx.Lock()
-		s.State = SERVICE_STARTING
-		s.StateMtx.Unlock()
 
 		healthcheckDone := make(chan any)
 
@@ -314,6 +320,7 @@ func (s *ManagedService) Start(baseCtx context.Context) {
 	}()
 }
 
+// Marks the service as running if it was in the "starting" phase
 func (s *ManagedService) onStartupSuccess() {
 	s.StateMtx.Lock()
 	defer s.StateMtx.Unlock()
@@ -325,12 +332,20 @@ func (s *ManagedService) onStartupSuccess() {
 	s.StartupOverCond.Broadcast()
 }
 
+// Trigger the kill message, then waits for the process to have finished (and if appOnly=false, same for all dependencies)
 func (s *ManagedService) Kill(appOnly bool) {
+	s.StateMtx.Lock()
+	if !s.IsInExecution() {
+		s.StateMtx.Unlock()
+		return
+	}
+	s.StateMtx.Unlock()
+
 	s.cancel()
 
 	// Wait for the service to be done and broadcast it
 	s.StateMtx.Lock()
-	for s.IsRunning() {
+	for s.IsInExecution() {
 		s.DoneCond.Wait()
 	}
 	s.StateMtx.Unlock()
@@ -344,13 +359,34 @@ func (s *ManagedService) Kill(appOnly bool) {
 	}
 }
 
+// Kill the service properly, then run the start sequence
 func (s *ManagedService) Restart(baseCtx context.Context, appOnly bool) {
 	s.Kill(appOnly)
 	s.Start(baseCtx)
 }
 
+// Run the os-specific command to open the service target
+// It may wait until the service is not in "starting" anymore
 func (s *ManagedService) Open() {
-	if len(s.Config.OpenTarget) > 0 {
+	if len(s.Config.OpenTarget) == 0 {
+		return
+	}
+	if s.openPending {
+		return
+	}
+
+	s.openPending = true
+
+	s.StateMtx.Lock()
+	defer s.StateMtx.Unlock()
+
+	for s.IsInExecution() && s.State != SERVICE_RUNNING {
+		s.StartupOverCond.Wait()
+	}
+
+	if s.State == SERVICE_RUNNING {
 		SystemOpen(s.Config.OpenTarget)
 	}
+
+	s.openPending = false
 }

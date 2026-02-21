@@ -17,6 +17,6 @@ func SystemOpen(target string) {
 		runDll32 := filepath.Join(os.Getenv("SYSTEMROOT"), "System32", "rundll32.exe")
 		_ = exec.Command(runDll32, "url.dll,FileProtocolHandler", target)
 	default:
-		_ = exec.Command("open", target)
+		_ = exec.Command("open", target).Start()
 	}
 }

@@ -3,7 +3,6 @@ package jobexec
 import (
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -43,10 +42,6 @@ type ListViewportModel struct {
 	sourceLines []ListViewportLine
 
 	visibleLines [][]string
-}
-
-func (m *ListViewportModel) Init() tea.Cmd {
-	return nil
 }
 
 func (m *ListViewportModel) AtTop() bool {

@@ -3,6 +3,7 @@ package servicemgmt
 import (
 	"fmt"
 	"image/color"
+	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 )
@@ -29,9 +30,10 @@ const HPADDING = 2
 const NAME_MAX_HEIGHT = 3
 
 type ServiceBrickModel struct {
-	background color.Color
-	width      int
-	focusLevel int
+	background   color.Color
+	width        int
+	focusLevel   int
+	cachedHeight int
 
 	ServiceName string
 	State       serviceState
@@ -46,23 +48,26 @@ type ServiceBrickModel struct {
 	errorStatusStyle    lipgloss.Style
 }
 
-func NewServiceBrick(name string, width int, background color.Color) ServiceBrickModel {
+func NewServiceBrick(name string, width int, background color.Color) *ServiceBrickModel {
 	model := ServiceBrickModel{
 		ServiceName: name,
 		State:       SERVICE_OFF,
 
-		background: background,
-		width:      width,
-		focusLevel: 0,
+		background:   background,
+		width:        width,
+		focusLevel:   0,
+		cachedHeight: 0,
 	}
 	model.refreshStyles()
+	model.refreshCachedHeight()
 
-	return model
+	return &model
 }
 
 func (s *ServiceBrickModel) Resize(width int) {
 	s.width = width
 	s.refreshStyles()
+	s.refreshCachedHeight()
 }
 
 func (s *ServiceBrickModel) SetFocusLevel(level int) {
@@ -103,6 +108,19 @@ func (s *ServiceBrickModel) refreshStyles() {
 	s.startingStatusStyle = baseStyle.Foreground(lipgloss.Color("#d3a825ff"))
 	s.runningStatusStyle = baseStyle.Foreground(lipgloss.Color("#1eaa25ff"))
 	s.errorStatusStyle = baseStyle.Foreground(lipgloss.Color("#d82525ff"))
+}
+
+func (s *ServiceBrickModel) refreshCachedHeight() {
+	content := s.View()
+	s.cachedHeight = len(strings.Split(content, "\n"))
+}
+
+func (s *ServiceBrickModel) Height() int {
+	return s.cachedHeight
+}
+
+func (s *ServiceBrickModel) Focusable() bool {
+	return true
 }
 
 func (s *ServiceBrickModel) View() string {

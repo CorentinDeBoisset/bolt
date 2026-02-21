@@ -27,8 +27,6 @@ var (
 				BorderForeground(lipgloss.Color("7")).
 				Padding(0, 2)
 
-	outputStyle = lipgloss.NewStyle().Width(30)
-
 	selectedTaskStyle           = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("111")).Inline(true)
 	focusedTaskStyle            = lipgloss.NewStyle().Underline(true).Inline(true)
 	focusedAndSelectedTaskStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("111")).Underline(true).Inline(true)
@@ -188,7 +186,7 @@ func (m *ifaceModel) updateSizes() {
 		return
 	}
 	m.outputPanel.Width = outputWidth
-	outputStyle = lipgloss.NewStyle().Width(outputWidth - m.outputPanel.Style.GetBorderLeftSize() - m.outputPanel.Style.GetBorderRightSize())
+	m.outputPanel.Style = m.outputPanel.Style.Width(outputWidth - m.outputPanel.Style.GetHorizontalBorderSize())
 	m.stepPanel.Resize(stepPanelWidth, panelsHeight)
 }
 
@@ -372,10 +370,10 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.updateKeyBindings()
 				if m.focusOutput {
 					m.stepPanel.Style = blurredBorderStyle
-					m.outputPanel.Style = focusedBorderStyle
+					m.outputPanel.Style = focusedBorderStyle.Width(m.outputPanel.Width - m.outputPanel.Style.GetHorizontalBorderSize())
 				} else {
 					m.stepPanel.Style = focusedBorderStyle
-					m.outputPanel.Style = blurredBorderStyle
+					m.outputPanel.Style = blurredBorderStyle.Width(m.outputPanel.Width - m.outputPanel.Style.GetHorizontalBorderSize())
 				}
 			}
 
@@ -391,8 +389,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case RefreshStatusMsg:
 		if !m.hideOutputPanel {
 			isAtBottom := m.outputPanel.AtBottom()
-			outputContent := outputStyle.Render(m.taskIds[m.selectedTask].Output.String())
-			m.outputPanel.SetContent(outputContent)
+			m.outputPanel.SetContent(m.taskIds[m.selectedTask].Output.String())
 			if isAtBottom {
 				m.outputPanel.GotoBottom()
 			}
@@ -400,7 +397,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tickReadOutputsMsg()
 	case spinner.TickMsg:
 		var cmd tea.Cmd
-		// Build the side panel content
+		// Rebuild the side panel content with updated spinners
 		m.spinner, cmd = m.spinner.Update(msg)
 		m.stepPanel.SetContent(m.calculateStepPanelContent())
 
@@ -441,5 +438,4 @@ func (m ifaceModel) View() string {
 		views = append(views, m.outputPanel.View())
 	}
 	return lipgloss.JoinHorizontal(lipgloss.Top, views...) + "\n\n" + help
-
 }

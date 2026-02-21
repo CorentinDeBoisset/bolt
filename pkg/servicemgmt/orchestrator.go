@@ -81,7 +81,7 @@ func NewOrchestrator(basePath string, serviceConfigList map[string]cfg.ServiceCo
 	for serviceId, service := range serviceList {
 		for _, dependencyConfig := range *dependencyConfigs[serviceId] {
 			if dependencyConfig.Target == serviceId {
-				return nil, fmt.Errorf("the service \"%s\" cannot be dependent on itself", service.Config.Name)
+				return nil, fmt.Errorf("the service \"%s\" cannot be dependent on itself", service.Id)
 			}
 
 			foundDependency := false
@@ -97,7 +97,7 @@ func NewOrchestrator(basePath string, serviceConfigList map[string]cfg.ServiceCo
 				}
 			}
 			if !foundDependency {
-				return nil, fmt.Errorf("the dependency target \"%s\" of the service \"%s\" does not exist", dependencyConfig.Target, serviceId)
+				return nil, fmt.Errorf("the dependency target \"%s\" of the service \"%s\" does not exist", dependencyConfig.Target, service.Id)
 			}
 		}
 

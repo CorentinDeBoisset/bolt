@@ -221,7 +221,7 @@ func validateConfig(cfg *ConfigFile) error {
 }
 
 // parseConfig reads the content of the file at the absolute path given in argument, and extracts its yaml content into a ConfigFile.
-func parseConfig(fileContent []byte) (*ConfigFile, error) {
+func ParseConfig(fileContent []byte) (*ConfigFile, error) {
 	output := ConfigFile{}
 	if err := yaml.Unmarshal(fileContent, &output); err != nil {
 		return nil, newConfigError("The file could not be parsed from YAML: %s", err.Error())
@@ -245,7 +245,7 @@ func FindAndParseConfig(givenPath string) (*ConfigFile, error) {
 		return nil, newConfigError("The contents of the file \"%s\" could not be read: %s", configPath, err)
 	}
 
-	config, err := parseConfig(fileContent)
+	config, err := ParseConfig(fileContent)
 	if err != nil {
 		return nil, err
 	}

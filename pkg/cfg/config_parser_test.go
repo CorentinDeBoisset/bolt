@@ -31,9 +31,26 @@ jobs:
         tasks:
           - name: echoes 1
             cmd: echo 12 && echo 13
+
+services:
+  serviceA:
+    name: Service A
+    cmd: echo 'A'
+    path: .
+    healthcheck:
+      port: 4242
+    open_target: "http://localhost:4242/something"
+    dependencies:
+      - target: Service B
+
+
+  serviceB:
+    name: Service B
+    cmd: echo 'B'
+    path: .
 `
 
-	config, err := parseConfig([]byte(sampleConfig))
+	config, err := ParseConfig([]byte(sampleConfig))
 	assert.Nil(t, err)
 	assert.Len(t, config.Jobs, 1)
 	assert.Equal(t, config.Jobs[0].Name, "My first job")
@@ -49,26 +66,40 @@ jobs:
 	assert.Len(t, config.Jobs[0].Steps[1].RunBefore, 0)
 	assert.Len(t, config.Jobs[0].Steps[1].Tasks, 1)
 	assert.Len(t, config.Jobs[0].Steps[1].RunAfter, 0)
+
+	assert.Len(t, config.Services, 2)
+	assert.Equal(t, config.Services["serviceA"].Name, "Service A")
+	assert.Equal(t, config.Services["serviceA"].Cmd, "echo 'A'")
+	assert.Equal(t, config.Services["serviceA"].Healthcheck.Port, 4242)
+	assert.Equal(t, config.Services["serviceA"].OpenTarget, "http://localhost:4242/something")
+	assert.Equal(t, config.Services["serviceB"].Name, "Service B")
+	assert.Len(t, config.Services["serviceA"].Dependencies, 1)
+	assert.Len(t, config.Services["serviceB"].Dependencies, 0)
 }
 
-func TestConfigErrors(t *testing.T) {
+func TestGlobalErrors(t *testing.T) {
 	t.Parallel()
 
-	invalidYaml := `this is some plaintext`
-	_, err := parseConfig([]byte(invalidYaml))
+	invalidYaml := `some plaintext`
+	_, err := ParseConfig([]byte(invalidYaml))
 	assert.ErrorContains(t, err, "The file could not be parsed from YAML")
 
 	emptyConfig := `
 jobs: []
+services:
 `
-	_, err = parseConfig([]byte(emptyConfig))
+	_, err = ParseConfig([]byte(emptyConfig))
 	assert.ErrorContains(t, err, "No job and no service is declared in the configuration")
+}
+
+func TestJobErrors(t *testing.T) {
+	t.Parallel()
 
 	noJobName := `
 jobs:
   - steps: []
 `
-	_, err = parseConfig([]byte(noJobName))
+	_, err := ParseConfig([]byte(noJobName))
 	assert.ErrorContains(t, err, "The job #0 has no name declared")
 
 	emptyJobConfig := `
@@ -76,8 +107,19 @@ jobs:
   - name: My first job
     steps: []
 `
-	_, err = parseConfig([]byte(emptyJobConfig))
+	_, err = ParseConfig([]byte(emptyJobConfig))
 	assert.ErrorContains(t, err, "No step is declared in the job \"My first job\"")
+
+	noCommand := `
+jobs:
+  - name: My first job
+    steps:
+        - name: First step
+          tasks:
+            - name: first_task
+`
+	_, err = ParseConfig([]byte(noCommand))
+	assert.ErrorContains(t, err, "The task \"first_task\" in the step \"First step\" in the job \"My first job\" is invalid: No command is declared")
 
 	noStepName := `
 jobs:
@@ -87,7 +129,7 @@ jobs:
             - name: first_task
               cmd: echo 1
 `
-	_, err = parseConfig([]byte(noStepName))
+	_, err = ParseConfig([]byte(noStepName))
 	assert.ErrorContains(t, err, "The step #0 in the job \"My first job\" has no name declared")
 
 	duplicateStepNameConfig := `
@@ -104,7 +146,7 @@ jobs:
             - name: first_task
               cmd: echo 1
 `
-	_, err = parseConfig([]byte(duplicateStepNameConfig))
+	_, err = ParseConfig([]byte(duplicateStepNameConfig))
 	assert.ErrorContains(t, err, "There are multiple steps named \"first_step\" in the job \"My first job\"")
 
 	duplicateTasksNames := `
@@ -119,6 +161,6 @@ jobs:
             - name: first_task
               cmd: echo 2
 `
-	_, err = parseConfig([]byte(duplicateTasksNames))
+	_, err = ParseConfig([]byte(duplicateTasksNames))
 	assert.ErrorContains(t, err, "There are multiple tasks named \"first_task\" in the step \"first_step\"")
 }

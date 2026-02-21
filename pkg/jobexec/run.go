@@ -3,25 +3,10 @@ package jobexec
 import (
 	"context"
 	"fmt"
-	"io"
-	"log"
-	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/corentindeboisset/bolt/pkg"
 )
-
-func setupLogs(path string) {
-	if len(path) > 0 {
-		logFile, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
-		if err == nil {
-			log.SetOutput(logFile)
-		}
-		// No need to close the logfile, it will be closed as the program terminates
-	} else {
-		log.SetOutput(io.Discard)
-	}
-}
 
 func GetJobList(confPath string) []string {
 	config, err := pkg.FindAndParseConfig(confPath)
@@ -43,7 +28,7 @@ func ExecuteJob(confPath string, jobToRun string) error {
 		return err
 	}
 
-	setupLogs(config.LogFilePath)
+	pkg.SetupLogs(config.LogFilePath)
 
 	var pickedJob *pkg.JobConfig
 	for _, job := range config.Jobs {

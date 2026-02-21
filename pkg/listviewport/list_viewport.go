@@ -137,7 +137,7 @@ func (m *Model) View() string {
 
 	beforeFocusHeight := 0
 	if m.focusedItem > 0 {
-		for i := m.focusedItem - 1; i >= 0; i++ {
+		for i := m.focusedItem - 1; i >= 0; i-- {
 			candidateBeforeFocusHeight := beforeFocusHeight + m.items[i].Height()
 			if candidateBeforeFocusHeight >= ((m.height - focusedItemHeight) / 2) {
 				break

@@ -43,31 +43,34 @@ var messageKeyToIndex = map[string]int{
 	"Print version and exit": 2,
 	"Run a job":              4,
 	"Script management that rides the lighting.": 1,
+	"Start the service management interface":     6,
 	"bolt version %s\n":                          3,
 	"unknown (built from source)":                0,
 }
 
-var enIndex = []uint32{ // 7 elements
+var enIndex = []uint32{ // 8 elements
 	0x00000000, 0x0000001c, 0x00000047, 0x0000005e,
-	0x00000076, 0x00000080, 0x000000f6,
-} // Size: 52 bytes
+	0x00000076, 0x00000080, 0x000000f6, 0x0000011d,
+} // Size: 56 bytes
 
-const enData string = "" + // Size: 246 bytes
+const enData string = "" + // Size: 285 bytes
 	"\x02unknown (built from source)\x02Script management that rides the ligh" +
 	"ting.\x02Print version and exit\x04\x00\x01\x0a\x13\x02bolt version %[1]" +
 	"s\x02Run a job\x02Path to a configuration file. If left empty, it will r" +
-	"ecursively search in the parent directories for a bolt.yml file"
+	"ecursively search in the parent directories for a bolt.yml file\x02Start" +
+	" the service management interface"
 
-var frIndex = []uint32{ // 7 elements
+var frIndex = []uint32{ // 8 elements
 	0x00000000, 0x0000002a, 0x00000058, 0x00000077,
-	0x0000008f, 0x000000b2, 0x0000014c,
-} // Size: 52 bytes
+	0x0000008f, 0x000000b2, 0x0000014c, 0x00000176,
+} // Size: 56 bytes
 
-const frData string = "" + // Size: 332 bytes
+const frData string = "" + // Size: 374 bytes
 	"\x02inconnue (compilation depuis les sources)\x02Lancez vos tâches plus " +
 	"vite que la lumière.\x02Afficher la version et quitter\x04\x00\x01\x0a" +
 	"\x13\x02bolt version %[1]s\x02Exécuter une séquence de tâches\x02Chemin " +
 	"vers un fichier de configuration. Si aucune valeur n'est saisie, une rec" +
-	"herche dans les dossiers parents pour un fichier bolt.yml sera exécutée."
+	"herche dans les dossiers parents pour un fichier bolt.yml sera exécutée." +
+	"\x02Lancer l'interface de gestion de services"
 
-	// Total table size 682 bytes (0KiB); checksum: 92D78B7D
+	// Total table size 771 bytes (0KiB); checksum: 72B79A60

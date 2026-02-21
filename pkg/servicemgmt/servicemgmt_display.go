@@ -46,7 +46,7 @@ type ifaceModel struct {
 	serviceBricks    []*ServiceBrickModel
 	serviceListPanel listviewport.Model
 
-	serviceConfigList []*pkg.ServiceConfig
+	serviceConfigList []pkg.TaskConfig
 }
 
 func tickReadOutputsMsg() tea.Cmd {
@@ -55,7 +55,7 @@ func tickReadOutputsMsg() tea.Cmd {
 	})
 }
 
-func newModel(serviceConfigList []*pkg.ServiceConfig) ifaceModel {
+func newModel(serviceConfigList []pkg.TaskConfig) ifaceModel {
 	m := ifaceModel{
 		help: help.New(),
 		keymap: keymap{
@@ -240,6 +240,7 @@ func (m ifaceModel) View() string {
 		{m.keymap.tab, m.keymap.quit},
 	})
 
-	views := make([]string, 0)
-	return lipgloss.JoinHorizontal(lipgloss.Top, views...) + "\n\n" + help
+	return lipgloss.JoinHorizontal(lipgloss.Top, m.serviceListPanel.View(), m.outputPanel.View()) +
+		"\n\n" +
+		help
 }

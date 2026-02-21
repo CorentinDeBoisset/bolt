@@ -7,6 +7,7 @@ import (
 
 	"github.com/corentindeboisset/bolt/pkg"
 	"github.com/corentindeboisset/bolt/pkg/jobexec"
+	"github.com/corentindeboisset/bolt/pkg/servicemgmt"
 )
 
 //go:generate gotext -srclang=en update -out catalog.go -lang=fr,en
@@ -60,6 +61,18 @@ func init() {
 	_ = runCmd.MarkFlagFilename("config", "yaml", "yml")
 
 	rootCmd.AddCommand(runCmd)
+
+	serviceCmd := &cobra.Command{
+		Use:   "services",
+		Short: i18n.Sprintf("Start the service management interface"),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return servicemgmt.StartServiceManagement(confPath)
+		},
+	}
+	serviceCmd.Flags().StringVarP(&confPath, "config", "c", "", i18n.Sprintf("Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file"))
+	_ = serviceCmd.MarkFlagFilename("config", "yaml", "yml")
+
+	rootCmd.AddCommand(serviceCmd)
 }
 
 func main() {

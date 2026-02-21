@@ -10,23 +10,16 @@ import (
 )
 
 type ConfigFile struct {
-	BasePath    string          `yaml:"-"`
-	LogFilePath string          `yaml:"log_file"`
-	Jobs        []JobConfig     `yaml:"jobs,omitempty"`
-	Services    []ServiceConfig `yaml:"services,omitempty"`
+	BasePath    string       `yaml:"-"`
+	LogFilePath string       `yaml:"log_file"`
+	Jobs        []JobConfig  `yaml:"jobs,omitempty"`
+	Services    []TaskConfig `yaml:"services,omitempty"`
 }
 
 type JobConfig struct {
 	Name     string       `yaml:"name"`
 	Steps    []StepConfig `yaml:"steps"`
 	RunAfter []CmdConfig  `yaml:"run_after,omitempty"`
-}
-
-type ServiceConfig struct {
-	Name      string      `yaml:"name"`
-	RunBefore []CmdConfig `yaml:"run_before,omitempty"`
-	Tasks     []CmdConfig `yaml:"tasks"`
-	RunAfter  []CmdConfig `yaml:"run_after,omitempty"`
 }
 
 type StepConfig struct {
@@ -136,22 +129,16 @@ func validateJobConfig(job *JobConfig) error {
 			return fmt.Errorf("the step \"%s\" in the job \"%s\" has no task declared", step.Name, job.Name)
 		}
 		for taskIdx, task := range step.Tasks {
-			if len(task.Name) == 0 {
-				return fmt.Errorf("the task #%d in the step \"%s\" in the job \"%s\" has no name declared", taskIdx, step.Name, job.Name)
-			}
 			if _, ok := taskNames[task.Name]; ok {
 				return fmt.Errorf("there are multiple tasks named \"%s\" in the step \"%s\"in the job \"%s\"", task.Name, step.Name, job.Name)
 			}
 			taskNames[task.Name] = true
 
-			if err := validateCommands(task.RunBefore); err != nil {
-				return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has invalid run_before hooks: %w", step.Name, job.Name, task.Name, err)
-			}
-			if err := validateCommands(task.RunAfter); err != nil {
-				return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has invalid run_after hooks: %w", step.Name, job.Name, task.Name, err)
-			}
-			if len(task.Cmd) == 0 {
-				return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" has no command declared", step.Name, job.Name, task.Name)
+			if err := validateTaskConfig(task); err != nil {
+				if len(task.Name) > 0 {
+					return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" is invalid: %w", task.Name, step.Name, job.Name, err)
+				}
+				return fmt.Errorf("the task #%d in the step \"%s\" in the job \"%s\" is invalid: %w", taskIdx, step.Name, job.Name, err)
 			}
 		}
 	}
@@ -159,20 +146,19 @@ func validateJobConfig(job *JobConfig) error {
 	return nil
 }
 
-func validateServiceConfig(service *ServiceConfig) error {
-	if len(service.Tasks) == 0 {
-		return fmt.Errorf("no task is declared in the service \"%s\"", service.Name)
+func validateTaskConfig(task TaskConfig) error {
+	if len(task.Name) == 0 {
+		return fmt.Errorf("no name is declared")
 	}
 
-	// Check the hooks
-	if err := validateCommands(service.RunBefore); err != nil {
-		return fmt.Errorf("the service \"%s\" has invalid run_before hooks: %w", service.Name, err)
+	if err := validateCommands(task.RunBefore); err != nil {
+		return fmt.Errorf("the run_before hooks are invalid: %w", err)
 	}
-	if err := validateCommands(service.RunAfter); err != nil {
-		return fmt.Errorf("the service \"%s\" has invalid run_after hooks: %w", service.Name, err)
+	if err := validateCommands(task.RunAfter); err != nil {
+		return fmt.Errorf("the run_after hooks are invalid: %w", err)
 	}
-	if err := validateCommands(service.Tasks); err != nil {
-		return fmt.Errorf("the service \"%s\" has invalid tasks: %w", service.Name, err)
+	if len(task.Cmd) == 0 {
+		return fmt.Errorf("no command is declared")
 	}
 
 	return nil
@@ -212,8 +198,11 @@ func validateConfig(cfg *ConfigFile) error {
 		}
 		serviceNames[service.Name] = true
 
-		if err := validateServiceConfig(&service); err != nil {
-			return err
+		if err := validateTaskConfig(service); err != nil {
+			if len(service.Name) > 0 {
+				return fmt.Errorf("the service \"%s\" is invalid: %w", service.Name, err)
+			}
+			return fmt.Errorf("the service #%d is invalid: %w", serviceIdx, err)
 		}
 	}
 

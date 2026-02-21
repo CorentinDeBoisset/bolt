@@ -52,6 +52,13 @@
             "translation": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
             "translatorComment": "Copied from source.",
             "fuzzy": true
+        },
+        {
+            "id": "Start the service management interface",
+            "message": "Start the service management interface",
+            "translation": "Start the service management interface",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
         }
     ]
 }

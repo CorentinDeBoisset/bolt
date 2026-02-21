@@ -40,6 +40,11 @@
       "id": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
       "message": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
       "translation": "Chemin vers un fichier de configuration. Si aucune valeur n'est saisie, une recherche dans les dossiers parents pour un fichier bolt.yml sera exécutée."
+    },
+    {
+      "id": "Start the service management interface",
+      "message": "Start the service management interface",
+      "translation": "Lancer l'interface de gestion de services"
     }
   ]
 }

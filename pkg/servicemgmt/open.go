@@ -1,5 +1,3 @@
-//go:build !window && !linux
-
 package servicemgmt
 
 import (

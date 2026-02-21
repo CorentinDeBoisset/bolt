@@ -5,16 +5,6 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/corentindeboisset/bolt/pkg"
-	"github.com/google/uuid"
-)
-
-type serviceState int
-
-const (
-	SERVICE_OFF serviceState = iota
-	SERVICE_STARTING
-	SERVICE_RUNNING
-	SERVICE_ERROR
 )
 
 const BRICK_MIN_WIDTH = 25
@@ -38,8 +28,9 @@ type ServiceBrickModel struct {
 	focusLevel   int
 	cachedHeight int
 
+	// TODO: remove this and use the orchestrator values
 	ServiceName string
-	State       serviceState
+	State       ServiceState
 
 	brickStyle lipgloss.Style
 	titleStyle lipgloss.Style
@@ -51,9 +42,9 @@ type ServiceBrickModel struct {
 	errorStatusStyle    lipgloss.Style
 }
 
-func NewServiceBrick(name string, width int, background color.Color) *ServiceBrickModel {
+func NewServiceBrick(id string, name string, width int, background color.Color) *ServiceBrickModel {
 	model := ServiceBrickModel{
-		id:          uuid.NewString(),
+		id:          id,
 		ServiceName: name,
 		State:       SERVICE_OFF,
 

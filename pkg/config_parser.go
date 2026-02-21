@@ -10,10 +10,23 @@ import (
 )
 
 type ConfigFile struct {
-	BasePath    string       `yaml:"-"`
-	LogFilePath string       `yaml:"log_file"`
-	Jobs        []JobConfig  `yaml:"jobs,omitempty"`
-	Services    []TaskConfig `yaml:"services,omitempty"`
+	BasePath    string                   `yaml:"-"`
+	LogFilePath string                   `yaml:"log_file"`
+	Jobs        []JobConfig              `yaml:"jobs,omitempty"`
+	Services    map[string]ServiceConfig `yaml:"services,omitempty"`
+}
+
+type DependencyConfig struct {
+	Target            string `yaml:"target"`
+	RestartWithTarget bool   `yaml:"restart_with_target"`
+	WaitTargetStarted bool   `yaml:"wait_target_restarted"`
+}
+
+type ServiceConfig struct {
+	TaskConfig `yaml:"task_config,inline"`
+
+	AutoRestart  bool               `yaml:"auto_restart"`
+	Dependencies []DependencyConfig `yaml:"dependencies"`
 }
 
 type JobConfig struct {
@@ -30,9 +43,9 @@ type StepConfig struct {
 }
 
 type TaskConfig struct {
+	CmdConfig `yaml:"cmd_config,inline"`
+
 	Name      string      `yaml:"name"`
-	Cmd       string      `yaml:"cmd"`
-	Path      string      `yaml:"path,omitempty"`
 	RunBefore []CmdConfig `yaml:"run_before,omitempty"`
 	RunAfter  []CmdConfig `yaml:"run_after,omitempty"`
 }
@@ -186,23 +199,13 @@ func validateConfig(cfg *ConfigFile) error {
 		}
 	}
 
-	serviceNames := make(map[string]bool)
-	for serviceIdx, service := range cfg.Services {
-		if len(service.Name) == 0 {
-			return fmt.Errorf("the service #%d has no name declared", serviceIdx)
+	for serviceId, service := range cfg.Services {
+		if len(serviceId) == 0 {
+			return fmt.Errorf("the key of a service is not defined")
 		}
 
-		// Check all the service names are unique
-		if _, exists := serviceNames[service.Name]; exists {
-			return fmt.Errorf("there are multiple services named \"%s\"", service.Name)
-		}
-		serviceNames[service.Name] = true
-
-		if err := validateTaskConfig(service); err != nil {
-			if len(service.Name) > 0 {
-				return fmt.Errorf("the service \"%s\" is invalid: %w", service.Name, err)
-			}
-			return fmt.Errorf("the service #%d is invalid: %w", serviceIdx, err)
+		if err := validateTaskConfig(service.TaskConfig); err != nil {
+			return fmt.Errorf("the service \"%s\" is invalid: %w", serviceId, err)
 		}
 	}
 

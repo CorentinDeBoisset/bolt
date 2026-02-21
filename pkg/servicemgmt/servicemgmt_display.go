@@ -57,7 +57,7 @@ type ifaceModel struct {
 	serviceBricks    []*ServiceBrickModel
 	serviceListPanel listviewport.Model
 
-	serviceConfigList []pkg.TaskConfig
+	orchestrator *Orchestrator
 }
 
 func tickReadOutputsMsg() tea.Cmd {
@@ -66,7 +66,7 @@ func tickReadOutputsMsg() tea.Cmd {
 	})
 }
 
-func newModel(serviceConfigList []pkg.TaskConfig) ifaceModel {
+func newModel(orchestrator *Orchestrator) ifaceModel {
 	m := ifaceModel{
 		help: help.New(),
 		keymap: keymap{
@@ -114,7 +114,7 @@ func newModel(serviceConfigList []pkg.TaskConfig) ifaceModel {
 		},
 		focusOutput:           false,
 		hideOutputPanel:       false,
-		serviceConfigList:     serviceConfigList,
+		orchestrator:          orchestrator,
 		serviceListPanelWidth: BRICK_MIN_WIDTH,
 		serviceListPanel:      listviewport.New(30, 10, pkg.BaseSurfaceStyle.Padding(1, 2)),
 		outputPanel:           viewport.New(30, 10),
@@ -151,16 +151,19 @@ func (m *ifaceModel) refreshLayoutSizes() {
 }
 
 func (m *ifaceModel) initializeServiceList() {
-	m.serviceBricks = make([]*ServiceBrickModel, len(m.serviceConfigList))
+	m.serviceBricks = make([]*ServiceBrickModel, len(m.orchestrator.ServiceList))
 	panelItems := make([]listviewport.ListItem, 0)
 
-	for idx, serviceConfig := range m.serviceConfigList {
-		brick := NewServiceBrick(serviceConfig.Name, m.width, color.RGBA{0, 0, 0, 0})
+	idx := 0
+	for _, service := range m.orchestrator.ServiceList {
+		brick := NewServiceBrick(service.Id, service.Name, m.width, color.RGBA{0, 0, 0, 0})
 		m.serviceBricks[idx] = brick
 		panelItems = append(panelItems, brick)
-		if idx < len(m.serviceConfigList)-1 {
+		if idx < len(m.orchestrator.ServiceList)-1 {
 			panelItems = append(panelItems, NewSeparator(m.width))
 		}
+
+		idx++
 	}
 
 	m.serviceListPanel.SetItems(panelItems)

@@ -19,17 +19,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Pull the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install the golang environment
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.25.x
+          go-version: '1.26'
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.4
+          version: v2.10
 
       - name: Run tests
         run: go test ./...
@@ -42,19 +42,19 @@ jobs:
       contents: write # Allow the job to write tags on the repo
     steps:
       - name: Pull the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           persist-credentials: false # to avoid using GITHUB_TOKEN when pushing
 
       - name: Install the golang environment
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.25.x
+          go-version: '1.26'
 
       # It's required to avoid using the GITHUB_TOKEN, because we want an action to run on the tags that will be pushed.
       # By default, github actions does not run on events triggered by other actions
       - name: Run semantic release
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_PUSH_TOKEN }}
           NPM_TOKEN: ""

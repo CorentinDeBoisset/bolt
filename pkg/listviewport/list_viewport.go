@@ -153,22 +153,23 @@ func (m *Model) View() string {
 	afterFocusHeight := 0
 	if m.focusedItem < len(m.items)-1 {
 		for i := m.focusedItem + 1; i < len(m.items); i++ {
-			candidateAfterFocusHeight := afterFocusHeight + m.items[i].Height()
-			remainingHeight := m.height - focusedItemHeight - beforeFocusHeight
-			if candidateAfterFocusHeight >= remainingHeight {
+			remainingHeight := m.height - focusedItemHeight - beforeFocusHeight - afterFocusHeight
+			renderedItemHeight := m.items[i].Height()
+			renderedItem := m.items[i].View()
+			if renderedItemHeight >= remainingHeight {
 				// Only show a part of the last visible item
-				lastRenderedItem := m.items[i].View()
-				lastRenderedItem = strings.ReplaceAll(lastRenderedItem, "\r\n", "\n")
-				lastRenderedItemLines := strings.Split(lastRenderedItem, "\n")
+				renderedItem = strings.ReplaceAll(renderedItem, "\r\n", "\n")
+				lastRenderedItemLines := strings.Split(renderedItem, "\n")
 				renderedItems = append(renderedItems, strings.Join(lastRenderedItemLines[:remainingHeight], "\n"))
+				afterFocusHeight += remainingHeight
 				break
 			}
-			renderedItems = append(renderedItems, m.items[i].View())
-			afterFocusHeight = candidateAfterFocusHeight
+			renderedItems = append(renderedItems, renderedItem)
+			afterFocusHeight += renderedItemHeight
 		}
 	}
 
-	return strings.Join(renderedItems, "\n")
+	return lipgloss.JoinVertical(lipgloss.Left, renderedItems...)
 }
 
 func clamp(v, low, high int) int {

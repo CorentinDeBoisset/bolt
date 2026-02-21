@@ -110,7 +110,7 @@ func (m *ifaceModel) initializeServiceList() {
 	panelItems := make([]listviewport.ListItem, 0)
 
 	for idx, serviceConfig := range m.serviceConfigList {
-		brick := NewServiceBrick(serviceConfig.Name, m.width, color.Black)
+		brick := NewServiceBrick(serviceConfig.Name, m.width, color.RGBA{0, 0, 0, 0})
 		m.serviceBricks[idx] = brick
 		panelItems = append(panelItems, brick)
 		if idx < len(m.serviceConfigList)-1 {
@@ -119,10 +119,18 @@ func (m *ifaceModel) initializeServiceList() {
 	}
 
 	m.serviceListPanel.SetItems(panelItems)
+
+	m.updateFocusedTask(0)
 }
 
 func (m ifaceModel) Init() tea.Cmd {
 	return tickReadOutputsMsg()
+}
+
+func (m ifaceModel) updateFocusedTask(newTaskId int) {
+	m.serviceBricks[m.focusedTask].SetFocusLevel(0)
+	m.focusedTask = min(max(newTaskId, len(m.serviceBricks)-1), 0)
+	m.serviceBricks[m.focusedTask].SetFocusLevel(1)
 }
 
 func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -131,27 +139,29 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
+
 		case "up", "k":
 			if m.focusOutput {
 				m.outputPanel.ScrollUp(3)
 			} else {
 				if (m.focusedTask) <= 0 {
-					m.focusedTask = len(m.serviceBricks) - 1
+					m.updateFocusedTask(len(m.serviceBricks) - 1)
 					m.serviceListPanel.GoToBottom()
 				} else {
-					m.focusedTask -= 1
+					m.updateFocusedTask(m.focusedTask - 1)
 					m.serviceListPanel.ScrollUp(1)
 				}
 			}
+
 		case "down", "j":
 			if m.focusOutput {
 				m.outputPanel.ScrollDown(3)
 			} else {
 				if (m.focusedTask) >= len(m.serviceBricks)-1 {
-					m.focusedTask = 0
+					m.updateFocusedTask(0)
 					m.serviceListPanel.GoToTop()
 				} else {
-					m.focusedTask += 1
+					m.updateFocusedTask(m.focusedTask + 1)
 					m.serviceListPanel.ScrollDown(1)
 				}
 			}
@@ -176,7 +186,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focusOutput {
 				m.outputPanel.GotoTop()
 			} else {
-				m.focusedTask = 0
+				m.updateFocusedTask(0)
 				m.serviceListPanel.GoToTop()
 			}
 
@@ -184,7 +194,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focusOutput {
 				m.outputPanel.GotoBottom()
 			} else {
-				m.focusedTask = len(m.serviceBricks) - 1
+				m.updateFocusedTask(len(m.serviceBricks) - 1)
 				m.serviceListPanel.GoToBottom()
 			}
 
@@ -217,14 +227,14 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.focusOutput {
 					m.outputPanel.ScrollUp(3)
 				} else {
-					m.focusedTask = max(m.focusedTask-1, 0)
+					m.updateFocusedTask(m.focusedTask - 1)
 					m.serviceListPanel.ScrollUp(1)
 				}
 			case tea.MouseButtonWheelDown:
 				if m.focusOutput {
 					m.outputPanel.ScrollDown(3)
 				} else {
-					m.focusedTask = min(m.focusedTask+1, len(m.serviceBricks)-1)
+					m.updateFocusedTask(m.focusedTask + 1)
 					m.serviceListPanel.ScrollDown(1)
 				}
 			}

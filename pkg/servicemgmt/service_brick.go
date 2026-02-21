@@ -76,43 +76,48 @@ func (s *ServiceBrickModel) SetFocusLevel(level int) {
 }
 
 func (s *ServiceBrickModel) refreshStyles() {
-	baseBackgroundR, baseBackgroundG, baseBackgroundB, baseBackgroundA := s.background.RGBA()
+	baseBackgroundR, baseBackgroundG, baseBackgroundB, _ := s.background.RGBA()
 
-	var baseStyle lipgloss.Style
+	// Convert to 4-bit colors
+	baseBackgroundR = baseBackgroundR >> 8
+	baseBackgroundG = baseBackgroundG >> 8
+	baseBackgroundB = baseBackgroundB >> 8
+
+	var backgroundHex string
 	switch s.focusLevel {
 	case 1:
 		backgroundR := (baseBackgroundR*50 + 255*50) / 100
 		backgroundG := (baseBackgroundG*50 + 255*50) / 100
 		backgroundB := (baseBackgroundB*50 + 255*50) / 100
-		backgroundHex := fmt.Sprintf("#%02x%02x%02x%02x", backgroundR, backgroundG, backgroundB, baseBackgroundA)
-		baseStyle = lipgloss.NewStyle().Background(lipgloss.Color(backgroundHex))
+		backgroundHex = fmt.Sprintf("#%02x%02x%02x", backgroundR, backgroundG, backgroundB)
 	case 2:
 		backgroundR := (baseBackgroundR*70 + 255*30) / 100
 		backgroundG := (baseBackgroundG*70 + 255*30) / 100
 		backgroundB := (baseBackgroundB*70 + 255*30) / 100
-		backgroundHex := fmt.Sprintf("#%02x%02x%02x%02x", backgroundR, backgroundG, backgroundB, baseBackgroundA)
-		baseStyle = lipgloss.NewStyle().Background(lipgloss.Color(backgroundHex))
+		backgroundHex = fmt.Sprintf("#%02x%02x%02x", backgroundR, backgroundG, backgroundB)
 	default:
-		backgroundHex := fmt.Sprintf("#%02x%02x%02x%02x", baseBackgroundR, baseBackgroundG, baseBackgroundB, baseBackgroundA)
-		baseStyle = lipgloss.NewStyle().Background(lipgloss.Color(backgroundHex))
+		backgroundHex = fmt.Sprintf("#%02x%02x%02x", baseBackgroundR, baseBackgroundG, baseBackgroundB)
 	}
+
+	baseStyle := lipgloss.NewStyle().
+		Background(lipgloss.Color(backgroundHex))
 
 	s.titleStyle = baseStyle.
 		Foreground(lipgloss.Color("2")).
-		MarginRight(HPADDING).
+		PaddingRight(HPADDING).
 		MaxHeight(NAME_MAX_HEIGHT).
 		Width(s.width - 14 - HPADDING*2)
 	s.brickStyle = baseStyle.Padding(1, 2)
 
-	s.offStatusStyle = baseStyle.Foreground(lipgloss.Color("#5e5e5eff"))
-	s.startingStatusStyle = baseStyle.Foreground(lipgloss.Color("#d3a825ff"))
-	s.runningStatusStyle = baseStyle.Foreground(lipgloss.Color("#1eaa25ff"))
-	s.errorStatusStyle = baseStyle.Foreground(lipgloss.Color("#d82525ff"))
+	s.offStatusStyle = baseStyle.Foreground(lipgloss.Color("#5e5e5e"))
+	s.startingStatusStyle = baseStyle.Foreground(lipgloss.Color("#d3a825"))
+	s.runningStatusStyle = baseStyle.Foreground(lipgloss.Color("#1eaa25"))
+	s.errorStatusStyle = baseStyle.Foreground(lipgloss.Color("#d82525"))
 }
 
 func (s *ServiceBrickModel) refreshCachedHeight() {
 	content := s.View()
-	s.cachedHeight = len(strings.Split(content, "\n"))
+	s.cachedHeight = strings.Count(content, "\n") + 1
 }
 
 func (s *ServiceBrickModel) Height() int {
@@ -140,7 +145,7 @@ func (s *ServiceBrickModel) View() string {
 	case SERVICE_ERROR:
 		indicator = s.errorStatusStyle.Render(INDICATOR_ERROR)
 	}
-	content := lipgloss.JoinVertical(lipgloss.Top, title, indicator)
+	content := lipgloss.JoinHorizontal(lipgloss.Top, title, indicator)
 
 	return s.brickStyle.Render(content)
 }

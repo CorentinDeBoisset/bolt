@@ -14,12 +14,12 @@ import (
 )
 
 var (
-	focusedBorderStyle = lipgloss.NewStyle().
+	focusedBorderStyle = pkg.BaseAppStyle.
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("111")).
 				Padding(0, 2)
 
-	blurredBorderStyle = lipgloss.NewStyle().
+	blurredBorderStyle = pkg.BaseAppStyle.
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("7")).
 				Padding(0, 2)
@@ -38,6 +38,7 @@ type ifaceModel struct {
 	help                  help.Model
 	serviceListPanelWidth int
 	hideOutputPanel       bool
+	hideHelp              bool
 
 	focusOutput bool
 	focusedTask int
@@ -80,7 +81,7 @@ func newModel(serviceConfigList []pkg.TaskConfig) ifaceModel {
 		hideOutputPanel:       false,
 		serviceConfigList:     serviceConfigList,
 		serviceListPanelWidth: BRICK_MIN_WIDTH,
-		serviceListPanel:      listviewport.New(30, 10),
+		serviceListPanel:      listviewport.New(30, 10, pkg.BaseAppStyle.Padding(1, 0)),
 		outputPanel:           viewport.New(30, 10),
 	}
 
@@ -92,8 +93,14 @@ func newModel(serviceConfigList []pkg.TaskConfig) ifaceModel {
 }
 
 func (m *ifaceModel) refreshLayoutSizes() {
-	panelsHeight := m.height - 5
-	m.outputPanel.Height = panelsHeight
+	panelsHeight := m.height - 4
+
+	if m.height <= 10 {
+		panelsHeight = m.height
+		m.hideHelp = true
+	} else {
+		m.hideHelp = false
+	}
 
 	if m.width > 75 {
 		m.hideOutputPanel = false
@@ -102,7 +109,10 @@ func (m *ifaceModel) refreshLayoutSizes() {
 		m.hideOutputPanel = true
 		m.serviceListPanelWidth = m.width
 	}
+
 	m.serviceListPanel.Resize(m.serviceListPanelWidth, panelsHeight)
+	m.outputPanel.Height = panelsHeight
+	m.outputPanel.Width = m.width - m.serviceListPanelWidth
 }
 
 func (m *ifaceModel) initializeServiceList() {
@@ -245,12 +255,20 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m ifaceModel) View() string {
+	panelsContent := pkg.BaseAppStyle.Render(lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		m.serviceListPanel.View(),
+		m.outputPanel.View()),
+	)
+
+	if m.hideHelp {
+		return panelsContent
+	}
+
 	help := m.help.FullHelpView([][]key.Binding{
 		{m.keymap.up, m.keymap.down},
 		{m.keymap.tab, m.keymap.quit},
 	})
 
-	return lipgloss.JoinHorizontal(lipgloss.Top, m.serviceListPanel.View(), m.outputPanel.View()) +
-		"\n\n" +
-		help
+	return panelsContent + "\n\n" + help
 }

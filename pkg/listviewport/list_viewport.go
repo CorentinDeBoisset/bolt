@@ -21,17 +21,18 @@ type Model struct {
 	yOffset     int
 	focusedItem int
 
-	Style lipgloss.Style
+	baseStyle lipgloss.Style
 
 	items []ListItem
 }
 
-func New(width, height int) (m Model) {
-	m.width = width
-	m.height = height
-	m.focusedItem = 0
-
-	return m
+func New(width, height int, baseStyle lipgloss.Style) (m Model) {
+	return Model{
+		width:       width,
+		height:      height,
+		focusedItem: 0,
+		baseStyle:   baseStyle,
+	}
 }
 
 func (m *Model) AtTop() bool {
@@ -132,7 +133,20 @@ func (m *Model) Resize(width, height int) {
 
 func (m *Model) View() string {
 	focusedItemContent := m.items[m.focusedItem].View()
-	focusedItemHeight := strings.Count(focusedItemContent, "\n")
+	focusedItemHeight := lipgloss.Height(focusedItemContent)
+
+	availableHeight := (m.height - focusedItemHeight - m.baseStyle.GetVerticalFrameSize())
+
+	if availableHeight < 0 {
+		// The available space is too small, we return an empty block
+		return m.baseStyle.
+			Padding(0).
+			Margin(0).
+			Border(lipgloss.Border{}, false).
+			Height(m.height).
+			Width(m.width).
+			Render("")
+	}
 
 	beforeFocusContent := make([]string, 0)
 	if m.focusedItem > 0 {
@@ -140,7 +154,7 @@ func (m *Model) View() string {
 			newLines := strings.Split(m.items[i].View(), "\n")
 			slices.Reverse(newLines)
 			beforeFocusContent = append(beforeFocusContent, newLines...)
-			if len(beforeFocusContent) > m.height-focusedItemHeight {
+			if len(beforeFocusContent) > availableHeight {
 				break
 			}
 		}
@@ -151,25 +165,25 @@ func (m *Model) View() string {
 		for i := m.focusedItem + 1; i < len(m.items); i++ {
 			newLines := strings.Split(m.items[i].View(), "\n")
 			afterFocusContent = append(afterFocusContent, newLines...)
-			if len(afterFocusContent) >= m.height-focusedItemHeight {
+			if len(afterFocusContent) >= availableHeight {
 				break
 			}
 		}
 	}
 
-	enoughContentBefore := len(beforeFocusContent) >= (m.height-focusedItemHeight)/2
-	enoughContentAfter := len(afterFocusContent) >= (m.height-focusedItemHeight)/2
+	enoughContentBefore := len(beforeFocusContent) >= (availableHeight)/2
+	enoughContentAfter := len(afterFocusContent) >= (availableHeight)/2
 	linesBefore := 0
 	linesAfter := 0
 	if enoughContentAfter && enoughContentBefore {
-		linesBefore = (m.height - focusedItemHeight) / 2
-		linesAfter = min(m.height-focusedItemHeight-linesBefore, len(afterFocusContent))
+		linesBefore = availableHeight / 2
+		linesAfter = min(availableHeight-linesBefore, len(afterFocusContent))
 	} else if enoughContentBefore && !enoughContentAfter {
 		linesAfter = len(afterFocusContent)
-		linesBefore = min(m.height-focusedItemHeight-linesAfter, len(beforeFocusContent))
+		linesBefore = min(availableHeight-linesAfter, len(beforeFocusContent))
 	} else if !enoughContentBefore && enoughContentAfter {
 		linesBefore = len(beforeFocusContent)
-		linesAfter = min(m.height-focusedItemHeight-linesBefore, len(afterFocusContent))
+		linesAfter = min(availableHeight-linesBefore, len(afterFocusContent))
 	} else {
 		linesBefore = len(beforeFocusContent)
 		linesAfter = len(afterFocusContent)
@@ -186,11 +200,12 @@ func (m *Model) View() string {
 	} else {
 		output = focusedItemContent
 	}
+
 	if len(afterFocusContent) > 0 {
 		output = lipgloss.JoinVertical(lipgloss.Left, output, strings.Join(afterFocusContent, "\n"))
 	}
 
-	return output
+	return m.baseStyle.Render(output)
 }
 
 func clamp(v, low, high int) int {

@@ -1,11 +1,10 @@
 package servicemgmt
 
 import (
-	"fmt"
 	"image/color"
-	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/corentindeboisset/bolt/pkg"
 )
 
 type serviceState int
@@ -76,40 +75,24 @@ func (s *ServiceBrickModel) SetFocusLevel(level int) {
 }
 
 func (s *ServiceBrickModel) refreshStyles() {
-	baseBackgroundR, baseBackgroundG, baseBackgroundB, _ := s.background.RGBA()
-
-	// Convert to 4-bit colors
-	baseBackgroundR = baseBackgroundR >> 8
-	baseBackgroundG = baseBackgroundG >> 8
-	baseBackgroundB = baseBackgroundB >> 8
-
-	var backgroundHex string
+	brickBackgound := pkg.NoticeableBackgroundColor
 	switch s.focusLevel {
 	case 1:
-		backgroundR := (baseBackgroundR*50 + 255*50) / 100
-		backgroundG := (baseBackgroundG*50 + 255*50) / 100
-		backgroundB := (baseBackgroundB*50 + 255*50) / 100
-		backgroundHex = fmt.Sprintf("#%02x%02x%02x", backgroundR, backgroundG, backgroundB)
+		brickBackgound = pkg.AccentBackgroundColor
 	case 2:
-		backgroundR := (baseBackgroundR*70 + 255*30) / 100
-		backgroundG := (baseBackgroundG*70 + 255*30) / 100
-		backgroundB := (baseBackgroundB*70 + 255*30) / 100
-		backgroundHex = fmt.Sprintf("#%02x%02x%02x", backgroundR, backgroundG, backgroundB)
-	default:
-		backgroundHex = fmt.Sprintf("#%02x%02x%02x", baseBackgroundR, baseBackgroundG, baseBackgroundB)
+		brickBackgound = pkg.HighlightBackgroundColor
 	}
 
-	baseStyle := lipgloss.NewStyle().
-		Background(lipgloss.Color(backgroundHex))
+	baseStyle := pkg.BaseAppStyle.Background(brickBackgound)
 
 	s.titleStyle = baseStyle.
-		Foreground(lipgloss.Color("2")).
+		Foreground(pkg.BodyColor).
 		PaddingRight(HPADDING).
 		MaxHeight(NAME_MAX_HEIGHT).
-		Width(s.width - 14 - HPADDING*2)
-	s.brickStyle = baseStyle.Padding(1, 2)
+		Width(s.width - 16 - HPADDING*2)
+	s.brickStyle = baseStyle.Padding(1, 2).Margin(0, 2)
 
-	s.offStatusStyle = baseStyle.Foreground(lipgloss.Color("#5e5e5e"))
+	s.offStatusStyle = baseStyle.Foreground(pkg.BodyColor)
 	s.startingStatusStyle = baseStyle.Foreground(lipgloss.Color("#d3a825"))
 	s.runningStatusStyle = baseStyle.Foreground(lipgloss.Color("#1eaa25"))
 	s.errorStatusStyle = baseStyle.Foreground(lipgloss.Color("#d82525"))
@@ -117,7 +100,7 @@ func (s *ServiceBrickModel) refreshStyles() {
 
 func (s *ServiceBrickModel) refreshCachedHeight() {
 	content := s.View()
-	s.cachedHeight = strings.Count(content, "\n") + 1
+	s.cachedHeight = lipgloss.Height(content) + 1
 }
 
 func (s *ServiceBrickModel) Height() int {

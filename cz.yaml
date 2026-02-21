@@ -1,0 +1,48 @@
+commitizen:
+    name: cz_customize
+    customize:
+        message_template: "{{ change_type }}{% if scope %}({{ scope }}){% endif %}: {{ summary }}{% if body %}\n\n{{ body }}{% endif %}"
+        example: "feat(servicemgmt): setup the general interface layout"
+        schema: "<type>(<scope>): <summary>"
+        schema_pattern: "(feat|fix|refactor|chore|docs|test)(\\(jobexec|servicemgmt|cli\\))?: ([^A-Z].*[^.])"
+        bump_pattern: "^(feat|fix|refactor)"
+        bump_map:
+            feat: MINOR
+            refactor: MINOR
+            fix: PATCH
+        change_type_order: ["BREAKING CHANGE", "feat", "refactor", "fix"]
+        questions:
+        - type: list
+          name: change_type
+          message: "Select the type of change that you are committing:"
+          choices:
+          - value: feat
+            name: "feat: A new feature"
+          - value: fix
+            name: "fix: A bug fix"
+          - value: refactor
+            name: "refactor: A code change that neither fixes a bug nor adds a feature"
+          - value: docs
+            name: "docs: Documentation only changes"
+          - value: test
+            name: "test: Adding missing or correcting existing tests"
+          - value: chore
+            name: "chore: A catch-all type for any other commits"
+        - type: list
+          name: scope
+          message: "What is the scope of this change:"
+          choices:
+          - value: ""
+            name: "<Leave empty>"
+          - value: "jobexec"
+            name: "jobexec: Single-job execution domain"
+          - value: "servicemgmt"
+            name: "servicemgmt: Service management domain"
+          - value: "cli"
+            name: "cli: Command-line interface of the tool"
+        - type: input
+          name: summary
+          message: "Write a short and imperative summary of the changes: (lower case and no period)\n"
+        - type: input
+          name: body
+          message: "Provide additional contextual information about the code changes: (press [enter] to skip)\n"

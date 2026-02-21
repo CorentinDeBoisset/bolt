@@ -2,6 +2,9 @@ package servicemgmt
 
 import (
 	"fmt"
+	"maps"
+	"slices"
+	"strings"
 
 	"github.com/corentindeboisset/bolt/pkg/cfg"
 	"github.com/corentindeboisset/bolt/pkg/cmdrunr"
@@ -132,6 +135,13 @@ func isDependencyGraphValid(serviceList map[string]*ManagedService) bool {
 	}
 
 	return true
+}
+
+// Returns the list of services sorted by case-insensitive alphabetical order
+func (o *Orchestrator) SortedServices() []*ManagedService {
+	return slices.SortedFunc(maps.Values(o.ServiceList), func(a, b *ManagedService) int {
+		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
+	})
 }
 
 // func (o *Orchestrator) StartService(id string) {

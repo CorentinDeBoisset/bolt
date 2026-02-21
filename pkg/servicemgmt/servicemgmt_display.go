@@ -151,15 +151,17 @@ func (m *ifaceModel) refreshLayoutSizes() {
 }
 
 func (m *ifaceModel) initializeServiceList() {
-	m.serviceBricks = make([]*ServiceBrickModel, len(m.orchestrator.ServiceList))
+	serviceList := m.orchestrator.SortedServices()
+
+	m.serviceBricks = make([]*ServiceBrickModel, len(serviceList))
 	panelItems := make([]listviewport.ListItem, 0)
 
 	idx := 0
-	for _, service := range m.orchestrator.ServiceList {
+	for _, service := range serviceList {
 		brick := NewServiceBrick(service.Id, service.Name, m.width, color.RGBA{0, 0, 0, 0})
 		m.serviceBricks[idx] = brick
 		panelItems = append(panelItems, brick)
-		if idx < len(m.orchestrator.ServiceList)-1 {
+		if idx < len(serviceList)-1 {
 			panelItems = append(panelItems, NewSeparator(m.width))
 		}
 

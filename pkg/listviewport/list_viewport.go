@@ -131,45 +131,66 @@ func (m *Model) Resize(width, height int) {
 }
 
 func (m *Model) View() string {
-	renderedItems := make([]string, 0)
+	focusedItemContent := m.items[m.focusedItem].View()
+	focusedItemHeight := strings.Count(focusedItemContent, "\n")
 
-	focusedItemHeight := m.items[m.focusedItem].Height()
-
-	beforeFocusHeight := 0
+	beforeFocusContent := make([]string, 0)
 	if m.focusedItem > 0 {
 		for i := m.focusedItem - 1; i >= 0; i-- {
-			candidateBeforeFocusHeight := beforeFocusHeight + m.items[i].Height()
-			if candidateBeforeFocusHeight >= ((m.height - focusedItemHeight) / 2) {
+			newLines := strings.Split(m.items[i].View(), "\n")
+			slices.Reverse(newLines)
+			beforeFocusContent = append(beforeFocusContent, newLines...)
+			if len(beforeFocusContent) > m.height-focusedItemHeight {
 				break
 			}
-			renderedItems = append(renderedItems, m.items[i].View())
-			beforeFocusHeight = candidateBeforeFocusHeight
 		}
-		slices.Reverse(renderedItems)
 	}
 
-	renderedItems = append(renderedItems, m.items[m.focusedItem].View())
-
-	afterFocusHeight := 0
+	afterFocusContent := make([]string, 0)
 	if m.focusedItem < len(m.items)-1 {
 		for i := m.focusedItem + 1; i < len(m.items); i++ {
-			remainingHeight := m.height - focusedItemHeight - beforeFocusHeight - afterFocusHeight
-			renderedItemHeight := m.items[i].Height()
-			renderedItem := m.items[i].View()
-			if renderedItemHeight >= remainingHeight {
-				// Only show a part of the last visible item
-				renderedItem = strings.ReplaceAll(renderedItem, "\r\n", "\n")
-				lastRenderedItemLines := strings.Split(renderedItem, "\n")
-				renderedItems = append(renderedItems, strings.Join(lastRenderedItemLines[:remainingHeight], "\n"))
-				afterFocusHeight += remainingHeight
+			newLines := strings.Split(m.items[i].View(), "\n")
+			afterFocusContent = append(afterFocusContent, newLines...)
+			if len(afterFocusContent) >= m.height-focusedItemHeight {
 				break
 			}
-			renderedItems = append(renderedItems, renderedItem)
-			afterFocusHeight += renderedItemHeight
 		}
 	}
 
-	return lipgloss.JoinVertical(lipgloss.Left, renderedItems...)
+	enoughContentBefore := len(beforeFocusContent) >= (m.height-focusedItemHeight)/2
+	enoughContentAfter := len(afterFocusContent) >= (m.height-focusedItemHeight)/2
+	linesBefore := 0
+	linesAfter := 0
+	if enoughContentAfter && enoughContentBefore {
+		linesBefore = (m.height - focusedItemHeight) / 2
+		linesAfter = min(m.height-focusedItemHeight-linesBefore, len(afterFocusContent))
+	} else if enoughContentBefore && !enoughContentAfter {
+		linesAfter = len(afterFocusContent)
+		linesBefore = min(m.height-focusedItemHeight-linesAfter, len(beforeFocusContent))
+	} else if !enoughContentBefore && enoughContentAfter {
+		linesBefore = len(beforeFocusContent)
+		linesAfter = min(m.height-focusedItemHeight-linesBefore, len(afterFocusContent))
+	} else {
+		linesBefore = len(beforeFocusContent)
+		linesAfter = len(afterFocusContent)
+	}
+
+	output := ""
+
+	beforeFocusContent = beforeFocusContent[0:linesBefore]
+	slices.Reverse(beforeFocusContent)
+	afterFocusContent = afterFocusContent[0:linesAfter]
+
+	if len(beforeFocusContent) > 0 {
+		output = lipgloss.JoinVertical(lipgloss.Left, strings.Join(beforeFocusContent, "\n"), focusedItemContent)
+	} else {
+		output = focusedItemContent
+	}
+	if len(afterFocusContent) > 0 {
+		output = lipgloss.JoinVertical(lipgloss.Left, output, strings.Join(afterFocusContent, "\n"))
+	}
+
+	return output
 }
 
 func clamp(v, low, high int) int {

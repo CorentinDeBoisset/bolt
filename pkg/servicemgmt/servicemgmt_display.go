@@ -127,9 +127,9 @@ func (m ifaceModel) Init() tea.Cmd {
 	return tickReadOutputsMsg()
 }
 
-func (m ifaceModel) updateFocusedTask(newTaskId int) {
+func (m *ifaceModel) updateFocusedTask(newTaskId int) {
 	m.serviceBricks[m.focusedTask].SetFocusLevel(0)
-	m.focusedTask = min(max(newTaskId, len(m.serviceBricks)-1), 0)
+	m.focusedTask = max(min(newTaskId, len(m.serviceBricks)-1), 0)
 	m.serviceBricks[m.focusedTask].SetFocusLevel(1)
 }
 
@@ -144,7 +144,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focusOutput {
 				m.outputPanel.ScrollUp(3)
 			} else {
-				if (m.focusedTask) <= 0 {
+				if m.focusedTask <= 0 {
 					m.updateFocusedTask(len(m.serviceBricks) - 1)
 					m.serviceListPanel.GoToBottom()
 				} else {
@@ -157,7 +157,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focusOutput {
 				m.outputPanel.ScrollDown(3)
 			} else {
-				if (m.focusedTask) >= len(m.serviceBricks)-1 {
+				if m.focusedTask >= len(m.serviceBricks)-1 {
 					m.updateFocusedTask(0)
 					m.serviceListPanel.GoToTop()
 				} else {

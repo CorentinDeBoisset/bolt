@@ -1,0 +1,66 @@
+package cmdrunr
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"sync"
+	"syscall"
+)
+
+type SafeBuffer struct {
+	buf bytes.Buffer
+	mtx sync.RWMutex
+}
+
+func (s *SafeBuffer) Write(p []byte) (n int, err error) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	return s.buf.Write(p)
+}
+
+func (s *SafeBuffer) String() string {
+	s.mtx.RLock()
+	defer s.mtx.RUnlock()
+	return s.buf.String()
+}
+
+func getCmdPath(basePath, cmdPath string) string {
+	if filepath.IsAbs(cmdPath) {
+		return cmdPath
+	} else {
+		return filepath.Join(basePath, cmdPath)
+	}
+}
+
+func RunCommand(ctx context.Context, basePath, path, cmd string, output *SafeBuffer) bool {
+	// Note: this only works on Unix platforms
+	// TODO: maybe add support for windows (or not... :shrug:)
+	_, _ = fmt.Fprintf(output, "> %s\n", cmd)
+	task := exec.CommandContext(ctx, "/bin/sh", "-c", cmd)
+	task.Dir = getCmdPath(basePath, path)
+	task.Env = os.Environ() // Pass the environment to the child processes
+	task.Stdout = output
+	task.Stderr = output
+	task.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	task.Cancel = func() error {
+		return syscall.Kill(-task.Process.Pid, syscall.SIGKILL)
+	}
+
+	if err := task.Start(); err != nil {
+		_, _ = fmt.Fprintf(output, "\n\nThe command could not start due to the following error:\n%s", err.Error())
+		return false
+	}
+
+	if err := task.Wait(); err != nil {
+		_, _ = fmt.Fprintf(output, "\n\nThe command failed with the following error:\n%s", err.Error())
+		return false
+	}
+
+	_, _ = fmt.Fprintf(output, "\n\n")
+
+	return true
+}

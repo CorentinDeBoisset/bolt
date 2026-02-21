@@ -13,6 +13,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/corentindeboisset/bolt/pkg"
+	"github.com/corentindeboisset/bolt/pkg/cmdrunr"
 )
 
 var (
@@ -45,7 +46,7 @@ type keymap = struct {
 
 type registeredTask struct {
 	Name   string
-	Output *SafeBuffer
+	Output *cmdrunr.SafeBuffer
 }
 
 type ifaceModel struct {

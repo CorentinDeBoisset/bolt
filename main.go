@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/corentindeboisset/bolt/pkg"
+	"github.com/corentindeboisset/bolt/pkg/cfg"
 	"github.com/corentindeboisset/bolt/pkg/jobexec"
 	"github.com/corentindeboisset/bolt/pkg/servicemgmt"
 )
@@ -20,7 +20,7 @@ var (
 )
 
 func init() {
-	i18n := pkg.GetI18nPrinter()
+	i18n := cfg.GetI18nPrinter()
 
 	if Version == "" {
 		Version = i18n.Sprintf("unknown (built from source)")

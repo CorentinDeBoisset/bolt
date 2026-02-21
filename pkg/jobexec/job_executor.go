@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/corentindeboisset/bolt/pkg"
+	"github.com/corentindeboisset/bolt/pkg/cfg"
 	"github.com/corentindeboisset/bolt/pkg/cmdrunr"
 )
 
@@ -42,7 +42,7 @@ type StepStatus struct {
 	Mtx   sync.Mutex
 }
 
-func executeJob(ctx context.Context, basePath string, config *pkg.JobConfig, stepStatuses []StepStatus, readyToDisplay, done chan struct{}) {
+func executeJob(ctx context.Context, basePath string, config *cfg.JobConfig, stepStatuses []StepStatus, readyToDisplay, done chan struct{}) {
 	// First, initialize the status structs
 	for stepIdx, step := range config.Steps {
 		if len(step.RunBefore) > 0 {
@@ -130,7 +130,7 @@ func executeJob(ctx context.Context, basePath string, config *pkg.JobConfig, ste
 	}
 }
 
-func runTask(ctx context.Context, basePath string, config pkg.TaskConfig, taskStatus *TaskStatus, globalStatus *StepStatus) bool {
+func runTask(ctx context.Context, basePath string, config cfg.TaskConfig, taskStatus *TaskStatus, globalStatus *StepStatus) bool {
 	globalStatus.Mtx.Lock()
 	taskStatus.BeforeHooksSuccess = false
 	taskStatus.MainTaskStatus = false

@@ -2,16 +2,16 @@ package servicemgmt
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/corentindeboisset/bolt/pkg"
+	"github.com/corentindeboisset/bolt/pkg/cfg"
 )
 
 func StartServiceManagement(confPath string) error {
-	config, err := pkg.FindAndParseConfig(confPath)
+	config, err := cfg.FindAndParseConfig(confPath)
 	if err != nil {
 		return err
 	}
 
-	pkg.SetupLogs(config.LogFilePath)
+	cfg.SetupLogs(config.LogFilePath)
 
 	orchestrator, err := NewOrchestrator(config.Services)
 	if err != nil {

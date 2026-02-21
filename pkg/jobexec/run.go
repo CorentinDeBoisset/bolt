@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/corentindeboisset/bolt/pkg"
+	"github.com/corentindeboisset/bolt/pkg/cfg"
 )
 
 func GetJobList(confPath string) []string {
-	config, err := pkg.FindAndParseConfig(confPath)
+	config, err := cfg.FindAndParseConfig(confPath)
 	if err != nil {
 		return nil
 	}
@@ -23,14 +23,14 @@ func GetJobList(confPath string) []string {
 }
 
 func ExecuteJob(confPath string, jobToRun string) error {
-	config, err := pkg.FindAndParseConfig(confPath)
+	config, err := cfg.FindAndParseConfig(confPath)
 	if err != nil {
 		return err
 	}
 
-	pkg.SetupLogs(config.LogFilePath)
+	cfg.SetupLogs(config.LogFilePath)
 
-	var pickedJob *pkg.JobConfig
+	var pickedJob *cfg.JobConfig
 	for _, job := range config.Jobs {
 		if (len(jobToRun) > 0 && job.Name == jobToRun) || job.Name == "default" {
 			pickedJob = &job

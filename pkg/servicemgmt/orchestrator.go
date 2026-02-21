@@ -3,7 +3,7 @@ package servicemgmt
 import (
 	"fmt"
 
-	"github.com/corentindeboisset/bolt/pkg"
+	"github.com/corentindeboisset/bolt/pkg/cfg"
 	"github.com/corentindeboisset/bolt/pkg/cmdrunr"
 )
 
@@ -37,9 +37,9 @@ type Orchestrator struct {
 	ServiceList map[string]*ManagedService
 }
 
-func NewOrchestrator(serviceConfigList map[string]pkg.ServiceConfig) (*Orchestrator, error) {
+func NewOrchestrator(serviceConfigList map[string]cfg.ServiceConfig) (*Orchestrator, error) {
 	serviceList := make(map[string]*ManagedService)
-	dependencyConfigs := make(map[string]*[]pkg.DependencyConfig)
+	dependencyConfigs := make(map[string]*[]cfg.DependencyConfig)
 	for serviceId, serviceConfig := range serviceConfigList {
 		name := serviceConfig.Name
 		if len(name) == 0 {

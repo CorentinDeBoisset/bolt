@@ -4,7 +4,7 @@ import (
 	"image/color"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/corentindeboisset/bolt/pkg"
+	"github.com/corentindeboisset/bolt/pkg/iface"
 )
 
 const BRICK_MIN_WIDTH = 25
@@ -71,12 +71,12 @@ func (s *ServiceBrickModel) SetFocusLevel(level int) {
 }
 
 func (s *ServiceBrickModel) refreshStyles() {
-	brickStyle := pkg.NoticeableSurfaceStyle
+	brickStyle := iface.NoticeableSurfaceStyle
 	switch s.focusLevel {
 	case 1:
-		brickStyle = pkg.HighlightSurfaceStyle
+		brickStyle = iface.HighlightSurfaceStyle
 	case 2:
-		brickStyle = pkg.AccentSurfaceStyle
+		brickStyle = iface.AccentSurfaceStyle
 	}
 
 	s.titleStyle = brickStyle.

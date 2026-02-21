@@ -1,4 +1,4 @@
-package pkg
+package iface
 
 import "github.com/charmbracelet/lipgloss"
 

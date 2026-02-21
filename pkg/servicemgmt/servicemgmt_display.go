@@ -9,17 +9,17 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/corentindeboisset/bolt/pkg"
+	"github.com/corentindeboisset/bolt/pkg/iface"
 	"github.com/corentindeboisset/bolt/pkg/listviewport"
 )
 
 var (
-	focusedBorderStyle = pkg.BaseSurfaceStyle.
+	focusedBorderStyle = iface.BaseSurfaceStyle.
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("111")).
 				Padding(0, 2)
 
-	blurredBorderStyle = pkg.BaseSurfaceStyle.
+	blurredBorderStyle = iface.BaseSurfaceStyle.
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("7")).
 				Padding(0, 2)
@@ -116,7 +116,7 @@ func newModel(orchestrator *Orchestrator) ifaceModel {
 		hideOutputPanel:       false,
 		orchestrator:          orchestrator,
 		serviceListPanelWidth: BRICK_MIN_WIDTH,
-		serviceListPanel:      listviewport.New(30, 10, pkg.BaseSurfaceStyle.Padding(1, 2)),
+		serviceListPanel:      listviewport.New(30, 10, iface.BaseSurfaceStyle.Padding(1, 2)),
 		outputPanel:           viewport.New(30, 10),
 	}
 
@@ -321,7 +321,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m ifaceModel) View() string {
-	panelsContent := pkg.BaseSurfaceStyle.Render(lipgloss.JoinHorizontal(
+	panelsContent := iface.BaseSurfaceStyle.Render(lipgloss.JoinHorizontal(
 		lipgloss.Top,
 		m.serviceListPanel.View(),
 		m.outputPanel.View()),

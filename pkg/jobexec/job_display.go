@@ -12,7 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/corentindeboisset/bolt/pkg"
+	"github.com/corentindeboisset/bolt/pkg/cfg"
 	"github.com/corentindeboisset/bolt/pkg/cmdrunr"
 )
 
@@ -64,7 +64,7 @@ type ifaceModel struct {
 	stepPanel    ListViewportModel
 	outputPanel  viewport.Model
 
-	jobConfig *pkg.JobConfig
+	jobConfig *cfg.JobConfig
 	statuses  []StepStatus
 	taskIds   []registeredTask
 }
@@ -75,7 +75,7 @@ func tickReadOutputsMsg() tea.Cmd {
 	})
 }
 
-func newModel(config *pkg.JobConfig, statuses []StepStatus) ifaceModel {
+func newModel(config *cfg.JobConfig, statuses []StepStatus) ifaceModel {
 	m := ifaceModel{
 		help: help.New(),
 		keymap: keymap{

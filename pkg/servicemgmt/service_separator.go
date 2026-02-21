@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/corentindeboisset/bolt/pkg"
+	"github.com/corentindeboisset/bolt/pkg/iface"
 	"github.com/google/uuid"
 )
 
@@ -17,7 +17,7 @@ type SeparatorModel struct {
 func NewSeparator(width int) *SeparatorModel {
 	return &SeparatorModel{
 		id:           uuid.NewString(),
-		currentStyle: pkg.BaseSurfaceStyle.Foreground(pkg.SeparatorColor).AlignHorizontal(lipgloss.Center).Width(width),
+		currentStyle: iface.BaseSurfaceStyle.Foreground(iface.SeparatorColor).AlignHorizontal(lipgloss.Center).Width(width),
 		width:        width,
 	}
 }

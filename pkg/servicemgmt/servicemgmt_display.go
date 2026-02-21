@@ -176,21 +176,21 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
-		// case "pgup":
-		// 	if m.focusOutput {
-		// 		m.outputPanel.PageUp()
-		// 	} else {
-		// 		// FIXME: get the id of the focused service
-		// 		m.serviceListPanel.PageUp()
-		// 	}
+		case "pgup":
+			if m.focusOutput {
+				m.outputPanel.PageUp()
+			} else {
+				itemId := m.serviceListPanel.PageUp()
+				m.focusBrickById(itemId)
+			}
 
-		// case "pgdown":
-		// 	if m.focusOutput {
-		// 		m.outputPanel.PageDown()
-		// 	} else {
-		// 		// FIXME: get the id of the focused service
-		// 		m.serviceListPanel.PageDown()
-		// 	}
+		case "pgdown":
+			if m.focusOutput {
+				m.outputPanel.PageDown()
+			} else {
+				itemId := m.serviceListPanel.PageDown()
+				m.focusBrickById(itemId)
+			}
 
 		case "home":
 			if m.focusOutput {
@@ -271,4 +271,13 @@ func (m ifaceModel) View() string {
 	})
 
 	return panelsContent + "\n\n" + help
+}
+
+func (m *ifaceModel) focusBrickById(id string) {
+	for brickIdx, brick := range m.serviceBricks {
+		if id == brick.Id() {
+			m.updateFocusedTask(brickIdx)
+			return
+		}
+	}
 }

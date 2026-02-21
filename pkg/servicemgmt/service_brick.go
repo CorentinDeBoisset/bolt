@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/corentindeboisset/bolt/pkg"
+	"github.com/google/uuid"
 )
 
 type serviceState int
@@ -30,6 +31,8 @@ const (
 const HPADDING = 2
 
 type ServiceBrickModel struct {
+	id string
+
 	background   color.Color
 	width        int
 	focusLevel   int
@@ -50,6 +53,7 @@ type ServiceBrickModel struct {
 
 func NewServiceBrick(name string, width int, background color.Color) *ServiceBrickModel {
 	model := ServiceBrickModel{
+		id:          uuid.NewString(),
 		ServiceName: name,
 		State:       SERVICE_OFF,
 
@@ -132,4 +136,8 @@ func (s *ServiceBrickModel) View() string {
 	content := lipgloss.JoinHorizontal(lipgloss.Top, title, indicator)
 
 	return s.brickStyle.Render(content)
+}
+
+func (s *ServiceBrickModel) Id() string {
+	return s.id
 }

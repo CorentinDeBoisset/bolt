@@ -8,6 +8,7 @@ import (
 )
 
 type ListItem interface {
+	Id() string
 	Height() int
 	View() string
 	Focusable() bool
@@ -56,7 +57,6 @@ func (m *Model) Focus(idx int) {
 		return
 	}
 
-	// TODO: set focusLevel of the children
 	m.focusedItem = clamp(idx, 0, len(m.items)-1)
 }
 
@@ -96,30 +96,32 @@ func (m *Model) ScrollUp(n int) {
 	}
 }
 
-func (m *Model) PageDown() {
-	// TODO: return the idx of the focused item to the parent
+func (m *Model) PageDown() string {
 	yMovement := 0
 	for i := m.focusedItem + 1; i < len(m.items); i++ {
 		yMovement += m.items[i].Height()
 		if yMovement >= m.height && m.items[i].Focusable() {
 			m.Focus(i)
-			return
+			return m.items[i].Id()
 		}
 	}
+
 	m.GoToBottom()
+	return m.items[m.focusedItem].Id()
 }
 
-func (m *Model) PageUp() {
-	// TODO: return the idx of the focused item to the parent
+func (m *Model) PageUp() string {
 	yMovement := 0
 	for i := m.focusedItem - 1; i >= 0; i-- {
 		yMovement += m.items[i].Height()
 		if yMovement >= m.height && m.items[i].Focusable() {
 			m.Focus(i)
-			return
+			return m.items[i].Id()
 		}
 	}
+
 	m.GoToTop()
+	return m.items[m.focusedItem].Id()
 }
 
 func (m *Model) Resize(width, height int) {

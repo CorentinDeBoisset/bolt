@@ -5,17 +5,20 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/corentindeboisset/bolt/pkg"
+	"github.com/google/uuid"
 )
 
 type SeparatorModel struct {
+	id           string
 	currentStyle lipgloss.Style
 	width        int
 }
 
 func NewSeparator(width int) *SeparatorModel {
 	return &SeparatorModel{
-		pkg.BaseSurfaceStyle.Foreground(pkg.SeparatorColor).AlignHorizontal(lipgloss.Center).Width(width),
-		width,
+		id:           uuid.NewString(),
+		currentStyle: pkg.BaseSurfaceStyle.Foreground(pkg.SeparatorColor).AlignHorizontal(lipgloss.Center).Width(width),
+		width:        width,
 	}
 }
 
@@ -47,4 +50,8 @@ func (m *SeparatorModel) View() string {
 	content := strings.Repeat("─", contentHalfWidth) + "·" + strings.Repeat("─", contentHalfWidth)
 
 	return m.currentStyle.Render(content)
+}
+
+func (s *SeparatorModel) Id() string {
+	return s.id
 }

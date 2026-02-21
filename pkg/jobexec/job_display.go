@@ -186,7 +186,6 @@ func (m *ifaceModel) updateSizes() {
 		return
 	}
 	m.outputPanel.Width = outputWidth
-	m.outputPanel.Style = m.outputPanel.Style.Width(outputWidth - m.outputPanel.Style.GetHorizontalBorderSize())
 	m.stepPanel.Resize(stepPanelWidth, panelsHeight)
 }
 
@@ -370,10 +369,10 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.updateKeyBindings()
 				if m.focusOutput {
 					m.stepPanel.Style = blurredBorderStyle
-					m.outputPanel.Style = focusedBorderStyle.Width(m.outputPanel.Width - m.outputPanel.Style.GetHorizontalBorderSize())
+					m.outputPanel.Style = focusedBorderStyle
 				} else {
 					m.stepPanel.Style = focusedBorderStyle
-					m.outputPanel.Style = blurredBorderStyle.Width(m.outputPanel.Width - m.outputPanel.Style.GetHorizontalBorderSize())
+					m.outputPanel.Style = blurredBorderStyle
 				}
 			}
 
@@ -389,7 +388,10 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case RefreshStatusMsg:
 		if !m.hideOutputPanel {
 			isAtBottom := m.outputPanel.AtBottom()
-			m.outputPanel.SetContent(m.taskIds[m.selectedTask].Output.String())
+			contentWidth := m.outputPanel.Width - m.outputPanel.Style.GetHorizontalFrameSize()
+			m.outputPanel.SetContent(
+				lipgloss.NewStyle().Width(contentWidth).Render(m.taskIds[m.selectedTask].Output.String()),
+			)
 			if isAtBottom {
 				m.outputPanel.GotoBottom()
 			}

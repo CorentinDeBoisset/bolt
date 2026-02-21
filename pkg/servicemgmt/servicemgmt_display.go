@@ -266,7 +266,12 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "R":
 			if !m.focusOutput {
-				go m.orchestrator.RestartService(m.serviceBricks[m.focusedTask].id, true)
+				go m.orchestrator.RestartService(
+					m.serviceBricks[m.focusedTask].id,
+					true,
+					m.outputPanel.Width-m.outputPanel.Style.GetHorizontalFrameSize(),
+					m.outputPanel.Height-m.outputPanel.Style.GetVerticalFrameSize(),
+				)
 			}
 
 		case "q":
@@ -276,13 +281,22 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "r":
 			if !m.focusOutput {
-				go m.orchestrator.RestartService(m.serviceBricks[m.focusedTask].id, false)
+				go m.orchestrator.RestartService(
+					m.serviceBricks[m.focusedTask].id,
+					false,
+					m.outputPanel.Width-m.outputPanel.Style.GetHorizontalFrameSize(),
+					m.outputPanel.Height-m.outputPanel.Style.GetVerticalFrameSize(),
+				)
 			}
 
 		case "enter":
 			if !m.focusOutput {
 				go func() {
-					m.orchestrator.StartService(m.serviceBricks[m.focusedTask].id)
+					m.orchestrator.StartService(
+						m.serviceBricks[m.focusedTask].id,
+						m.outputPanel.Width-m.outputPanel.Style.GetHorizontalFrameSize(),
+						m.outputPanel.Height-m.outputPanel.Style.GetVerticalFrameSize(),
+					)
 					m.orchestrator.OpenService(m.serviceBricks[m.focusedTask].id)
 				}()
 			}

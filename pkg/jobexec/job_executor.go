@@ -68,7 +68,8 @@ func executeJob(ctx context.Context, basePath string, config *cfg.JobConfig, ste
 		stepStatuses[stepIdx].Mtx.Unlock()
 
 		for _, hook := range step.RunBefore {
-			if !cmdrunr.RunCommand(ctx, basePath, hook.Path, hook.Cmd, &stepStatuses[stepIdx].BeforeHooks.Output) {
+			// FIXME: the width/height values are not right
+			if !cmdrunr.RunCommand(ctx, basePath, hook.Path, hook.Cmd, &stepStatuses[stepIdx].BeforeHooks.Output, 120, 24) {
 				stepStatuses[stepIdx].Mtx.Lock()
 				stepStatuses[stepIdx].BeforeHooks.state = STATE_FAILED
 				stepStatuses[stepIdx].state = STATE_FAILED
@@ -112,7 +113,7 @@ func executeJob(ctx context.Context, basePath string, config *cfg.JobConfig, ste
 		stepStatuses[stepIdx].Mtx.Unlock()
 
 		for _, hook := range step.RunAfter {
-			if !cmdrunr.RunCommand(ctx, basePath, hook.Path, hook.Cmd, &stepStatuses[stepIdx].AfterHooks.Output) {
+			if !cmdrunr.RunCommand(ctx, basePath, hook.Path, hook.Cmd, &stepStatuses[stepIdx].AfterHooks.Output, 120, 24) {
 				stepStatuses[stepIdx].Mtx.Lock()
 				stepStatuses[stepIdx].AfterHooks.state = STATE_FAILED
 				stepStatuses[stepIdx].state = STATE_FAILED
@@ -139,7 +140,7 @@ func runTask(ctx context.Context, basePath string, config cfg.TaskConfig, taskSt
 	globalStatus.Mtx.Unlock()
 
 	for _, hook := range config.RunBefore {
-		if !cmdrunr.RunCommand(ctx, basePath, hook.Path, hook.Cmd, &taskStatus.Output) {
+		if !cmdrunr.RunCommand(ctx, basePath, hook.Path, hook.Cmd, &taskStatus.Output, 120, 24) {
 			globalStatus.Mtx.Lock()
 			taskStatus.state = STATE_FAILED
 			globalStatus.Mtx.Unlock()
@@ -152,7 +153,7 @@ func runTask(ctx context.Context, basePath string, config cfg.TaskConfig, taskSt
 	globalStatus.Mtx.Unlock()
 
 	// run config.Cmd
-	if !cmdrunr.RunCommand(ctx, basePath, config.Path, config.Cmd, &taskStatus.Output) {
+	if !cmdrunr.RunCommand(ctx, basePath, config.Path, config.Cmd, &taskStatus.Output, 120, 24) {
 		globalStatus.Mtx.Lock()
 		taskStatus.state = STATE_FAILED
 		globalStatus.Mtx.Unlock()
@@ -164,7 +165,7 @@ func runTask(ctx context.Context, basePath string, config cfg.TaskConfig, taskSt
 	globalStatus.Mtx.Unlock()
 
 	for _, hook := range config.RunAfter {
-		if !cmdrunr.RunCommand(ctx, basePath, hook.Path, hook.Cmd, &taskStatus.Output) {
+		if !cmdrunr.RunCommand(ctx, basePath, hook.Path, hook.Cmd, &taskStatus.Output, 120, 24) {
 			globalStatus.Mtx.Lock()
 			taskStatus.state = STATE_FAILED
 			globalStatus.Mtx.Unlock()

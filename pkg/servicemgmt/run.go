@@ -1,6 +1,10 @@
 package servicemgmt
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/corentindeboisset/bolt/pkg/cfg"
 )
@@ -18,10 +22,34 @@ func StartServiceManagement(confPath string) error {
 		return err
 	}
 
-	_, err = tea.NewProgram(newModel(orchestrator), tea.WithAltScreen(), tea.WithMouseCellMotion()).Run()
+	program := tea.NewProgram(newModel(orchestrator), tea.WithAltScreen(), tea.WithMouseCellMotion(), tea.WithoutSignalHandler())
+
+	programErr := make(chan error)
+	go func() {
+		_, err := program.Run()
+		if err != tea.ErrProgramKilled {
+			programErr <- err
+		}
+		close(programErr)
+	}()
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
+	defer signal.Stop(sigChan)
+
+	select {
+	case <-sigChan:
+		program.Quit()
+	case err = <-programErr:
+		// nothing to do, the program already quit
+	}
 
 	// Shutdown all services
 	orchestrator.Shutdown(nil)
+
+	// Ensure the program is finished before proceeding
+	for err = range programErr {
+	}
 
 	return err
 }

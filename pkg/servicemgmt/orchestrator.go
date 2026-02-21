@@ -186,10 +186,10 @@ func (o *Orchestrator) Shutdown(done chan any) {
 }
 
 // Calls start on a given service
-func (o *Orchestrator) StartService(id string) {
+func (o *Orchestrator) StartService(id string, outputWidth, outputHeight int) {
 	for _, service := range o.ServiceList {
 		if service.Id == id {
-			service.Start(o.ctx)
+			service.Start(o.ctx, outputWidth, outputHeight)
 			return
 		}
 	}
@@ -206,10 +206,10 @@ func (o *Orchestrator) KillService(id string, appOnly bool) {
 }
 
 // Calls restart on a given service
-func (o *Orchestrator) RestartService(id string, appOnly bool) {
+func (o *Orchestrator) RestartService(id string, appOnly bool, outputWidth, outputHeight int) {
 	for _, service := range o.ServiceList {
 		if service.Id == id {
-			service.Restart(o.ctx, appOnly)
+			service.Restart(o.ctx, appOnly, outputWidth, outputHeight)
 			return
 		}
 	}
@@ -233,7 +233,7 @@ func (s *ManagedService) IsInExecution() bool {
 
 // This method starts all dependencies, waits for them to be up, then starts the service and returns
 // Be careful since this can block the routine for a while when waiting
-func (s *ManagedService) Start(baseCtx context.Context) {
+func (s *ManagedService) Start(baseCtx context.Context, outputWidth, outputHeight int) {
 	s.StateMtx.Lock()
 	if s.IsInExecution() {
 		log.Printf("The service %s is already started", s.Id)
@@ -243,7 +243,7 @@ func (s *ManagedService) Start(baseCtx context.Context) {
 	s.StateMtx.Unlock()
 
 	for _, dependency := range s.Dependencies {
-		dependency.Target.Start(baseCtx)
+		dependency.Target.Start(baseCtx, outputWidth, outputHeight)
 	}
 
 	// Wait for hard dependencies to pass their healthcheck
@@ -298,7 +298,7 @@ func (s *ManagedService) Start(baseCtx context.Context) {
 		}()
 
 		// Start the service and wait for it to finish
-		ok := cmdrunr.RunCommand(s.ctx, s.BasePath, s.Config.Path, s.Config.Cmd, &s.Output)
+		ok := cmdrunr.RunCommand(s.ctx, s.BasePath, s.Config.Path, s.Config.Cmd, &s.Output, outputWidth, outputHeight)
 
 		log.Printf("The service %s has finished running", s.Id)
 
@@ -360,9 +360,9 @@ func (s *ManagedService) Kill(appOnly bool) {
 }
 
 // Kill the service properly, then run the start sequence
-func (s *ManagedService) Restart(baseCtx context.Context, appOnly bool) {
+func (s *ManagedService) Restart(baseCtx context.Context, appOnly bool, outputWidth, outputHeight int) {
 	s.Kill(appOnly)
-	s.Start(baseCtx)
+	s.Start(baseCtx, outputWidth, outputHeight)
 }
 
 // Run the os-specific command to open the service target

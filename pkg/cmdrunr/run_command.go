@@ -39,13 +39,15 @@ func getCmdPath(basePath, cmdPath string) string {
 	}
 }
 
-func RunCommand(ctx context.Context, basePath, path, cmd string, output *SafeBuffer) bool {
+func RunCommand(ctx context.Context, basePath, path, cmd string, output *SafeBuffer, width, height int) bool {
 	// Note: this only works on Unix platforms
 	// TODO: maybe add support for windows (or not... :shrug:)
 	_, _ = fmt.Fprintf(output, "> %s\n", cmd)
 	task := exec.CommandContext(ctx, "/bin/sh", "-c", cmd)
 	task.Dir = getCmdPath(basePath, path)
-	task.Env = os.Environ() // Pass the environment to the child processes
+
+	// Pass the environment to the child processes, and set the WIDTH/HEIGHT env variables
+	task.Env = append(os.Environ(), fmt.Sprintf("COLUMNS=%d", width), fmt.Sprintf("LINES=%d", height))
 	task.Stdout = output
 	task.Stderr = output
 	task.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}

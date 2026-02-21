@@ -13,7 +13,7 @@ wget "https://github.com/CorentinDeBoisset/bolt/releases/latest/download/bolt_$(
 install -m 0755 bolt /path/to/install
 ```
 
-Alternatively, you can run the following command (you will need to install golang v1.25+):
+Alternatively, you can run the following command (you will need to install golang v1.26+):
 
 ```bash
 go install github.com/corentindeboisset/bolt

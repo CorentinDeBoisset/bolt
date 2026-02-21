@@ -28,7 +28,17 @@ var (
 type refreshStatusMsg time.Time
 
 type keymap = struct {
-	up, down, tab, quit key.Binding
+	up   key.Binding
+	down key.Binding
+	tab  key.Binding
+	quit key.Binding
+
+	appOnlyKill     key.Binding
+	appOnlyRestart  key.Binding
+	standardKill    key.Binding
+	standardRestart key.Binding
+	standardStart   key.Binding
+	open            key.Binding
 }
 
 type ifaceModel struct {
@@ -76,6 +86,31 @@ func newModel(serviceConfigList []pkg.TaskConfig) ifaceModel {
 				key.WithKeys("ctrl+c"),
 				key.WithHelp("Ctrl+C ", "Exit"),
 			),
+
+			appOnlyKill: key.NewBinding(
+				key.WithKeys("Q"),
+				key.WithHelp("Q", "Kill only the service"),
+			),
+			appOnlyRestart: key.NewBinding(
+				key.WithKeys("R"),
+				key.WithHelp("R", "Restart the service"),
+			),
+			standardKill: key.NewBinding(
+				key.WithKeys("q"),
+				key.WithHelp("q", "Kill the service"),
+			),
+			standardRestart: key.NewBinding(
+				key.WithKeys("r"),
+				key.WithHelp("r", "Restart the service"),
+			),
+			standardStart: key.NewBinding(
+				key.WithKeys("enter"),
+				key.WithHelp("↵/Enter", "Start the service"),
+			),
+			open: key.NewBinding(
+				key.WithKeys("o"),
+				key.WithHelp("o", "Open the app"),
+			),
 		},
 		focusOutput:           false,
 		hideOutputPanel:       false,
@@ -93,7 +128,7 @@ func newModel(serviceConfigList []pkg.TaskConfig) ifaceModel {
 }
 
 func (m *ifaceModel) refreshLayoutSizes() {
-	panelsHeight := m.height - 4
+	panelsHeight := m.height - 6
 
 	if m.height <= 10 {
 		panelsHeight = m.height
@@ -219,7 +254,35 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
-			// TODO: add cases for start/restart/kill/open browser
+		case "Q":
+			if !m.focusOutput {
+				// TODO: appOnlyKill
+			}
+
+		case "R":
+			if !m.focusOutput {
+				// TODO: appOnlyRestart
+			}
+
+		case "q":
+			if !m.focusOutput {
+				// TODO: standardKill
+			}
+
+		case "r":
+			if !m.focusOutput {
+				// TODO: standardRestart
+			}
+
+		case "enter":
+			if !m.focusOutput {
+				// TODO: standardStart
+			}
+
+		case "o":
+			if !m.focusOutput {
+				// TODO: open
+			}
 		}
 
 	case tea.WindowSizeMsg:
@@ -266,8 +329,9 @@ func (m ifaceModel) View() string {
 	}
 
 	help := m.help.FullHelpView([][]key.Binding{
-		{m.keymap.up, m.keymap.down},
-		{m.keymap.tab, m.keymap.quit},
+		{m.keymap.up, m.keymap.down, m.keymap.tab, m.keymap.quit},
+		{},
+		{m.keymap.standardStart, m.keymap.standardKill, m.keymap.open, m.keymap.standardRestart},
 	})
 
 	return panelsContent + "\n\n" + help

@@ -14,12 +14,12 @@ import (
 )
 
 var (
-	focusedBorderStyle = pkg.BaseAppStyle.
+	focusedBorderStyle = pkg.BaseSurfaceStyle.
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("111")).
 				Padding(0, 2)
 
-	blurredBorderStyle = pkg.BaseAppStyle.
+	blurredBorderStyle = pkg.BaseSurfaceStyle.
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("7")).
 				Padding(0, 2)
@@ -81,7 +81,7 @@ func newModel(serviceConfigList []pkg.TaskConfig) ifaceModel {
 		hideOutputPanel:       false,
 		serviceConfigList:     serviceConfigList,
 		serviceListPanelWidth: BRICK_MIN_WIDTH,
-		serviceListPanel:      listviewport.New(30, 10, pkg.BaseAppStyle.Padding(1, 0)),
+		serviceListPanel:      listviewport.New(30, 10, pkg.BaseSurfaceStyle.Padding(1, 2)),
 		outputPanel:           viewport.New(30, 10),
 	}
 
@@ -255,7 +255,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m ifaceModel) View() string {
-	panelsContent := pkg.BaseAppStyle.Render(lipgloss.JoinHorizontal(
+	panelsContent := pkg.BaseSurfaceStyle.Render(lipgloss.JoinHorizontal(
 		lipgloss.Top,
 		m.serviceListPanel.View(),
 		m.outputPanel.View()),

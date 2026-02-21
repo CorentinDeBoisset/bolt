@@ -16,8 +16,10 @@ const (
 	SERVICE_ERROR
 )
 
-const BRICK_MIN_WIDTH = 30
+const BRICK_MIN_WIDTH = 25
 
+// It is important that all indicators have the same len
+const INDICATOR_LEN = 12
 const (
 	INDICATOR_OFF      = "⠺ OFF      ⠗"
 	INDICATOR_STARTING = "⠺ STARTING ⠗"
@@ -26,7 +28,6 @@ const (
 )
 
 const HPADDING = 2
-const NAME_MAX_HEIGHT = 3
 
 type ServiceBrickModel struct {
 	background   color.Color
@@ -75,27 +76,25 @@ func (s *ServiceBrickModel) SetFocusLevel(level int) {
 }
 
 func (s *ServiceBrickModel) refreshStyles() {
-	brickBackgound := pkg.NoticeableBackgroundColor
+	brickStyle := pkg.NoticeableSurfaceStyle
 	switch s.focusLevel {
 	case 1:
-		brickBackgound = pkg.AccentBackgroundColor
+		brickStyle = pkg.HighlightSurfaceStyle
 	case 2:
-		brickBackgound = pkg.HighlightBackgroundColor
+		brickStyle = pkg.AccentSurfaceStyle
 	}
 
-	baseStyle := pkg.BaseAppStyle.Background(brickBackgound)
-
-	s.titleStyle = baseStyle.
-		Foreground(pkg.BodyColor).
+	s.titleStyle = brickStyle.
 		PaddingRight(HPADDING).
-		MaxHeight(NAME_MAX_HEIGHT).
-		Width(s.width - 16 - HPADDING*2)
-	s.brickStyle = baseStyle.Padding(1, 2).Margin(0, 2)
+		MaxHeight(1).
+		Width(s.width - INDICATOR_LEN - HPADDING*2)
 
-	s.offStatusStyle = baseStyle.Foreground(pkg.BodyColor)
-	s.startingStatusStyle = baseStyle.Foreground(lipgloss.Color("#d3a825"))
-	s.runningStatusStyle = baseStyle.Foreground(lipgloss.Color("#1eaa25"))
-	s.errorStatusStyle = baseStyle.Foreground(lipgloss.Color("#d82525"))
+	s.brickStyle = brickStyle.Padding(1, 2)
+
+	s.offStatusStyle = brickStyle
+	s.startingStatusStyle = brickStyle.Foreground(lipgloss.Color("#d3a825"))
+	s.runningStatusStyle = brickStyle.Foreground(lipgloss.Color("#1eaa25"))
+	s.errorStatusStyle = brickStyle.Foreground(lipgloss.Color("#d82525"))
 }
 
 func (s *ServiceBrickModel) refreshCachedHeight() {
@@ -113,7 +112,9 @@ func (s *ServiceBrickModel) Focusable() bool {
 
 func (s *ServiceBrickModel) View() string {
 	if s.width < BRICK_MIN_WIDTH {
-		return ""
+		return s.brickStyle.
+			Width(s.width).
+			Render("")
 	}
 
 	title := s.titleStyle.Render(s.ServiceName)

@@ -126,8 +126,10 @@ func (m *Model) Resize(width, height int) {
 	m.width = width
 	m.height = height
 
+	itemWidth := max(width-m.baseStyle.GetHorizontalFrameSize(), 0)
+
 	for _, item := range m.items {
-		item.Resize(width)
+		item.Resize(itemWidth)
 	}
 }
 
@@ -137,7 +139,7 @@ func (m *Model) View() string {
 
 	availableHeight := (m.height - focusedItemHeight - m.baseStyle.GetVerticalFrameSize())
 
-	if availableHeight < 0 {
+	if availableHeight < 0 || m.width-m.baseStyle.GetHorizontalFrameSize() < 0 {
 		// The available space is too small, we return an empty block
 		return m.baseStyle.
 			Padding(0).

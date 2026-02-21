@@ -14,7 +14,7 @@ type SeparatorModel struct {
 
 func NewSeparator(width int) *SeparatorModel {
 	return &SeparatorModel{
-		pkg.BaseAppStyle.Foreground(pkg.SeparatorColor).AlignHorizontal(lipgloss.Center).Width(width),
+		pkg.BaseSurfaceStyle.Foreground(pkg.SeparatorColor).AlignHorizontal(lipgloss.Center).Width(width),
 		width,
 	}
 }
@@ -37,7 +37,7 @@ func (m *SeparatorModel) View() string {
 	if m.width < 10 {
 		contentWidth = m.width
 	} else if m.width < 30 {
-		contentWidth = m.width * 80 / 100
+		contentWidth = m.width * 60 / 100
 	} else {
 		contentWidth = m.width * 35 / 100
 	}

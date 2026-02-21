@@ -55,20 +55,40 @@ const refBurntPeach7 = "#ee9781"
 const refBurntPeach8 = "#f5c0b3"
 const refBurntPeach9 = "#f9dad2"
 
-var BackgroundColor = lipgloss.AdaptiveColor{Light: refJasmine7, Dark: refCharcoalBlue11}
-var NoticeableBackgroundColor = lipgloss.AdaptiveColor{Light: refJasmine6, Dark: refCharcoalBlue14}
-var AccentBackgroundColor = lipgloss.AdaptiveColor{Light: refJasmine6, Dark: refCharcoalBlue34}
-var HighlightBackgroundColor = lipgloss.AdaptiveColor{Light: refJasmine4, Dark: refCharcoalBlue44}
+var BaseSurfaceColor = lipgloss.AdaptiveColor{Light: refJasmine7, Dark: refCharcoalBlue11}
+var NoticeableSurfaceColor = lipgloss.AdaptiveColor{Light: refJasmine6, Dark: refCharcoalBlue14}
+var AccentSurfaceColor = lipgloss.AdaptiveColor{Light: refJasmine6, Dark: refVerdigris2}
+var HighlightSurfaceColor = lipgloss.AdaptiveColor{Light: refJasmine4, Dark: refSandyBrown4}
 
-var BodyColor = lipgloss.AdaptiveColor{Light: refSandyBrown2, Dark: refSandyBrown8}
+var BodyColorOnBase = lipgloss.AdaptiveColor{Light: refSandyBrown2, Dark: refSandyBrown8}
+var BodyColorOnNoticeable = lipgloss.AdaptiveColor{Light: refSandyBrown2, Dark: refSandyBrown8}
+var BodyColorOnAccent = lipgloss.AdaptiveColor{Light: refSandyBrown2, Dark: refSandyBrown9}
+var BodyColorOnHighlight = lipgloss.AdaptiveColor{Light: refSandyBrown2, Dark: refSandyBrown9}
 
-var SecondaryTextColor = lipgloss.AdaptiveColor{Light: refJasmine8, Dark: refCharcoalBlue14}
+var BaseSurfaceStyle = lipgloss.NewStyle().
+	Background(BaseSurfaceColor).
+	BorderBackground(BaseSurfaceColor).
+	MarginBackground(BaseSurfaceColor).
+	Foreground(BodyColorOnBase)
 
-var SeparatorColor = lipgloss.AdaptiveColor{Light: refVerdigris4, Dark: refSandyBrown3}
+var NoticeableSurfaceStyle = lipgloss.NewStyle().
+	Background(NoticeableSurfaceColor).
+	BorderBackground(NoticeableSurfaceColor).
+	MarginBackground(NoticeableSurfaceColor).
+	Foreground(BodyColorOnNoticeable)
+
+var AccentSurfaceStyle = lipgloss.NewStyle().
+	Background(AccentSurfaceColor).
+	BorderBackground(AccentSurfaceColor).
+	MarginBackground(AccentSurfaceColor).
+	Foreground(BodyColorOnAccent)
+
+var HighlightSurfaceStyle = lipgloss.NewStyle().
+	Background(HighlightSurfaceColor).
+	BorderBackground(HighlightSurfaceColor).
+	MarginBackground(HighlightSurfaceColor).
+	Foreground(BodyColorOnHighlight)
+
+var SeparatorColor = lipgloss.AdaptiveColor{Light: refVerdigris4, Dark: refVerdigris2}
 
 var SpinnerColor = lipgloss.AdaptiveColor{Light: refVerdigris4, Dark: refBurntPeach5}
-
-var BaseAppStyle = lipgloss.NewStyle().
-	Background(BackgroundColor).
-	BorderBackground(BackgroundColor).
-	MarginBackground(BackgroundColor)

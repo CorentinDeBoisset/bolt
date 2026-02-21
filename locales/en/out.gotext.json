@@ -482,6 +482,13 @@
             "fuzzy": true
         },
         {
+            "id": "No job and no service is declared in the configuration",
+            "message": "No job and no service is declared in the configuration",
+            "translation": "No job and no service is declared in the configuration",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "The job #{JobIdx} has no name declared",
             "message": "The job #{JobIdx} has no name declared",
             "translation": "The job #{JobIdx} has no name declared",

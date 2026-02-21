@@ -7,7 +7,7 @@ Script management that rides the lighting.
 You can use a pre-built binary with:
 
 ```bash
-wget "https://github.com/CorentinDeBoisset/bolt/releases/download/v1.6.0/bolt_$(uname)_$(uname -m)" -O bolt
+wget "https://github.com/CorentinDeBoisset/bolt/releases/latest/download/bolt_$(uname)_$(uname -m)" -O bolt
 
 # On linux, you can install on /usr/local/bin (requires sudo), or in ~/bin
 install -m 0755 bolt /path/to/install

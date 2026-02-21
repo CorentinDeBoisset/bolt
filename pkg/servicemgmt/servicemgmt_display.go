@@ -158,7 +158,7 @@ func (m *ifaceModel) initializeServiceList() {
 
 	idx := 0
 	for _, service := range serviceList {
-		brick := NewServiceBrick(service.Id, service.Name, m.width, color.RGBA{0, 0, 0, 0})
+		brick := NewServiceBrick(service.Id, service, m.width, color.RGBA{0, 0, 0, 0})
 		m.serviceBricks[idx] = brick
 		panelItems = append(panelItems, brick)
 		if idx < len(serviceList)-1 {
@@ -261,32 +261,32 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "Q":
 			if !m.focusOutput {
-				// TODO: appOnlyKill
+				go m.orchestrator.KillService(m.serviceBricks[m.focusedTask].id, true)
 			}
 
 		case "R":
 			if !m.focusOutput {
-				// TODO: appOnlyRestart
+				go m.orchestrator.RestartService(m.serviceBricks[m.focusedTask].id, true)
 			}
 
 		case "q":
 			if !m.focusOutput {
-				// TODO: standardKill
+				go m.orchestrator.KillService(m.serviceBricks[m.focusedTask].id, false)
 			}
 
 		case "r":
 			if !m.focusOutput {
-				// TODO: standardRestart
+				go m.orchestrator.RestartService(m.serviceBricks[m.focusedTask].id, false)
 			}
 
 		case "enter":
 			if !m.focusOutput {
-				// TODO: standardStart
+				go m.orchestrator.StartService(m.serviceBricks[m.focusedTask].id)
 			}
 
 		case "o":
 			if !m.focusOutput {
-				// TODO: open
+				go m.orchestrator.OpenService(m.serviceBricks[m.focusedTask].id)
 			}
 		}
 

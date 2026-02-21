@@ -23,14 +23,12 @@ const HPADDING = 2
 type ServiceBrickModel struct {
 	id string
 
+	service *ManagedService
+
 	background   color.Color
 	width        int
 	focusLevel   int
 	cachedHeight int
-
-	// TODO: remove this and use the orchestrator values
-	ServiceName string
-	State       ServiceState
 
 	brickStyle lipgloss.Style
 	titleStyle lipgloss.Style
@@ -42,11 +40,10 @@ type ServiceBrickModel struct {
 	errorStatusStyle    lipgloss.Style
 }
 
-func NewServiceBrick(id string, name string, width int, background color.Color) *ServiceBrickModel {
+func NewServiceBrick(id string, service *ManagedService, width int, background color.Color) *ServiceBrickModel {
 	model := ServiceBrickModel{
-		id:          id,
-		ServiceName: name,
-		State:       SERVICE_OFF,
+		id:      id,
+		service: service,
 
 		background:   background,
 		width:        width,
@@ -112,9 +109,9 @@ func (s *ServiceBrickModel) View() string {
 			Render("")
 	}
 
-	title := s.titleStyle.Render(s.ServiceName)
+	title := s.titleStyle.Render(s.service.Config.Name)
 	var indicator string
-	switch s.State {
+	switch s.service.State {
 	case SERVICE_OFF:
 		indicator = s.offStatusStyle.Render(INDICATOR_OFF)
 	case SERVICE_STARTING:

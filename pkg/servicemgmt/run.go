@@ -13,11 +13,17 @@ func StartServiceManagement(confPath string) error {
 
 	cfg.SetupLogs(config.LogFilePath)
 
-	orchestrator, err := NewOrchestrator(config.Services)
+	orchestrator, err := NewOrchestrator(config.BasePath, config.Services)
 	if err != nil {
 		return err
 	}
 
 	_, err = tea.NewProgram(newModel(orchestrator), tea.WithAltScreen(), tea.WithMouseCellMotion()).Run()
+
+	// Shutdown all services
+	done := make(chan any)
+	orchestrator.Shutdown(done)
+	<-done
+
 	return err
 }

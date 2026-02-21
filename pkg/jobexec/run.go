@@ -54,14 +54,10 @@ func ExecuteJob(confPath string, jobToRun string) error {
 	// Run the job in a goroutine. The synchronisation is handled by the channels
 	go executeJob(ctx, config.BasePath, pickedJob, stepStatuses, readyToDisplay, jobDone)
 	<-readyToDisplay
-	if _, err := tea.NewProgram(newModel(pickedJob, stepStatuses), tea.WithAltScreen(), tea.WithMouseCellMotion()).Run(); err != nil {
-		// TODO: Handle error
-		cancelJob()
-		<-jobDone
-		return err
-	}
+	_, err = tea.NewProgram(newModel(pickedJob, stepStatuses), tea.WithAltScreen(), tea.WithMouseCellMotion()).Run()
+
+	// Run the cleanup, and wait for all tasks to be done
 	cancelJob()
 	<-jobDone
-
-	return nil
+	return err
 }

@@ -21,11 +21,20 @@ type DependencyConfig struct {
 	WaitTargetStarted bool   `yaml:"wait_target_restarted"`
 }
 
+type HealthcheckConfig struct {
+	Port int `yaml:"port"`
+	// File       string `yaml:"file"`
+	// OutputText string `yaml:"output_text"`
+}
+
 type ServiceConfig struct {
 	TaskConfig `yaml:"task_config,inline"`
 
+	Healthcheck  HealthcheckConfig  `yaml:"healthcheck"`
 	AutoRestart  bool               `yaml:"auto_restart"`
 	Dependencies []DependencyConfig `yaml:"dependencies"`
+
+	OpenTarget string `yaml:"open_target"`
 }
 
 type JobConfig struct {

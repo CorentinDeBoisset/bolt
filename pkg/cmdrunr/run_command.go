@@ -12,7 +12,7 @@ import (
 	"syscall"
 )
 
-var PlannedKill = errors.New("process planned to be killed")
+var ErrPlannedKill = errors.New("process planned to be killed")
 
 type SafeBuffer struct {
 	buf bytes.Buffer
@@ -62,7 +62,7 @@ func RunCommand(ctx context.Context, basePath, path, cmd string, output *SafeBuf
 
 	err := task.Wait()
 	if err != nil {
-		if errors.Is(context.Cause(ctx), PlannedKill) {
+		if errors.Is(context.Cause(ctx), ErrPlannedKill) {
 			_, _ = fmt.Fprintf(output, "\nService killed\n\n")
 			return true
 		} else {

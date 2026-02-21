@@ -34,7 +34,7 @@ func checkPort(ctx context.Context, port int) bool {
 	conn, err := d.DialContext(ctx, "tcp", net.JoinHostPort("127.0.0.1", fmt.Sprintf("%d", port)))
 
 	if err == nil {
-		defer conn.Close()
+		_ = conn.Close()
 		return true
 	}
 

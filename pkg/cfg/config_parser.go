@@ -1,7 +1,6 @@
 package cfg
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 
@@ -187,7 +186,7 @@ func validateTaskConfig(task TaskConfig) error {
 
 func validateConfig(cfg *ConfigFile) error {
 	if len(cfg.Jobs) == 0 && len(cfg.Services) == 0 {
-		return errors.New("No job and no service is declared in the configuration")
+		return newConfigError("No job and no service is declared in the configuration")
 	}
 
 	jobNames := make(map[string]bool)

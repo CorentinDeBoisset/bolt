@@ -19,7 +19,6 @@ type Model struct {
 	width  int
 	height int
 
-	yOffset     int
 	focusedItem int
 
 	baseStyle lipgloss.Style

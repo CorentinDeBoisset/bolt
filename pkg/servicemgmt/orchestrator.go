@@ -51,7 +51,6 @@ type ManagedService struct {
 type Orchestrator struct {
 	ctx         context.Context
 	cancel      context.CancelCauseFunc
-	jobsDone    chan any
 	BasePath    string
 	ServiceList map[string]*ManagedService
 }
@@ -60,11 +59,6 @@ func NewOrchestrator(basePath string, serviceConfigList map[string]cfg.ServiceCo
 	serviceList := make(map[string]*ManagedService)
 	dependencyConfigs := make(map[string]*[]cfg.DependencyConfig)
 	for serviceId, serviceConfig := range serviceConfigList {
-		name := serviceConfig.Name
-		if len(name) == 0 {
-			name = serviceId
-		}
-
 		serviceList[serviceId] = &ManagedService{
 			Id:           serviceId,
 			BasePath:     basePath,
@@ -167,7 +161,7 @@ func (o *Orchestrator) SortedServices() []*ManagedService {
 // Kill all services, wait for all process to end and return.
 // If you call it in a goroutine, you can should a channel as an argument that will be closed once the shutdown is complete.
 func (o *Orchestrator) Shutdown(done chan any) {
-	o.cancel(cmdrunr.PlannedKill)
+	o.cancel(cmdrunr.ErrPlannedKill)
 
 	// Wait for all services to be off
 	for _, service := range o.ServiceList {
@@ -303,7 +297,7 @@ func (s *ManagedService) Start(baseCtx context.Context, outputWidth, outputHeigh
 		log.Printf("The service %s has finished running", s.Id)
 
 		// Ensure the healthcheck routine is finished
-		s.cancel(cmdrunr.PlannedKill)
+		s.cancel(cmdrunr.ErrPlannedKill)
 		<-healthcheckDone
 
 		// Post-run updates
@@ -341,7 +335,7 @@ func (s *ManagedService) Kill(appOnly bool) {
 	}
 	s.StateMtx.Unlock()
 
-	s.cancel(cmdrunr.PlannedKill)
+	s.cancel(cmdrunr.ErrPlannedKill)
 
 	// Wait for the service to be done and broadcast it
 	s.StateMtx.Lock()

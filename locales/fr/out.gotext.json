@@ -45,6 +45,505 @@
             "id": "Start the service management interface",
             "message": "Start the service management interface",
             "translation": "Lancer l'interface de gestion de services"
+        },
+        {
+            "id": "An error occured calculating an absolute path: {Err}",
+            "message": "An error occured calculating an absolute path: {Err}",
+            "translation": "Une erreur est survenue à la récupération d'un chemin absolu : {Err}",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ]
+        },
+        {
+            "id": "An error occured when checking the path \"{Ret}\":\n{Err}",
+            "message": "An error occured when checking the path \"{Ret}\":\n{Err}",
+            "translation": "Une erreur est survenue en listant les propriétés du fichier \"{Ret}\" :\n{Err}",
+            "placeholders": [
+                {
+                    "id": "Ret",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ret"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ]
+        },
+        {
+            "id": "The path \"{Ret}\" is a directory",
+            "message": "The path \"{Ret}\" is a directory",
+            "translation": "Le chemin \"{Ret}\" pointe vers un dossier",
+            "placeholders": [
+                {
+                    "id": "Ret",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ret"
+                }
+            ]
+        },
+        {
+            "id": "Failed to read the current working directory: {Err}",
+            "message": "Failed to read the current working directory: {Err}",
+            "translation": "Impossible de lire le répertoire de travail actuel : {Err}",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ]
+        },
+        {
+            "id": "No configuration file could be found",
+            "message": "No configuration file could be found",
+            "translation": "Aucun fichier de configuration n'a pu être trouvé"
+        },
+        {
+            "id": "The task #{CmdIdx} has no command declared",
+            "message": "The task #{CmdIdx} has no command declared",
+            "translation": "La tâche #{CmdIdx} n'a pas de commande",
+            "placeholders": [
+                {
+                    "id": "CmdIdx",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "cmdIdx"
+                }
+            ]
+        },
+        {
+            "id": "No step is declared in the job \"{Name}\"",
+            "message": "No step is declared in the job \"{Name}\"",
+            "translation": "Aucun step n'est déclaré dans le job \"{Name}\"",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "job.Name"
+                }
+            ]
+        },
+        {
+            "id": "The step #{StepIdx} in the job \"{Name}\" has no name declared",
+            "message": "The step #{StepIdx} in the job \"{Name}\" has no name declared",
+            "translation": "Le step #{StepIdx} du job \"{Name}\" n'a pas de nom",
+            "placeholders": [
+                {
+                    "id": "StepIdx",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "stepIdx"
+                },
+                {
+                    "id": "Name",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "job.Name"
+                }
+            ]
+        },
+        {
+            "id": "There are multiple steps named \"{Name}\" in the job \"{Name_1}\"",
+            "message": "There are multiple steps named \"{Name}\" in the job \"{Name_1}\"",
+            "translation": "Plusieurs steps ont le nom \"{Name}\" dans le job \"{Name_1}\"",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "job.Name"
+                }
+            ]
+        },
+        {
+            "id": "The step \"{Name}\" in the job \"{Name_1}\" has invalid run_before hooks: {Err}",
+            "message": "The step \"{Name}\" in the job \"{Name_1}\" has invalid run_before hooks: {Err}",
+            "translation": "Le step \"{Name}\" dans le job \"{Name_1}\" a un hook run_before invalide : {Err}",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "job.Name"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[3]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 3,
+                    "expr": "err"
+                }
+            ]
+        },
+        {
+            "id": "The step \"{Name}\" in the job \"{Name_1}\" has invalid run_after hooks: {Err}",
+            "message": "The step \"{Name}\" in the job \"{Name_1}\" has invalid run_after hooks: {Err}",
+            "translation": "Le step \"{Name}\" du job \"{Name_1}\" a un hook run_after invalide : {Err}",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "job.Name"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[3]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 3,
+                    "expr": "err"
+                }
+            ]
+        },
+        {
+            "id": "The step \"{Name}\" in the job \"{Name_1}\" has no task declared",
+            "message": "The step \"{Name}\" in the job \"{Name_1}\" has no task declared",
+            "translation": "Le step \"{Name}\" du job \"{Name_1}\" ne contient aucune tâche",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "job.Name"
+                }
+            ]
+        },
+        {
+            "id": "There are multiple tasks named \"{Name}\" in the step \"{Name_1}\"in the job \"{Name_2}\"",
+            "message": "There are multiple tasks named \"{Name}\" in the step \"{Name_1}\"in the job \"{Name_2}\"",
+            "translation": "Plusieurs tâches ont le nom \"{Name}\" dans le step \"{Name_1}\" du job \"{Name_2}\"",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "task.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_2",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "job.Name"
+                }
+            ]
+        },
+        {
+            "id": "The task \"{Name}\" in the step \"{Name_1}\" in the job \"{Name_2}\" is invalid: {Err}",
+            "message": "The task \"{Name}\" in the step \"{Name_1}\" in the job \"{Name_2}\" is invalid: {Err}",
+            "translation": "La tâche \"{Name}\" dans le step \"{Name_1}\" du job \"{Name_2}\" est invalide : {Err}",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "task.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_2",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "job.Name"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[4]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 4,
+                    "expr": "err"
+                }
+            ]
+        },
+        {
+            "id": "The task #{TaskIdx} in the step \"{Name}\" in the job \"{Name_1}\" is invalid: {Err}",
+            "message": "The task #{TaskIdx} in the step \"{Name}\" in the job \"{Name_1}\" is invalid: {Err}",
+            "translation": "La tâche #{TaskIdx} dans le step \"{Name}\" du job \"{Name_1}\" est invalide : {Err}",
+            "placeholders": [
+                {
+                    "id": "TaskIdx",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "taskIdx"
+                },
+                {
+                    "id": "Name",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "job.Name"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[4]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 4,
+                    "expr": "err"
+                }
+            ]
+        },
+        {
+            "id": "No name is declared",
+            "message": "No name is declared",
+            "translation": "Aucun nom n'est déclaré"
+        },
+        {
+            "id": "The run_before hooks are invalid: {Err}",
+            "message": "The run_before hooks are invalid: {Err}",
+            "translation": "Le hook run_before est invalide : {Err}",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ]
+        },
+        {
+            "id": "The run_after hooks are invalid: {Err}",
+            "message": "The run_after hooks are invalid: {Err}",
+            "translation": "Le hook run_after est invalide : {Err}",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ]
+        },
+        {
+            "id": "No command is declared",
+            "message": "No command is declared",
+            "translation": "Aucune commande n'est déclarée"
+        },
+        {
+            "id": "The job #{JobIdx} has no name declared",
+            "message": "The job #{JobIdx} has no name declared",
+            "translation": "Le job #{JobIdx} n'a pas de nom",
+            "placeholders": [
+                {
+                    "id": "JobIdx",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "jobIdx"
+                }
+            ]
+        },
+        {
+            "id": "There are multiple jobs named \"{Name}\"",
+            "message": "There are multiple jobs named \"{Name}\"",
+            "translation": "Plusieurs jobs ont le nom \"{Name}\"",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "job.Name"
+                }
+            ]
+        },
+        {
+            "id": "The key of a service is not defined",
+            "message": "The key of a service is not defined",
+            "translation": "Un service n'a pas de clé"
+        },
+        {
+            "id": "The service \"{ServiceId}\" is invalid: {Err}",
+            "message": "The service \"{ServiceId}\" is invalid: {Err}",
+            "translation": "Le service \"{ServiceId}\" est invalide : {Err}",
+            "placeholders": [
+                {
+                    "id": "ServiceId",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "serviceId"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ]
+        },
+        {
+            "id": "The file could not be parsed from YAML: {Error}",
+            "message": "The file could not be parsed from YAML: {Error}",
+            "translation": "Le fichier YAML n'a pas pu être lu : {Error}",
+            "placeholders": [
+                {
+                    "id": "Error",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "err.Error()"
+                }
+            ]
+        },
+        {
+            "id": "The configuration is invalid: {Err}",
+            "message": "The configuration is invalid: {Err}",
+            "translation": "La configuration n'est pas valide : {Err}",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ]
+        },
+        {
+            "id": "The contents of the file \"{ConfigPath}\" could not be read: {Err}",
+            "message": "The contents of the file \"{ConfigPath}\" could not be read: {Err}",
+            "translation": "Le contenu du fichier \"{ConfigPath}\" n'a pas pu être lu : {Err}",
+            "placeholders": [
+                {
+                    "id": "ConfigPath",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "configPath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ]
+        },
+        {
+            "id": "💥 The command failed:",
+            "message": "💥 The command failed:",
+            "translation": "💥 La commande a échoué :"
         }
     ]
 }

@@ -59,6 +59,559 @@
             "translation": "Start the service management interface",
             "translatorComment": "Copied from source.",
             "fuzzy": true
+        },
+        {
+            "id": "An error occured calculating an absolute path: {Err}",
+            "message": "An error occured calculating an absolute path: {Err}",
+            "translation": "An error occured calculating an absolute path: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "An error occured when checking the path \"{Ret}\":\n{Err}",
+            "message": "An error occured when checking the path \"{Ret}\":\n{Err}",
+            "translation": "An error occured when checking the path \"{Ret}\":\n{Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Ret",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ret"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The path \"{Ret}\" is a directory",
+            "message": "The path \"{Ret}\" is a directory",
+            "translation": "The path \"{Ret}\" is a directory",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Ret",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ret"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to read the current working directory: {Err}",
+            "message": "Failed to read the current working directory: {Err}",
+            "translation": "Failed to read the current working directory: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "No configuration file could be found",
+            "message": "No configuration file could be found",
+            "translation": "No configuration file could be found",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The task #{CmdIdx} has no command declared",
+            "message": "The task #{CmdIdx} has no command declared",
+            "translation": "The task #{CmdIdx} has no command declared",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "CmdIdx",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "cmdIdx"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "No step is declared in the job \"{Name}\"",
+            "message": "No step is declared in the job \"{Name}\"",
+            "translation": "No step is declared in the job \"{Name}\"",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "job.Name"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The step #{StepIdx} in the job \"{Name}\" has no name declared",
+            "message": "The step #{StepIdx} in the job \"{Name}\" has no name declared",
+            "translation": "The step #{StepIdx} in the job \"{Name}\" has no name declared",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "StepIdx",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "stepIdx"
+                },
+                {
+                    "id": "Name",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "job.Name"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "There are multiple steps named \"{Name}\" in the job \"{Name_1}\"",
+            "message": "There are multiple steps named \"{Name}\" in the job \"{Name_1}\"",
+            "translation": "There are multiple steps named \"{Name}\" in the job \"{Name_1}\"",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "job.Name"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The step \"{Name}\" in the job \"{Name_1}\" has invalid run_before hooks: {Err}",
+            "message": "The step \"{Name}\" in the job \"{Name_1}\" has invalid run_before hooks: {Err}",
+            "translation": "The step \"{Name}\" in the job \"{Name_1}\" has invalid run_before hooks: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "job.Name"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[3]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 3,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The step \"{Name}\" in the job \"{Name_1}\" has invalid run_after hooks: {Err}",
+            "message": "The step \"{Name}\" in the job \"{Name_1}\" has invalid run_after hooks: {Err}",
+            "translation": "The step \"{Name}\" in the job \"{Name_1}\" has invalid run_after hooks: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "job.Name"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[3]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 3,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The step \"{Name}\" in the job \"{Name_1}\" has no task declared",
+            "message": "The step \"{Name}\" in the job \"{Name_1}\" has no task declared",
+            "translation": "The step \"{Name}\" in the job \"{Name_1}\" has no task declared",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "job.Name"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "There are multiple tasks named \"{Name}\" in the step \"{Name_1}\"in the job \"{Name_2}\"",
+            "message": "There are multiple tasks named \"{Name}\" in the step \"{Name_1}\"in the job \"{Name_2}\"",
+            "translation": "There are multiple tasks named \"{Name}\" in the step \"{Name_1}\"in the job \"{Name_2}\"",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "task.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_2",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "job.Name"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The task \"{Name}\" in the step \"{Name_1}\" in the job \"{Name_2}\" is invalid: {Err}",
+            "message": "The task \"{Name}\" in the step \"{Name_1}\" in the job \"{Name_2}\" is invalid: {Err}",
+            "translation": "The task \"{Name}\" in the step \"{Name_1}\" in the job \"{Name_2}\" is invalid: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "task.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_2",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "job.Name"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[4]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 4,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The task #{TaskIdx} in the step \"{Name}\" in the job \"{Name_1}\" is invalid: {Err}",
+            "message": "The task #{TaskIdx} in the step \"{Name}\" in the job \"{Name_1}\" is invalid: {Err}",
+            "translation": "The task #{TaskIdx} in the step \"{Name}\" in the job \"{Name_1}\" is invalid: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "TaskIdx",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "taskIdx"
+                },
+                {
+                    "id": "Name",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "step.Name"
+                },
+                {
+                    "id": "Name_1",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "job.Name"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[4]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 4,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "No name is declared",
+            "message": "No name is declared",
+            "translation": "No name is declared",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The run_before hooks are invalid: {Err}",
+            "message": "The run_before hooks are invalid: {Err}",
+            "translation": "The run_before hooks are invalid: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The run_after hooks are invalid: {Err}",
+            "message": "The run_after hooks are invalid: {Err}",
+            "translation": "The run_after hooks are invalid: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "No command is declared",
+            "message": "No command is declared",
+            "translation": "No command is declared",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The job #{JobIdx} has no name declared",
+            "message": "The job #{JobIdx} has no name declared",
+            "translation": "The job #{JobIdx} has no name declared",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "JobIdx",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "jobIdx"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "There are multiple jobs named \"{Name}\"",
+            "message": "There are multiple jobs named \"{Name}\"",
+            "translation": "There are multiple jobs named \"{Name}\"",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "job.Name"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The key of a service is not defined",
+            "message": "The key of a service is not defined",
+            "translation": "The key of a service is not defined",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The service \"{ServiceId}\" is invalid: {Err}",
+            "message": "The service \"{ServiceId}\" is invalid: {Err}",
+            "translation": "The service \"{ServiceId}\" is invalid: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ServiceId",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "serviceId"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The file could not be parsed from YAML: {Error}",
+            "message": "The file could not be parsed from YAML: {Error}",
+            "translation": "The file could not be parsed from YAML: {Error}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Error",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "err.Error()"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The configuration is invalid: {Err}",
+            "message": "The configuration is invalid: {Err}",
+            "translation": "The configuration is invalid: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The contents of the file \"{ConfigPath}\" could not be read: {Err}",
+            "message": "The contents of the file \"{ConfigPath}\" could not be read: {Err}",
+            "translation": "The contents of the file \"{ConfigPath}\" could not be read: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ConfigPath",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "configPath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]s",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "💥 The command failed:",
+            "message": "💥 The command failed:",
+            "translation": "💥 The command failed:",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
         }
     ]
 }

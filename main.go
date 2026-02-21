@@ -1,11 +1,14 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 
 	"github.com/corentindeboisset/bolt/pkg/cfg"
+	"github.com/corentindeboisset/bolt/pkg/iface"
 	"github.com/corentindeboisset/bolt/pkg/jobexec"
 	"github.com/corentindeboisset/bolt/pkg/servicemgmt"
 )
@@ -66,7 +69,15 @@ func init() {
 		Use:   "services",
 		Short: i18n.Sprintf("Start the service management interface"),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return servicemgmt.StartServiceManagement(confPath)
+			err := servicemgmt.StartServiceManagement(confPath)
+			if formattableErr, ok := errors.AsType[iface.FormattableError](err); ok {
+				iface.PrintError(formattableErr)
+				fmt.Printf("\n")
+				os.Exit(1)
+				return nil
+			}
+
+			return err
 		},
 	}
 	serviceCmd.Flags().StringVarP(&confPath, "config", "c", "", i18n.Sprintf("Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file"))

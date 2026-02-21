@@ -56,20 +56,20 @@ func TestConfigErrors(t *testing.T) {
 
 	invalidYaml := `this is some plaintext`
 	_, err := parseConfig([]byte(invalidYaml))
-	assert.ErrorContains(t, err, "the file could not be parsed from YAML")
+	assert.ErrorContains(t, err, "The file could not be parsed from YAML")
 
 	emptyConfig := `
 jobs: []
 `
 	_, err = parseConfig([]byte(emptyConfig))
-	assert.ErrorContains(t, err, "no job is declared")
+	assert.ErrorContains(t, err, "No job and no service is declared in the configuration")
 
 	noJobName := `
 jobs:
   - steps: []
 `
 	_, err = parseConfig([]byte(noJobName))
-	assert.ErrorContains(t, err, "the job #0 has no name declared")
+	assert.ErrorContains(t, err, "The job #0 has no name declared")
 
 	emptyJobConfig := `
 jobs:
@@ -77,7 +77,7 @@ jobs:
     steps: []
 `
 	_, err = parseConfig([]byte(emptyJobConfig))
-	assert.ErrorContains(t, err, "no step is declared in the job \"My first job\"")
+	assert.ErrorContains(t, err, "No step is declared in the job \"My first job\"")
 
 	noStepName := `
 jobs:
@@ -88,7 +88,7 @@ jobs:
               cmd: echo 1
 `
 	_, err = parseConfig([]byte(noStepName))
-	assert.ErrorContains(t, err, "the step #0 in the job \"My first job\" has no name declared")
+	assert.ErrorContains(t, err, "The step #0 in the job \"My first job\" has no name declared")
 
 	duplicateStepNameConfig := `
 jobs:
@@ -105,7 +105,7 @@ jobs:
               cmd: echo 1
 `
 	_, err = parseConfig([]byte(duplicateStepNameConfig))
-	assert.ErrorContains(t, err, "there are multiple steps named \"first_step\" in the job \"My first job\"")
+	assert.ErrorContains(t, err, "There are multiple steps named \"first_step\" in the job \"My first job\"")
 
 	duplicateTasksNames := `
 jobs:
@@ -120,5 +120,5 @@ jobs:
               cmd: echo 2
 `
 	_, err = parseConfig([]byte(duplicateTasksNames))
-	assert.ErrorContains(t, err, "there are multiple tasks named \"first_task\" in the step \"first_step\"")
+	assert.ErrorContains(t, err, "There are multiple tasks named \"first_task\" in the step \"first_step\"")
 }

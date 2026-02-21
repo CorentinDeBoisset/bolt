@@ -39,38 +39,126 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
+	"An error occured calculating an absolute path: %s":   7,
+	"An error occured when checking the path \"%s\":\n%s": 8,
+	"Failed to read the current working directory: %s":    10,
+	"No command is declared":                              25,
+	"No configuration file could be found":                11,
+	"No name is declared":                                 22,
+	"No step is declared in the job \"%s\"":               13,
 	"Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file": 5,
 	"Print version and exit": 2,
 	"Run a job":              4,
-	"Script management that rides the lighting.": 1,
-	"Start the service management interface":     6,
-	"bolt version %s\n":                          3,
-	"unknown (built from source)":                0,
+	"Script management that rides the lighting.":                                1,
+	"Start the service management interface":                                    6,
+	"The configuration is invalid: %s":                                          31,
+	"The contents of the file \"%s\" could not be read: %s":                     32,
+	"The file could not be parsed from YAML: %s":                                30,
+	"The job #%d has no name declared":                                          26,
+	"The key of a service is not defined":                                       28,
+	"The path \"%s\" is a directory":                                            9,
+	"The run_after hooks are invalid: %s":                                       24,
+	"The run_before hooks are invalid: %s":                                      23,
+	"The service \"%s\" is invalid: %s":                                         29,
+	"The step \"%s\" in the job \"%s\" has invalid run_after hooks: %s":         17,
+	"The step \"%s\" in the job \"%s\" has invalid run_before hooks: %s":        16,
+	"The step \"%s\" in the job \"%s\" has no task declared":                    18,
+	"The step #%d in the job \"%s\" has no name declared":                       14,
+	"The task \"%s\" in the step \"%s\" in the job \"%s\" is invalid: %s":       20,
+	"The task #%d has no command declared":                                      12,
+	"The task #%d in the step \"%s\" in the job \"%s\" is invalid: %s":          21,
+	"There are multiple jobs named \"%s\"":                                      27,
+	"There are multiple steps named \"%s\" in the job \"%s\"":                   15,
+	"There are multiple tasks named \"%s\" in the step \"%s\"in the job \"%s\"": 19,
+	"bolt version %s\n":                                                         3,
+	"unknown (built from source)":                                               0,
+	"💥 The command failed:":                                                     33,
 }
 
-var enIndex = []uint32{ // 8 elements
+var enIndex = []uint32{ // 35 elements
+	// Entry 0 - 1F
 	0x00000000, 0x0000001c, 0x00000047, 0x0000005e,
 	0x00000076, 0x00000080, 0x000000f6, 0x0000011d,
-} // Size: 56 bytes
+	0x00000152, 0x00000189, 0x000001a9, 0x000001dd,
+	0x00000202, 0x0000022a, 0x00000251, 0x00000289,
+	0x000002c3, 0x0000030b, 0x00000352, 0x0000038b,
+	0x000003d8, 0x00000422, 0x0000046b, 0x0000047f,
+	0x000004a7, 0x000004ce, 0x000004e5, 0x00000509,
+	0x0000052f, 0x00000553, 0x00000579, 0x000005a7,
+	// Entry 20 - 3F
+	0x000005cb, 0x00000605, 0x0000061e,
+} // Size: 164 bytes
 
-const enData string = "" + // Size: 285 bytes
+const enData string = "" + // Size: 1566 bytes
 	"\x02unknown (built from source)\x02Script management that rides the ligh" +
 	"ting.\x02Print version and exit\x04\x00\x01\x0a\x13\x02bolt version %[1]" +
 	"s\x02Run a job\x02Path to a configuration file. If left empty, it will r" +
 	"ecursively search in the parent directories for a bolt.yml file\x02Start" +
-	" the service management interface"
+	" the service management interface\x02An error occured calculating an abs" +
+	"olute path: %[1]s\x02An error occured when checking the path \x22%[1]s" +
+	"\x22:\x0a%[2]s\x02The path \x22%[1]s\x22 is a directory\x02Failed to rea" +
+	"d the current working directory: %[1]s\x02No configuration file could be" +
+	" found\x02The task #%[1]d has no command declared\x02No step is declared" +
+	" in the job \x22%[1]s\x22\x02The step #%[1]d in the job \x22%[2]s\x22 ha" +
+	"s no name declared\x02There are multiple steps named \x22%[1]s\x22 in th" +
+	"e job \x22%[2]s\x22\x02The step \x22%[1]s\x22 in the job \x22%[2]s\x22 h" +
+	"as invalid run_before hooks: %[3]s\x02The step \x22%[1]s\x22 in the job " +
+	"\x22%[2]s\x22 has invalid run_after hooks: %[3]s\x02The step \x22%[1]s" +
+	"\x22 in the job \x22%[2]s\x22 has no task declared\x02There are multiple" +
+	" tasks named \x22%[1]s\x22 in the step \x22%[2]s\x22in the job \x22%[3]s" +
+	"\x22\x02The task \x22%[1]s\x22 in the step \x22%[2]s\x22 in the job \x22" +
+	"%[3]s\x22 is invalid: %[4]s\x02The task #%[1]d in the step \x22%[2]s\x22" +
+	" in the job \x22%[3]s\x22 is invalid: %[4]s\x02No name is declared\x02Th" +
+	"e run_before hooks are invalid: %[1]s\x02The run_after hooks are invalid" +
+	": %[1]s\x02No command is declared\x02The job #%[1]d has no name declared" +
+	"\x02There are multiple jobs named \x22%[1]s\x22\x02The key of a service " +
+	"is not defined\x02The service \x22%[1]s\x22 is invalid: %[2]s\x02The fil" +
+	"e could not be parsed from YAML: %[1]s\x02The configuration is invalid: " +
+	"%[1]s\x02The contents of the file \x22%[1]s\x22 could not be read: %[2]s" +
+	"\x02💥 The command failed:"
 
-var frIndex = []uint32{ // 8 elements
+var frIndex = []uint32{ // 35 elements
+	// Entry 0 - 1F
 	0x00000000, 0x0000002a, 0x00000058, 0x00000077,
 	0x0000008f, 0x000000b2, 0x0000014c, 0x00000176,
-} // Size: 56 bytes
+	0x000001be, 0x0000020d, 0x00000236, 0x00000272,
+	0x000002a6, 0x000002cb, 0x000002fa, 0x00000327,
+	0x0000035e, 0x000003a8, 0x000003ec, 0x00000425,
+	0x0000046e, 0x000004b9, 0x00000503, 0x0000051d,
+	0x00000545, 0x0000056c, 0x0000058d, 0x000005aa,
+	0x000005cc, 0x000005e7, 0x0000060f, 0x0000063b,
+	// Entry 20 - 3F
+	0x00000665, 0x0000069f, 0x000006bd,
+} // Size: 164 bytes
 
-const frData string = "" + // Size: 374 bytes
+const frData string = "" + // Size: 1725 bytes
 	"\x02inconnue (compilation depuis les sources)\x02Lancez vos tâches plus " +
 	"vite que la lumière.\x02Afficher la version et quitter\x04\x00\x01\x0a" +
 	"\x13\x02bolt version %[1]s\x02Exécuter une séquence de tâches\x02Chemin " +
 	"vers un fichier de configuration. Si aucune valeur n'est saisie, une rec" +
 	"herche dans les dossiers parents pour un fichier bolt.yml sera exécutée." +
-	"\x02Lancer l'interface de gestion de services"
+	"\x02Lancer l'interface de gestion de services\x02Une erreur est survenue" +
+	" à la récupération d'un chemin absolu : %[1]s\x02Une erreur est survenue" +
+	" en listant les propriétés du fichier \x22%[1]s\x22 :\x0a%[2]s\x02Le che" +
+	"min \x22%[1]s\x22 pointe vers un dossier\x02Impossible de lire le répert" +
+	"oire de travail actuel : %[1]s\x02Aucun fichier de configuration n'a pu " +
+	"être trouvé\x02La tâche #%[1]d n'a pas de commande\x02Aucun step n'est " +
+	"déclaré dans le job \x22%[1]s\x22\x02Le step #%[1]d du job \x22%[2]s\x22" +
+	" n'a pas de nom\x02Plusieurs steps ont le nom \x22%[1]s\x22 dans le job " +
+	"\x22%[2]s\x22\x02Le step \x22%[1]s\x22 dans le job \x22%[2]s\x22 a un ho" +
+	"ok run_before invalide : %[3]s\x02Le step \x22%[1]s\x22 du job \x22%[2]s" +
+	"\x22 a un hook run_after invalide : %[3]s\x02Le step \x22%[1]s\x22 du jo" +
+	"b \x22%[2]s\x22 ne contient aucune tâche\x02Plusieurs tâches ont le nom " +
+	"\x22%[1]s\x22 dans le step \x22%[2]s\x22 du job \x22%[3]s\x22\x02La tâch" +
+	"e \x22%[1]s\x22 dans le step \x22%[2]s\x22 du job \x22%[3]s\x22 est inva" +
+	"lide : %[4]s\x02La tâche #%[1]d dans le step \x22%[2]s\x22 du job \x22%[" +
+	"3]s\x22 est invalide : %[4]s\x02Aucun nom n'est déclaré\x02Le hook run_b" +
+	"efore est invalide : %[1]s\x02Le hook run_after est invalide : %[1]s\x02" +
+	"Aucune commande n'est déclarée\x02Le job #%[1]d n'a pas de nom\x02Plusie" +
+	"urs jobs ont le nom \x22%[1]s\x22\x02Un service n'a pas de clé\x02Le ser" +
+	"vice \x22%[1]s\x22 est invalide : %[2]s\x02Le fichier YAML n'a pas pu êt" +
+	"re lu : %[1]s\x02La configuration n'est pas valide : %[1]s\x02Le contenu" +
+	" du fichier \x22%[1]s\x22 n'a pas pu être lu : %[2]s\x02💥 La commande a " +
+	"échoué :"
 
-	// Total table size 771 bytes (0KiB); checksum: 72B79A60
+	// Total table size 3619 bytes (3KiB); checksum: 19A95BD4

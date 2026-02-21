@@ -92,3 +92,5 @@ var HighlightSurfaceStyle = lipgloss.NewStyle().
 var SeparatorColor = lipgloss.AdaptiveColor{Light: refVerdigris4, Dark: refVerdigris2}
 
 var SpinnerColor = lipgloss.AdaptiveColor{Light: refVerdigris4, Dark: refBurntPeach5}
+
+var ErrorColor = lipgloss.AdaptiveColor{Light: refBurntPeach5, Dark: refBurntPeach4}

@@ -2,7 +2,6 @@ package cfg
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -64,16 +63,16 @@ func findConfig(givenPath string) (ret string, err error) {
 		} else {
 			ret, err = filepath.Abs(givenPath)
 			if err != nil {
-				return "", fmt.Errorf("an error occured calculating an absolute path: %w", err)
+				return "", newConfigError("An error occured calculating an absolute path: %s", err)
 			}
 		}
 
 		stat, err := os.Stat(ret)
 		if err != nil {
-			return "", fmt.Errorf("an error occured when checking the path \"%s\": %w", ret, err)
+			return "", newConfigError("An error occured when checking the path \"%s\":\n%s", ret, err)
 		}
 		if stat.IsDir() {
-			return "", fmt.Errorf("the path \"%s\" is a directory", ret)
+			return "", newConfigError("The path \"%s\" is a directory", ret)
 		}
 
 		return ret, nil
@@ -81,7 +80,7 @@ func findConfig(givenPath string) (ret string, err error) {
 
 	curDir, err := os.Getwd()
 	if err != nil {
-		return "", fmt.Errorf("failed to get the current working directory: %w", err)
+		return "", newConfigError("Failed to read the current working directory: %s", err)
 	}
 	for {
 		stat, err := os.Stat(filepath.Join(curDir, "bolt.yml"))
@@ -98,13 +97,13 @@ func findConfig(givenPath string) (ret string, err error) {
 		curDir = filepath.Dir(curDir)
 	}
 
-	return "", errors.New("no configuration file could be found")
+	return "", newConfigError("No configuration file could be found")
 }
 
 func validateCommands(configs []CmdConfig) error {
 	for cmdIdx, cmd := range configs {
 		if len(cmd.Cmd) == 0 {
-			return fmt.Errorf("the task #%d has no command declared", cmdIdx)
+			return newConfigError("The task #%d has no command declared", cmdIdx)
 		}
 	}
 
@@ -113,45 +112,45 @@ func validateCommands(configs []CmdConfig) error {
 
 func validateJobConfig(job *JobConfig) error {
 	if len(job.Steps) == 0 {
-		return fmt.Errorf("no step is declared in the job \"%s\"", job.Name)
+		return newConfigError("No step is declared in the job \"%s\"", job.Name)
 	}
 
 	stepNames := make(map[string]bool)
 	for stepIdx, step := range job.Steps {
 		if len(step.Name) == 0 {
-			return fmt.Errorf("the step #%d in the job \"%s\" has no name declared", stepIdx, job.Name)
+			return newConfigError("The step #%d in the job \"%s\" has no name declared", stepIdx, job.Name)
 		}
 
 		// Check all the step names are unique
 		if _, ok := stepNames[step.Name]; ok {
-			return fmt.Errorf("there are multiple steps named \"%s\" in the job \"%s\"", step.Name, job.Name)
+			return newConfigError("There are multiple steps named \"%s\" in the job \"%s\"", step.Name, job.Name)
 		}
 		stepNames[step.Name] = true
 
 		// Check the hooks
 		if err := validateCommands(step.RunBefore); err != nil {
-			return fmt.Errorf("the step \"%s\" in the job \"%s\" has invalid run_before hooks: %w", step.Name, job.Name, err)
+			return newConfigError("The step \"%s\" in the job \"%s\" has invalid run_before hooks: %s", step.Name, job.Name, err)
 		}
 		if err := validateCommands(step.RunAfter); err != nil {
-			return fmt.Errorf("the step \"%s\" in the job \"%s\" has invalid run_after hooks: %w", step.Name, job.Name, err)
+			return newConfigError("The step \"%s\" in the job \"%s\" has invalid run_after hooks: %s", step.Name, job.Name, err)
 		}
 
 		// Check all the tasks. Check that within a step, the names are unique
 		taskNames := make(map[string]bool)
 		if len(step.Tasks) == 0 {
-			return fmt.Errorf("the step \"%s\" in the job \"%s\" has no task declared", step.Name, job.Name)
+			return newConfigError("The step \"%s\" in the job \"%s\" has no task declared", step.Name, job.Name)
 		}
 		for taskIdx, task := range step.Tasks {
 			if _, ok := taskNames[task.Name]; ok {
-				return fmt.Errorf("there are multiple tasks named \"%s\" in the step \"%s\"in the job \"%s\"", task.Name, step.Name, job.Name)
+				return newConfigError("There are multiple tasks named \"%s\" in the step \"%s\"in the job \"%s\"", task.Name, step.Name, job.Name)
 			}
 			taskNames[task.Name] = true
 
 			if err := validateTaskConfig(task); err != nil {
 				if len(task.Name) > 0 {
-					return fmt.Errorf("the task \"%s\" in the step \"%s\" in the job \"%s\" is invalid: %w", task.Name, step.Name, job.Name, err)
+					return newConfigError("The task \"%s\" in the step \"%s\" in the job \"%s\" is invalid: %s", task.Name, step.Name, job.Name, err)
 				}
-				return fmt.Errorf("the task #%d in the step \"%s\" in the job \"%s\" is invalid: %w", taskIdx, step.Name, job.Name, err)
+				return newConfigError("The task #%d in the step \"%s\" in the job \"%s\" is invalid: %s", taskIdx, step.Name, job.Name, err)
 			}
 		}
 	}
@@ -161,17 +160,17 @@ func validateJobConfig(job *JobConfig) error {
 
 func validateTaskConfig(task TaskConfig) error {
 	if len(task.Name) == 0 {
-		return fmt.Errorf("no name is declared")
+		return newConfigError("No name is declared")
 	}
 
 	if err := validateCommands(task.RunBefore); err != nil {
-		return fmt.Errorf("the run_before hooks are invalid: %w", err)
+		return newConfigError("The run_before hooks are invalid: %s", err)
 	}
 	if err := validateCommands(task.RunAfter); err != nil {
-		return fmt.Errorf("the run_after hooks are invalid: %w", err)
+		return newConfigError("The run_after hooks are invalid: %s", err)
 	}
 	if len(task.Cmd) == 0 {
-		return fmt.Errorf("no command is declared")
+		return newConfigError("No command is declared")
 	}
 
 	return nil
@@ -179,18 +178,18 @@ func validateTaskConfig(task TaskConfig) error {
 
 func validateConfig(cfg *ConfigFile) error {
 	if len(cfg.Jobs) == 0 && len(cfg.Services) == 0 {
-		return errors.New("no job and no service is declared in the configuration")
+		return errors.New("No job and no service is declared in the configuration")
 	}
 
 	jobNames := make(map[string]bool)
 	for jobIdx, job := range cfg.Jobs {
 		if len(job.Name) == 0 {
-			return fmt.Errorf("the job #%d has no name declared", jobIdx)
+			return newConfigError("The job #%d has no name declared", jobIdx)
 		}
 
 		// Check all the job names are unique
 		if _, exists := jobNames[job.Name]; exists {
-			return fmt.Errorf("there are multiple jobs named \"%s\"", job.Name)
+			return newConfigError("There are multiple jobs named \"%s\"", job.Name)
 		}
 		jobNames[job.Name] = true
 
@@ -201,11 +200,11 @@ func validateConfig(cfg *ConfigFile) error {
 
 	for serviceId, service := range cfg.Services {
 		if len(serviceId) == 0 {
-			return fmt.Errorf("the key of a service is not defined")
+			return newConfigError("The key of a service is not defined")
 		}
 
 		if err := validateTaskConfig(service.TaskConfig); err != nil {
-			return fmt.Errorf("the service \"%s\" is invalid: %w", serviceId, err)
+			return newConfigError("The service \"%s\" is invalid: %s", serviceId, err)
 		}
 	}
 
@@ -216,11 +215,11 @@ func validateConfig(cfg *ConfigFile) error {
 func parseConfig(fileContent []byte) (*ConfigFile, error) {
 	output := ConfigFile{}
 	if err := yaml.Unmarshal(fileContent, &output); err != nil {
-		return nil, fmt.Errorf("the file could not be parsed from YAML: %w", err)
+		return nil, newConfigError("The file could not be parsed from YAML: %s", err.Error())
 	}
 
 	if err := validateConfig(&output); err != nil {
-		return nil, fmt.Errorf("the configuration is invalid: %w", err)
+		return nil, newConfigError("The configuration is invalid: %s", err)
 	}
 
 	return &output, nil
@@ -234,7 +233,7 @@ func FindAndParseConfig(givenPath string) (*ConfigFile, error) {
 
 	fileContent, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("the contents of the file \"%s\" could not be read: %w", configPath, err)
+		return nil, newConfigError("The contents of the file \"%s\" could not be read: %s", configPath, err)
 	}
 
 	config, err := parseConfig(fileContent)

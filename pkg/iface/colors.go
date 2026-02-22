@@ -17,23 +17,13 @@ type Theme struct {
 
 var ErrorColor = lipgloss.Color("1")
 
-var focusedOutputBorderColor = lipgloss.AdaptiveColor{
-	Dark:  "#f08128",
-	Light: "#f4a261",
-}
-
-var blurreddOutputBorderColor = lipgloss.Color("#808080")
-
 var (
-	FocusedOutputStyle = lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(focusedOutputBorderColor).
-				Padding(0, 2)
+	FocusedOutputBorderColor = lipgloss.AdaptiveColor{
+		Dark:  "#f08128",
+		Light: "#f4a261",
+	}
 
-	BlurredOutputStyle = lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(blurreddOutputBorderColor).
-				Padding(0, 2)
+	BlurredOutputBorderColor = lipgloss.Color("#808080")
 )
 
 func LoadTheme() Theme {

@@ -5,11 +5,11 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/corentindeboisset/bolt/pkg/iface"
 	"github.com/corentindeboisset/bolt/pkg/listviewport"
+	"github.com/corentindeboisset/bolt/pkg/outputviewer"
 )
 
 type refreshStatusMsg time.Time
@@ -40,7 +40,7 @@ type ifaceModel struct {
 
 	focusOutput bool
 	focusedTask int
-	outputPanel viewport.Model
+	outputPanel outputviewer.Model
 
 	serviceBricks    []*ServiceBrickModel
 	serviceListPanel listviewport.Model
@@ -106,10 +106,8 @@ func newModel(orchestrator *Orchestrator, theme iface.Theme) ifaceModel {
 		orchestrator:          orchestrator,
 		serviceListPanelWidth: BRICK_MIN_WIDTH,
 		serviceListPanel:      listviewport.New(30, 10, lipgloss.NewStyle().Padding(1, 2)),
-		outputPanel:           viewport.New(30, 10),
+		outputPanel:           outputviewer.New(30, 10, lipgloss.Color("1"), nil),
 	}
-
-	m.outputPanel.Style = iface.BlurredOutputStyle
 
 	m.initializeServiceList()
 
@@ -135,8 +133,7 @@ func (m *ifaceModel) refreshLayoutSizes() {
 	}
 
 	m.serviceListPanel.Resize(m.serviceListPanelWidth, panelsHeight)
-	m.outputPanel.Height = panelsHeight
-	m.outputPanel.Width = m.width - m.serviceListPanelWidth
+	m.outputPanel.Resize(m.width-m.serviceListPanelWidth, panelsHeight)
 }
 
 func (m *ifaceModel) initializeServiceList() {
@@ -169,6 +166,7 @@ func (m ifaceModel) Init() tea.Cmd {
 func (m *ifaceModel) updateFocusedTask(newTaskId int) {
 	m.serviceBricks[m.focusedTask].SetFocusLevel(0)
 	m.focusedTask = max(min(newTaskId, len(m.serviceBricks)-1), 0)
+	m.outputPanel.SetBuffer(&(m.serviceBricks[m.focusedTask].service.Output), true)
 	m.serviceBricks[m.focusedTask].SetFocusLevel(1)
 }
 
@@ -223,7 +221,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "home":
 			if m.focusOutput {
-				m.outputPanel.GotoTop()
+				m.outputPanel.GoToTop()
 			} else {
 				m.updateFocusedTask(0)
 				m.serviceListPanel.GoToTop()
@@ -231,7 +229,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "end":
 			if m.focusOutput {
-				m.outputPanel.GotoBottom()
+				m.outputPanel.GoToBottom()
 			} else {
 				m.updateFocusedTask(len(m.serviceBricks) - 1)
 				m.serviceListPanel.GoToBottom()
@@ -242,9 +240,9 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.focusOutput = !m.focusOutput
 				// TODO: m.updateKeyBindings()
 				if m.focusOutput {
-					m.outputPanel.Style = iface.FocusedOutputStyle
+					m.outputPanel.SetBorderColor(iface.FocusedOutputBorderColor)
 				} else {
-					m.outputPanel.Style = iface.BlurredOutputStyle
+					m.outputPanel.SetBorderColor(iface.BlurredOutputBorderColor)
 				}
 			}
 
@@ -258,8 +256,8 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				go m.orchestrator.RestartService(
 					m.serviceBricks[m.focusedTask].id,
 					true,
-					m.outputPanel.Width-m.outputPanel.Style.GetHorizontalFrameSize(),
-					m.outputPanel.Height-m.outputPanel.Style.GetVerticalFrameSize(),
+					m.outputPanel.InnerFrameWidth(),
+					m.outputPanel.InnerFrameHeight(),
 				)
 			}
 
@@ -273,8 +271,8 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				go m.orchestrator.RestartService(
 					m.serviceBricks[m.focusedTask].id,
 					false,
-					m.outputPanel.Width-m.outputPanel.Style.GetHorizontalFrameSize(),
-					m.outputPanel.Height-m.outputPanel.Style.GetVerticalFrameSize(),
+					m.outputPanel.InnerFrameWidth(),
+					m.outputPanel.InnerFrameHeight(),
 				)
 			}
 
@@ -283,8 +281,8 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				go func() {
 					m.orchestrator.StartService(
 						m.serviceBricks[m.focusedTask].id,
-						m.outputPanel.Width-m.outputPanel.Style.GetHorizontalFrameSize(),
-						m.outputPanel.Height-m.outputPanel.Style.GetVerticalFrameSize(),
+						m.outputPanel.InnerFrameWidth(),
+						m.outputPanel.InnerFrameHeight(),
 					)
 					m.orchestrator.OpenService(m.serviceBricks[m.focusedTask].id)
 				}()
@@ -306,11 +304,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case refreshStatusMsg:
 		if !m.hideOutputPanel {
-			isAtBottom := m.outputPanel.AtBottom()
-			m.outputPanel.SetContent(m.serviceBricks[m.focusedTask].service.Output.String())
-			if isAtBottom {
-				m.outputPanel.GotoBottom()
-			}
+			m.outputPanel.RefreshContent()
 		}
 		return m, tickReadOutputsMsg()
 

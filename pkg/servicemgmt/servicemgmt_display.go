@@ -301,6 +301,9 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.refreshLayoutSizes()
 
+		// Clear the screen to avoid artifacts
+		return m, tea.ClearScreen
+
 	case refreshStatusMsg:
 		if !m.hideOutputPanel {
 			isAtBottom := m.outputPanel.AtBottom()

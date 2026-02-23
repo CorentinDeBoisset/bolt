@@ -8,6 +8,28 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var StackedVerticalBorderFirst = lipgloss.Border{
+	Top:         "─",
+	Bottom:      "─",
+	Left:        "│",
+	Right:       "│",
+	TopLeft:     "╭",
+	TopRight:    "╮",
+	BottomLeft:  "├",
+	BottomRight: "┤",
+}
+
+var StackedVerticalBorderLast = lipgloss.Border{
+	Top:         "─",
+	Bottom:      "─",
+	Left:        "│",
+	Right:       "│",
+	TopLeft:     "├",
+	TopRight:    "┤",
+	BottomLeft:  "╰",
+	BottomRight: "╯",
+}
+
 type Model struct {
 	width  int
 	height int

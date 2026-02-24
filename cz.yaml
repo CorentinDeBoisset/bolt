@@ -38,6 +38,10 @@ commitizen:
             name: "jobexec: Single-job execution domain"
           - value: "servicemgmt"
             name: "servicemgmt: Service management domain"
+          - value: "outputviewer"
+            name: "outputviewer: Component to display some process output"
+          - value: "listviewport"
+            name: "listviewport: Component to display a list of highlightable items"
           - value: "cli"
             name: "cli: Command-line interface of the tool"
         - type: input

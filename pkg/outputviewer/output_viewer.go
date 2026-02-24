@@ -100,6 +100,7 @@ func (m *Model) SetBuffer(b *cmdrunr.SafeBuffer, goToBottom bool) {
 	m.buffer = b
 
 	m.clearSearch()
+	m.RefreshContent()
 
 	if goToBottom {
 		m.GoToBottom()
@@ -212,19 +213,15 @@ func (m *Model) ScrollUp(n int) {
 }
 
 func (m *Model) GoToBottom() {
-	if m.AtBottom() {
-		return
+	if m.offset != m.maxOffset() {
+		m.SetOffset(m.maxOffset())
 	}
-
-	m.SetOffset(m.maxOffset())
 }
 
 func (m *Model) GoToTop() {
-	if m.AtTop() {
-		return
+	if m.offset != 0 {
+		m.SetOffset(0)
 	}
-
-	m.SetOffset(0)
 }
 
 func (m *Model) ContentHeight() int {

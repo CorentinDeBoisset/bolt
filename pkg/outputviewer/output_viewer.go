@@ -6,7 +6,6 @@ import (
 	"math"
 	"regexp"
 	"strings"
-	"unicode/utf8"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -48,10 +47,10 @@ type Model struct {
 	displayedContent []string
 	offset           int
 
+	searchBar         *SearchBarModel
+	searchRegexp      *regexp.Regexp
 	showSearch        bool
 	searchHasFocus    bool
-	currentSearch     []byte
-	searchRegexp      *regexp.Regexp
 	searchResultLines []int
 	highlightedMatch  int
 }
@@ -71,9 +70,8 @@ func New(width, height int, theme iface.Theme, borderColor lipgloss.TerminalColo
 		displayedContent: nil,
 		offset:           0,
 
+		searchBar:         &SearchBarModel{},
 		showSearch:        false,
-		currentSearch:     nil,
-		searchRegexp:      nil,
 		searchResultLines: nil,
 		highlightedMatch:  -1,
 	}
@@ -265,22 +263,8 @@ func (m *Model) setSearchVisibility(visible bool) {
 	}
 }
 
-func (m *Model) updateSearchRegexp() {
-	if len(m.currentSearch) == 0 {
-		return
-	}
-
-	reg, err := regexp.Compile(string(m.currentSearch))
-	if err != nil {
-		m.searchRegexp = nil
-		return
-	}
-
-	m.searchRegexp = reg
-}
-
 func (m *Model) executeSearch() {
-	m.updateSearchRegexp()
+	m.searchRegexp = m.searchBar.Submit()
 	m.searchHasFocus = false
 
 	// We have to do a double refresh: once to calculate the results,
@@ -338,7 +322,7 @@ func (m *Model) clearSearchResults() {
 }
 
 func (m *Model) clearSearch() {
-	m.currentSearch = nil
+	m.searchBar.Clear()
 	m.clearSearchResults()
 	m.setSearchVisibility(false)
 }
@@ -362,15 +346,11 @@ func (m *Model) View() string {
 
 	resultBlock := ""
 	if m.searchRegexp != nil {
-		resultBlock = fmt.Sprintf(" %d / %d", len(m.searchResultLines)-m.highlightedMatch, len(m.searchResultLines))
+		resultBlock = fmt.Sprintf(" %d / %d", m.highlightedMatch+1, len(m.searchResultLines))
 	}
 
 	// Render the search block
-	searchBlockContent := lipgloss.NewStyle().
-		Width(contentWidth - len(resultBlock)).
-		Height(1).
-		MaxHeight(3).
-		Render(fmt.Sprintf("Search: %s", m.currentSearch))
+	searchBlockContent := m.searchBar.View(contentWidth - len(resultBlock))
 
 	searchBlock := m.frameStyle.Border(StackedVerticalBorderLast, true).Render(searchBlockContent + resultBlock)
 
@@ -379,31 +359,14 @@ func (m *Model) View() string {
 
 func (m *Model) HandleKeyMsg(msg tea.KeyMsg) {
 	if m.showSearch && m.searchHasFocus {
-		// Search input manipulation
 		switch msg.String() {
 		case "enter":
 			m.executeSearch()
-		case "backspace":
-			if len(m.currentSearch) > 0 {
-				_, runeLen := utf8.DecodeLastRune(m.currentSearch)
-				m.currentSearch = m.currentSearch[0 : len(m.currentSearch)-runeLen]
-			}
-		case " ":
-			m.currentSearch = utf8.AppendRune(m.currentSearch, msg.Runes[0])
-		case "home":
-			// TODO: when cursor position is done
-		case "end":
-			// TODO: when cursor position is done
-		case "delete":
-			// TODO: when cursor position is done
 		case "esc":
 			m.clearSearch()
 		default:
-			if msg.Type == tea.KeyRunes {
-				for _, r := range msg.Runes {
-					m.currentSearch = utf8.AppendRune(m.currentSearch, r)
-				}
-			}
+			// pass the input to the searchBar
+			m.searchBar.HandleKeyMsg(msg)
 		}
 	} else {
 		switch msg.String() {
@@ -428,11 +391,11 @@ func (m *Model) HandleKeyMsg(msg tea.KeyMsg) {
 
 		case "enter", "n":
 			if m.showSearch {
-				m.nextSearchResult()
+				m.prevSearchResult()
 			}
 		case "N":
 			if m.showSearch {
-				m.prevSearchResult()
+				m.nextSearchResult()
 			}
 		case "/":
 			if m.showSearch {

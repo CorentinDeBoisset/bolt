@@ -394,7 +394,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			isAtBottom := m.outputPanel.AtBottom()
 			contentWidth := m.outputPanel.Width - m.outputPanel.Style.GetHorizontalFrameSize()
 			m.outputPanel.SetContent(
-				lipgloss.NewStyle().Width(contentWidth).Render(m.taskIds[m.selectedTask].Output.String()),
+				lipgloss.NewStyle().Width(contentWidth).Render(string(m.taskIds[m.selectedTask].Output.Bytes())),
 			)
 			if isAtBottom {
 				m.outputPanel.GotoBottom()

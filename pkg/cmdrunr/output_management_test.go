@@ -78,23 +78,30 @@ func TestDecorateOutput(t *testing.T) {
 	// Force colors
 	lipgloss.SetColorProfile(termenv.TrueColor)
 
-	highlightStyle := lipgloss.NewStyle().Background(lipgloss.Color("1"))
+	noticeableStyle := lipgloss.NewStyle().Background(lipgloss.Color("1"))
+	highlightStyle := lipgloss.NewStyle().Background(lipgloss.Color("2"))
 
 	// Non-matching input
 	input := []byte("super")
 	re := regexp.MustCompile("xyz")
 	expected := "super"
-	assert.Equal(t, string(DecorateCmdOutput(re, input, highlightStyle)), expected)
+	output, matchLines := DecorateCmdOutput(re, input, -1, noticeableStyle, highlightStyle)
+	assert.Equal(t, string(output), expected)
+	assert.Nil(t, matchLines)
 
 	// Simple input
 	input = []byte("Super content")
 	re = regexp.MustCompile("e.")
 	expected = "Sup\x1b[41me\x1b[0m\x1b[41mr\x1b[0m cont\x1b[41me\x1b[0m\x1b[41mn\x1b[0mt"
-	assert.Equal(t, string(DecorateCmdOutput(re, input, highlightStyle)), string(expected))
+	output, matchLines = DecorateCmdOutput(re, input, 2, noticeableStyle, highlightStyle)
+	assert.Equal(t, string(output), expected)
+	assert.Equal(t, matchLines, []int{0, 0})
 
 	// Complex input
-	input = []byte("\x1b[31mHel\x1b[31mlo, bellissimo mundo! 🎉\x1b[0m")
+	input = []byte("\x1b[31mHel\x1b[31mlo,\nbellissimo mundo! 🎉\x1b[0m")
 	re = regexp.MustCompile("ll.")
-	expected = "\x1b[31mHe\x1b[41ml\x1b[0m\x1b[31m\x1b[41ml\x1b[0m\x1b[41mo\x1b[0m, be\x1b[41ml\x1b[0m\x1b[41ml\x1b[0m\x1b[41mi\x1b[0mssimo mundo! 🎉\x1b[0m"
-	assert.Equal(t, string(DecorateCmdOutput(re, input, highlightStyle)), expected)
+	expected = "\x1b[31mHe\x1b[41ml\x1b[0m\x1b[31m\x1b[41ml\x1b[0m\x1b[41mo\x1b[0m,\nbe\x1b[41ml\x1b[0m\x1b[41ml\x1b[0m\x1b[41mi\x1b[0mssimo mundo! 🎉\x1b[0m"
+	output, matchLines = DecorateCmdOutput(re, input, 2, noticeableStyle, highlightStyle)
+	assert.Equal(t, string(output), expected)
+	assert.Equal(t, matchLines, []int{0, 1})
 }

@@ -106,7 +106,7 @@ func newModel(orchestrator *Orchestrator, theme iface.Theme) ifaceModel {
 		orchestrator:          orchestrator,
 		serviceListPanelWidth: BRICK_MIN_WIDTH,
 		serviceListPanel:      listviewport.New(30, 10, lipgloss.NewStyle().Padding(1, 2)),
-		outputPanel:           outputviewer.New(30, 10, lipgloss.Color("1"), nil),
+		outputPanel:           outputviewer.New(30, 10, theme, iface.BlurredOutputBorderColor, nil),
 	}
 
 	m.initializeServiceList()
@@ -173,14 +173,28 @@ func (m *ifaceModel) updateFocusedTask(newTaskId int) {
 func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c":
-			return m, tea.Quit
+		msgStr := msg.String()
 
-		case "up", "k":
+		// Global (independent of the panel with focus)
+		if msgStr == "ctrl+c" {
+			return m, tea.Quit
+		} else if msgStr == "tab" && !m.hideOutputPanel {
+			m.focusOutput = !m.focusOutput
+			// TODO: m.updateKeyBindings()
 			if m.focusOutput {
-				m.outputPanel.ScrollUp(3)
+				m.outputPanel.SetBorderColor(iface.FocusedOutputBorderColor)
 			} else {
+				m.outputPanel.SetBorderColor(iface.BlurredOutputBorderColor)
+			}
+			return m, nil
+		}
+
+		if m.focusOutput {
+			m.outputPanel.HandleKeyMsg(msg)
+
+		} else {
+			switch msg.String() {
+			case "up", "k":
 				if m.focusedTask <= 0 {
 					m.updateFocusedTask(len(m.serviceBricks) - 1)
 					m.serviceListPanel.GoToBottom()
@@ -188,12 +202,8 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.updateFocusedTask(m.focusedTask - 1)
 					m.serviceListPanel.ScrollUp(1)
 				}
-			}
 
-		case "down", "j":
-			if m.focusOutput {
-				m.outputPanel.ScrollDown(3)
-			} else {
+			case "down", "j":
 				if m.focusedTask >= len(m.serviceBricks)-1 {
 					m.updateFocusedTask(0)
 					m.serviceListPanel.GoToTop()
@@ -201,83 +211,46 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.updateFocusedTask(m.focusedTask + 1)
 					m.serviceListPanel.ScrollDown(1)
 				}
-			}
 
-		case "pgup":
-			if m.focusOutput {
-				m.outputPanel.PageUp()
-			} else {
+			case "pgup":
 				itemId := m.serviceListPanel.PageUp()
 				m.focusBrickById(itemId)
-			}
 
-		case "pgdown":
-			if m.focusOutput {
-				m.outputPanel.PageDown()
-			} else {
+			case "pgdown":
 				itemId := m.serviceListPanel.PageDown()
 				m.focusBrickById(itemId)
-			}
 
-		case "home":
-			if m.focusOutput {
-				m.outputPanel.GoToTop()
-			} else {
+			case "home":
 				m.updateFocusedTask(0)
 				m.serviceListPanel.GoToTop()
-			}
 
-		case "end":
-			if m.focusOutput {
-				m.outputPanel.GoToBottom()
-			} else {
+			case "end":
 				m.updateFocusedTask(len(m.serviceBricks) - 1)
 				m.serviceListPanel.GoToBottom()
-			}
 
-		case "tab":
-			if !m.hideOutputPanel {
-				m.focusOutput = !m.focusOutput
-				// TODO: m.updateKeyBindings()
-				if m.focusOutput {
-					m.outputPanel.SetBorderColor(iface.FocusedOutputBorderColor)
-				} else {
-					m.outputPanel.SetBorderColor(iface.BlurredOutputBorderColor)
-				}
-			}
-
-		case "Q":
-			if !m.focusOutput {
+			case "Q":
 				go m.orchestrator.KillService(m.serviceBricks[m.focusedTask].id, true)
-			}
 
-		case "R":
-			if !m.focusOutput {
+			case "R":
 				go m.orchestrator.RestartService(
 					m.serviceBricks[m.focusedTask].id,
 					true,
 					m.outputPanel.InnerFrameWidth(),
 					m.outputPanel.InnerFrameHeight(),
 				)
-			}
 
-		case "q":
-			if !m.focusOutput {
+			case "q":
 				go m.orchestrator.KillService(m.serviceBricks[m.focusedTask].id, false)
-			}
 
-		case "r":
-			if !m.focusOutput {
+			case "r":
 				go m.orchestrator.RestartService(
 					m.serviceBricks[m.focusedTask].id,
 					false,
 					m.outputPanel.InnerFrameWidth(),
 					m.outputPanel.InnerFrameHeight(),
 				)
-			}
 
-		case "enter":
-			if !m.focusOutput {
+			case "enter":
 				go func() {
 					m.orchestrator.StartService(
 						m.serviceBricks[m.focusedTask].id,
@@ -286,11 +259,10 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					)
 					m.orchestrator.OpenService(m.serviceBricks[m.focusedTask].id)
 				}()
-			}
 
-		case "o":
-			if !m.focusOutput {
+			case "o":
 				go m.orchestrator.OpenService(m.serviceBricks[m.focusedTask].id)
+
 			}
 		}
 

@@ -1,6 +1,7 @@
 package cmdrunr
 
 import (
+	"bytes"
 	"regexp"
 
 	"github.com/charmbracelet/lipgloss"
@@ -76,23 +77,34 @@ func findAllInSequence(r *regexp.Regexp, sequences []sequence) [][]int {
 	return originalMatches
 }
 
-func DecorateCmdOutput(r *regexp.Regexp, content []byte, style lipgloss.Style) []byte {
+func DecorateCmdOutput(r *regexp.Regexp, content []byte, highLightIdx int, noticeableStyle, highlightedStyle lipgloss.Style) ([]byte, []int) {
 	sequences := prepareSequence(content)
 	matches := findAllInSequence(r, sequences)
 	if matches == nil {
-		return content
+		return content, nil
 	}
 
 	output := make([]byte, 0)
 	currentOffset := 0
 	currentMatchIdx := 0
+	lineNb := 0
+	matchLines := make([]int, len(matches))
 	for _, sequence := range sequences {
+		if bytes.Equal(sequence.content, []byte("\n")) {
+			lineNb++
+		}
+
 		for currentMatchIdx < len(matches) && currentOffset >= matches[currentMatchIdx][1] {
+			matchLines[currentMatchIdx] = lineNb
 			currentMatchIdx++
 		}
 
 		if currentMatchIdx < len(matches) && currentOffset >= matches[currentMatchIdx][0] && sequence.visible {
-			output = append(output, []byte(style.Render(string(sequence.content)))...)
+			if currentMatchIdx == highLightIdx {
+				output = append(output, []byte(highlightedStyle.Render(string(sequence.content)))...)
+			} else {
+				output = append(output, []byte(noticeableStyle.Render(string(sequence.content)))...)
+			}
 		} else {
 			output = append(output, sequence.content...)
 		}
@@ -100,5 +112,5 @@ func DecorateCmdOutput(r *regexp.Regexp, content []byte, style lipgloss.Style) [
 		currentOffset += sequence.length
 	}
 
-	return output
+	return output, matchLines
 }

@@ -25,10 +25,13 @@ func (s *SafeBuffer) Write(p []byte) (n int, err error) {
 	return s.buf.Write(p)
 }
 
-func (s *SafeBuffer) String() string {
+func (s *SafeBuffer) Bytes() []byte {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
-	return s.buf.String()
+
+	output := make([]byte, s.buf.Len())
+	_ = copy(output, s.buf.Bytes())
+	return output
 }
 
 func getCmdPath(basePath, cmdPath string) string {

@@ -106,7 +106,7 @@ func newModel(orchestrator *Orchestrator, theme iface.Theme) ifaceModel {
 		orchestrator:          orchestrator,
 		serviceListPanelWidth: BRICK_MIN_WIDTH,
 		serviceListPanel:      listviewport.New(30, 10, lipgloss.NewStyle().Padding(1, 2)),
-		outputPanel:           outputviewer.New(30, 10, theme, iface.BlurredOutputBorderColor, nil),
+		outputPanel:           outputviewer.New(30, 10, theme, nil),
 	}
 
 	m.initializeServiceList()
@@ -181,11 +181,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else if msgStr == "tab" && !m.hideOutputPanel {
 			m.focusOutput = !m.focusOutput
 			// TODO: m.updateKeyBindings()
-			if m.focusOutput {
-				m.outputPanel.SetBorderColor(iface.FocusedOutputBorderColor)
-			} else {
-				m.outputPanel.SetBorderColor(iface.BlurredOutputBorderColor)
-			}
+			m.outputPanel.SetFocus(m.focusOutput)
 			return m, nil
 		}
 

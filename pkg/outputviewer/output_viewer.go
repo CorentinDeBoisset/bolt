@@ -55,7 +55,7 @@ type Model struct {
 	highlightedMatch  int
 }
 
-func New(width, height int, theme iface.Theme, borderColor lipgloss.TerminalColor, buffer *cmdrunr.SafeBuffer) (m Model) {
+func New(width, height int, theme iface.Theme, buffer *cmdrunr.SafeBuffer) (m Model) {
 	return Model{
 		width:  width,
 		height: height,
@@ -65,7 +65,7 @@ func New(width, height int, theme iface.Theme, borderColor lipgloss.TerminalColo
 		theme: theme,
 		frameStyle: lipgloss.NewStyle().
 			Padding(0, 2).
-			BorderForeground(borderColor),
+			BorderForeground(theme.BlurredOutputBorderColor),
 		rawOutput:        nil,
 		displayedContent: nil,
 		offset:           0,
@@ -108,8 +108,14 @@ func (m *Model) SetBuffer(b *cmdrunr.SafeBuffer, goToBottom bool) {
 	}
 }
 
-func (m *Model) SetBorderColor(color lipgloss.TerminalColor) {
-	m.frameStyle = m.frameStyle.BorderForeground(color)
+func (m *Model) SetFocus(focused bool) {
+	if focused {
+		m.frameStyle = m.frameStyle.BorderForeground(m.theme.FocusedOutputBorderColor)
+	} else {
+		m.frameStyle = m.frameStyle.BorderForeground(m.theme.BlurredOutputBorderColor)
+	}
+
+	m.searchBar.SetCursorVisibility(focused)
 }
 
 func (m *Model) RefreshContent() {
@@ -256,7 +262,8 @@ func (m *Model) getVisibleLines(offset, height int) []string {
 func (m *Model) setSearchVisibility(visible bool) {
 	wasAtBottom := m.AtBottom()
 	m.showSearch = visible
-	m.searchHasFocus = false
+	m.searchHasFocus = visible
+	m.searchBar.ToggleCursor(visible)
 
 	if wasAtBottom || m.offset > m.maxOffset() {
 		m.GoToBottom()
@@ -266,6 +273,7 @@ func (m *Model) setSearchVisibility(visible bool) {
 func (m *Model) executeSearch() {
 	m.searchRegexp = m.searchBar.Submit()
 	m.searchHasFocus = false
+	m.searchBar.ToggleCursor(false)
 
 	// We have to do a double refresh: once to calculate the results,
 	// then once to put the highlight at the right position
@@ -404,6 +412,7 @@ func (m *Model) HandleKeyMsg(msg tea.KeyMsg) {
 				m.setSearchVisibility(true)
 			}
 			m.searchHasFocus = true
+			m.searchBar.ToggleCursor(true)
 		case "esc":
 			if m.showSearch {
 				m.clearSearch()

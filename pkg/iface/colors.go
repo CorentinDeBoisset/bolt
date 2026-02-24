@@ -10,21 +10,15 @@ type Theme struct {
 	NoticeableSurfaceStyle lipgloss.Style
 	AccentSurfaceStyle     lipgloss.Style
 	HighlightSurfaceStyle  lipgloss.Style
-	SeparatorColor         lipgloss.Color
+	SeparatorColor         lipgloss.TerminalColor
+
+	BlurredOutputBorderColor lipgloss.TerminalColor
+	FocusedOutputBorderColor lipgloss.TerminalColor
 }
 
 // The base palette is available here: https://coolors.co/palette/264653-2a9d8f-e9c46a-f4a261-e76f51
 
 var ErrorColor = lipgloss.Color("1")
-
-var (
-	FocusedOutputBorderColor = lipgloss.AdaptiveColor{
-		Dark:  "#f08128",
-		Light: "#f4a261",
-	}
-
-	BlurredOutputBorderColor = lipgloss.Color("#808080")
-)
 
 func LoadTheme() Theme {
 	// bgColor is the actual color of the terminal's background
@@ -88,5 +82,12 @@ func LoadTheme() Theme {
 			Foreground(lgBodyColorOnHighlight),
 
 		SeparatorColor: lipgloss.Color(separatorCol.Hex()),
+
+		FocusedOutputBorderColor: lipgloss.AdaptiveColor{
+			Dark:  "#f08128",
+			Light: "#f4a261",
+		},
+
+		BlurredOutputBorderColor: lipgloss.Color("#808080"),
 	}
 }

@@ -14,7 +14,7 @@ import (
 	"github.com/corentindeboisset/bolt/pkg/iface"
 )
 
-var StackedVerticalBorderFirst = lipgloss.Border{
+var TopBlockBorder = lipgloss.Border{
 	Top:         "─",
 	Bottom:      "─",
 	Left:        "│",
@@ -25,7 +25,7 @@ var StackedVerticalBorderFirst = lipgloss.Border{
 	BottomRight: "┤",
 }
 
-var StackedVerticalBorderLast = lipgloss.Border{
+var BottomBlockBorder = lipgloss.Border{
 	Top:         "─",
 	Bottom:      "─",
 	Left:        "│",
@@ -33,6 +33,28 @@ var StackedVerticalBorderLast = lipgloss.Border{
 	TopLeft:     "├",
 	TopRight:    "┤",
 	BottomLeft:  "╰",
+	BottomRight: "╯",
+}
+
+var LeftBottomBlockBorder = lipgloss.Border{
+	Top:         "─",
+	Bottom:      "─",
+	Left:        "│",
+	Right:       "│",
+	TopLeft:     "├",
+	TopRight:    "┬",
+	BottomLeft:  "╰",
+	BottomRight: "┴",
+}
+
+var RightBottomBlockBorder = lipgloss.Border{
+	Top:         "─",
+	Bottom:      "─",
+	Left:        "│",
+	Right:       "│",
+	TopLeft:     "┬",
+	TopRight:    "┤",
+	BottomLeft:  "┴",
 	BottomRight: "╯",
 }
 
@@ -359,17 +381,20 @@ func (m *Model) View() string {
 		return m.frameStyle.Border(lipgloss.RoundedBorder(), true).Render(content)
 	}
 
-	contentBlock := m.frameStyle.Border(StackedVerticalBorderFirst, true, true, false, true).Render(content)
+	contentBlock := m.frameStyle.Border(TopBlockBorder, true, true, false, true).Render(content)
 
-	resultBlock := ""
+	var searchBlock string
 	if m.searchRegexp != nil {
-		resultBlock = fmt.Sprintf(" %d / %d", m.highlightedMatch+1, len(m.searchResultLines))
+		resultBlock := fmt.Sprintf("%d / %d", m.highlightedMatch+1, len(m.searchResultLines))
+		searchBlockContent := m.searchBar.View(contentWidth - len(resultBlock) - m.frameStyle.GetHorizontalPadding() - 1) // the one if for the border
+		searchBlock = lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			m.frameStyle.Border(LeftBottomBlockBorder, true).Render(searchBlockContent),
+			m.frameStyle.Border(RightBottomBlockBorder, true, true, true, false).Render(resultBlock),
+		)
+	} else {
+		searchBlock = m.frameStyle.Border(LeftBottomBlockBorder, true).Render(m.searchBar.View(contentWidth))
 	}
-
-	// Render the search block
-	searchBlockContent := m.searchBar.View(contentWidth - len(resultBlock))
-
-	searchBlock := m.frameStyle.Border(StackedVerticalBorderLast, true).Render(searchBlockContent + resultBlock)
 
 	return lipgloss.JoinVertical(lipgloss.Left, contentBlock, searchBlock)
 }

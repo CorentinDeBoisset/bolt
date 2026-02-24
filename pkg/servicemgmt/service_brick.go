@@ -10,10 +10,10 @@ const BRICK_MIN_WIDTH = 25
 // It is important that all indicators have the same len
 const INDICATOR_LEN = 12
 const (
-	INDICATOR_OFF      = "⠺ OFF      ⠗"
+	INDICATOR_OFF      = "⠺      OFF ⠗"
 	INDICATOR_STARTING = "⠺ STARTING ⠗"
-	INDICATOR_RUNNING  = "⠺ RUNNING  ⠗"
-	INDICATOR_ERROR    = "⠺ ERROR    ⠗"
+	INDICATOR_RUNNING  = "⠺  RUNNING ⠗"
+	INDICATOR_ERROR    = "⠺    ERROR ⠗"
 )
 
 const HPADDING = 2
@@ -69,9 +69,9 @@ func (s *ServiceBrickModel) refreshStyles() {
 	brickStyle := s.theme.NoticeableSurfaceStyle
 	switch s.focusLevel {
 	case 1:
-		brickStyle = s.theme.HighlightSurfaceStyle
-	case 2:
 		brickStyle = s.theme.AccentSurfaceStyle
+	case 2:
+		brickStyle = s.theme.HighlightSurfaceStyle
 	}
 
 	s.titleStyle = brickStyle.

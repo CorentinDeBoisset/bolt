@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"regexp"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
+	"github.com/corentindeboisset/bolt/pkg/iface"
 )
 
 type sequence struct {
@@ -77,7 +77,7 @@ func findAllInSequence(r *regexp.Regexp, sequences []sequence) [][]int {
 	return originalMatches
 }
 
-func DecorateCmdOutput(r *regexp.Regexp, content []byte, highLightIdx int, noticeableStyle, highlightedStyle lipgloss.Style) ([]byte, []int) {
+func DecorateCmdOutput(r *regexp.Regexp, content []byte, highLightIdx int, theme iface.Theme) ([]byte, []int) {
 	sequences := prepareSequence(content)
 	matches := findAllInSequence(r, sequences)
 	if matches == nil {
@@ -101,9 +101,9 @@ func DecorateCmdOutput(r *regexp.Regexp, content []byte, highLightIdx int, notic
 
 		if currentMatchIdx < len(matches) && currentOffset >= matches[currentMatchIdx][0] && sequence.visible {
 			if currentMatchIdx == highLightIdx {
-				output = append(output, []byte(highlightedStyle.Render(string(sequence.content)))...)
+				output = append(output, []byte(theme.InvertedHighlightSurfaceStyle.Render(string(sequence.content)))...)
 			} else {
-				output = append(output, []byte(noticeableStyle.Render(string(sequence.content)))...)
+				output = append(output, []byte(theme.InvertedAccentSurfaceStyle.Render(string(sequence.content)))...)
 			}
 		} else {
 			output = append(output, sequence.content...)

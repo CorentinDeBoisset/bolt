@@ -136,7 +136,7 @@ func (m *Model) refreshDisplayedContent() {
 
 	if m.searchRegexp != nil {
 		newLineNb := 0
-		decoratedOutput, searchResultLines := cmdrunr.DecorateCmdOutput(m.searchRegexp, m.rawOutput, m.highlightedMatch, m.theme.NoticeableSurfaceStyle, m.theme.AccentSurfaceStyle)
+		decoratedOutput, searchResultLines := cmdrunr.DecorateCmdOutput(m.searchRegexp, m.rawOutput, m.highlightedMatch, m.theme)
 		splitDecoratedOutput := bytes.Split(decoratedOutput, []byte("\n"))
 		resultLines := make([]string, 0)
 		searchResultLinesAfterFormat := make([]int, len(searchResultLines))

@@ -7,11 +7,13 @@ import (
 )
 
 type Theme struct {
-	NoticeableSurfaceStyle lipgloss.Style
-	AccentSurfaceStyle     lipgloss.Style
-	HighlightSurfaceStyle  lipgloss.Style
-	SeparatorColor         lipgloss.TerminalColor
+	NoticeableSurfaceStyle        lipgloss.Style
+	AccentSurfaceStyle            lipgloss.Style
+	HighlightSurfaceStyle         lipgloss.Style
+	InvertedHighlightSurfaceStyle lipgloss.Style
+	InvertedAccentSurfaceStyle    lipgloss.Style
 
+	SeparatorColor           lipgloss.TerminalColor
 	BlurredOutputBorderColor lipgloss.TerminalColor
 	FocusedOutputBorderColor lipgloss.TerminalColor
 }
@@ -26,48 +28,71 @@ func LoadTheme() Theme {
 	bgH, bgS, bgL := bgColor.Hsl()
 
 	var noticeableSurfaceColor, accentSurfaceColor, highlightSurfaceColor colorful.Color
-	var bodyColorOnAccent, bodyColorOnHighlight colorful.Color
-	var separatorCol colorful.Color
-
-	if bgL < 0.5 {
-		noticeableSurfaceColor = colorful.Hsl(bgH, bgS, 0.1+0.9*bgL).Clamped()
-	} else {
-		noticeableSurfaceColor = colorful.Hsl(bgH, bgS, 0.95*bgL).Clamped()
-	}
+	var invertedAccentSurfaceColor, invertedHighlightSurfaceColor colorful.Color
+	var bodyColorOnNoticeable, bodyColorOnAccent, bodyColorOnHighlight colorful.Color
+	var bodyColorOnInvertedAccent, bodyColorOnInvertedHighlight colorful.Color
+	var separatorCol, focusedOutputBorderColor colorful.Color
 
 	if bgL < 0.22 {
-		accentSurfaceColor = colorful.Hsl(197, 0.37, 0.17)
-		highlightSurfaceColor = colorful.Hsl(197, 0.37, 0.22)
-		bodyColorOnAccent = colorful.Hsl(0, 0, 0.95)
-		bodyColorOnHighlight = colorful.Hsl(0, 0, 0.95)
+		noticeableSurfaceColor = colorful.Hsl(bgH, bgS, 0.15+0.2*bgL).Clamped()
+		bodyColorOnNoticeable = colorful.Hsl(43, 0.58, 0.8+0.2*bgL).Clamped()
+
+		accentSurfaceColor = colorful.Hsl(92, 0.37, 0.14+0.15*bgL)
+		bodyColorOnAccent = colorful.Hsl(43, 0.58, 0.75)
+
+		highlightSurfaceColor = colorful.Hsl(92, 0.37, 0.15+0.3*bgL)
+		bodyColorOnHighlight = colorful.Hsl(43, 1.0, 0.95)
+
+		invertedAccentSurfaceColor = colorful.Hsl(26.7, 0.65, 0.55)
+		bodyColorOnInvertedAccent = colorful.Hsl(0, 0, 0.07)
+
+		invertedHighlightSurfaceColor = colorful.Hsl(26.7, 0.95, 0.95)
+		bodyColorOnInvertedHighlight = colorful.Hsl(0, 0, 0.1)
+
 		separatorCol = colorful.Hsl(0, 0, 0.4)
-	} else if bgL < 0.45 {
-		accentSurfaceColor = colorful.Hsl(197, 0.37, 0.45)
-		highlightSurfaceColor = colorful.Hsl(197, 0.37, 0.50)
-		bodyColorOnAccent = colorful.Hsl(0, 0, 0.95)
-		bodyColorOnHighlight = colorful.Hsl(0, 0, 0.95)
-		separatorCol = colorful.Hsl(0, 0, 0.95)
+		focusedOutputBorderColor = colorful.Hsl(26, 0.87, 0.55)
 	} else {
-		accentSurfaceColor = colorful.Hsl(197, 0.7, 0.6)
-		highlightSurfaceColor = colorful.Hsl(197, 0.7, 0.75)
+		noticeableSurfaceColor = colorful.Hsl(bgH, bgS, 0.95*bgL).Clamped()
+		bodyColorOnNoticeable = colorful.Hsl(43, 0.58, 0.15*bgL).Clamped()
+
+		accentSurfaceColor = colorful.Hsl(92, 0.27, 0.7)
 		bodyColorOnAccent = colorful.Hsl(0, 0, 0.1)
-		bodyColorOnHighlight = colorful.Hsl(0, 0, 0.1)
+
+		highlightSurfaceColor = colorful.Hsl(92, 0.27, 0.55)
+		bodyColorOnHighlight = colorful.Hsl(43, 0.58, 0.1)
+
+		invertedAccentSurfaceColor = colorful.Hsl(26, 0.87, 0.6+0.2*bgL)
+		bodyColorOnInvertedAccent = colorful.Hsl(0, 0, 0.1)
+
+		invertedHighlightSurfaceColor = colorful.Hsl(26, 0.9, 0.15+0.05*bgL)
+		bodyColorOnInvertedHighlight = colorful.Hsl(0, 0, 0.95)
+
 		separatorCol = colorful.Hsl(0, 0, 0.15)
+		focusedOutputBorderColor = colorful.Hsl(26, 0.87, 0.67)
 	}
 
-	// Convert them all to
+	// Convert them all to lipgloss colors
 	lgNoticeableColor := lipgloss.Color(noticeableSurfaceColor.Hex())
-	lgAccentSurfaceColor := lipgloss.Color(accentSurfaceColor.Hex())
-	lgHighlightSurfaceColor := lipgloss.Color(highlightSurfaceColor.Hex())
+	lgBodyColorOnNoticeable := lipgloss.Color(bodyColorOnNoticeable.Hex())
 
+	lgAccentSurfaceColor := lipgloss.Color(accentSurfaceColor.Hex())
 	lgBodyColorOnAccent := lipgloss.Color(bodyColorOnAccent.Hex())
+
+	lgHighlightSurfaceColor := lipgloss.Color(highlightSurfaceColor.Hex())
 	lgBodyColorOnHighlight := lipgloss.Color(bodyColorOnHighlight.Hex())
+
+	lgInvertedHighlightSurfaceColor := lipgloss.Color(invertedHighlightSurfaceColor.Hex())
+	lgBodyColorOnInvertedHighlight := lipgloss.Color(bodyColorOnInvertedHighlight.Hex())
+
+	lgInvertedAccentSurfaceColor := lipgloss.Color(invertedAccentSurfaceColor.Hex())
+	lgBodyColorOnInvertedAccent := lipgloss.Color(bodyColorOnInvertedAccent.Hex())
 
 	return Theme{
 		NoticeableSurfaceStyle: lipgloss.NewStyle().
 			Background(lgNoticeableColor).
 			BorderBackground(lgNoticeableColor).
-			MarginBackground(lgNoticeableColor),
+			MarginBackground(lgNoticeableColor).
+			Foreground(lgBodyColorOnNoticeable),
 
 		AccentSurfaceStyle: lipgloss.NewStyle().
 			Background(lgAccentSurfaceColor).
@@ -81,13 +106,20 @@ func LoadTheme() Theme {
 			MarginBackground(lgHighlightSurfaceColor).
 			Foreground(lgBodyColorOnHighlight),
 
-		SeparatorColor: lipgloss.Color(separatorCol.Hex()),
+		InvertedHighlightSurfaceStyle: lipgloss.NewStyle().
+			Background(lgInvertedHighlightSurfaceColor).
+			BorderBackground(lgInvertedHighlightSurfaceColor).
+			MarginBackground(lgInvertedHighlightSurfaceColor).
+			Foreground(lgBodyColorOnInvertedHighlight),
 
-		FocusedOutputBorderColor: lipgloss.AdaptiveColor{
-			Dark:  "#f08128",
-			Light: "#f4a261",
-		},
+		InvertedAccentSurfaceStyle: lipgloss.NewStyle().
+			Background(lgInvertedAccentSurfaceColor).
+			BorderBackground(lgInvertedAccentSurfaceColor).
+			MarginBackground(lgInvertedAccentSurfaceColor).
+			Foreground(lgBodyColorOnInvertedAccent),
 
+		SeparatorColor:           lipgloss.Color(separatorCol.Hex()),
+		FocusedOutputBorderColor: lipgloss.Color(focusedOutputBorderColor.Hex()),
 		BlurredOutputBorderColor: lipgloss.Color("#808080"),
 	}
 }

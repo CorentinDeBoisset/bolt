@@ -167,7 +167,7 @@ func (m *ifaceModel) updateFocusedTask(newTaskId int) {
 	m.serviceBricks[m.focusedTask].SetFocusLevel(0)
 	m.focusedTask = max(min(newTaskId, len(m.serviceBricks)-1), 0)
 	m.outputPanel.SetBuffer(&(m.serviceBricks[m.focusedTask].service.Output), true)
-	m.serviceBricks[m.focusedTask].SetFocusLevel(1)
+	m.serviceBricks[m.focusedTask].SetFocusLevel(2)
 }
 
 func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -182,6 +182,11 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.focusOutput = !m.focusOutput
 			// TODO: m.updateKeyBindings()
 			m.outputPanel.SetFocus(m.focusOutput)
+			if m.focusOutput {
+				m.serviceBricks[m.focusedTask].SetFocusLevel(1)
+			} else {
+				m.serviceBricks[m.focusedTask].SetFocusLevel(2)
+			}
 			return m, nil
 		}
 

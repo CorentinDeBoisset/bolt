@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"slices"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -135,15 +136,15 @@ func (m *Model) refreshDisplayedContent() {
 
 	if m.searchRegexp != nil {
 		newLineNb := 0
-		var decoratedOutput []byte
-		decoratedOutput, m.searchResultLines = cmdrunr.DecorateCmdOutput(m.searchRegexp, m.rawOutput, m.highlightedMatch, m.theme.NoticeableSurfaceStyle, m.theme.AccentSurfaceStyle)
+		decoratedOutput, searchResultLines := cmdrunr.DecorateCmdOutput(m.searchRegexp, m.rawOutput, m.highlightedMatch, m.theme.NoticeableSurfaceStyle, m.theme.AccentSurfaceStyle)
 		splitDecoratedOutput := bytes.Split(decoratedOutput, []byte("\n"))
 		resultLines := make([]string, 0)
+		searchResultLinesAfterFormat := make([]int, len(searchResultLines))
 		for lineIdx, line := range splitDecoratedOutput {
 			// Recalculate the new line number for every match
-			for matchIdx, match := range m.searchResultLines {
+			for matchIdx, match := range searchResultLines {
 				if match == lineIdx {
-					m.searchResultLines[matchIdx] = newLineNb
+					searchResultLinesAfterFormat[matchIdx] = newLineNb
 				}
 			}
 
@@ -153,6 +154,7 @@ func (m *Model) refreshDisplayedContent() {
 			resultLines = append(resultLines, renderedLines...)
 		}
 
+		m.searchResultLines = searchResultLinesAfterFormat
 		m.displayedContent = resultLines
 	} else {
 		m.searchResultLines = nil
@@ -277,8 +279,18 @@ func (m *Model) executeSearch() {
 	m.refreshDisplayedContent()
 
 	if len(m.searchResultLines) > 0 {
-		// TODO: select the result closest to the current offset
-		m.highlightedMatch = len(m.searchResultLines) - 1
+		highlightCandidate := len(m.searchResultLines) - 1
+		if !m.AtBottom() {
+			// Find the result that is currently closest to the top of the screen
+			for resultIdx, resultLine := range slices.Backward(m.searchResultLines) {
+				if resultLine < m.offset {
+					break
+				}
+				highlightCandidate = resultIdx
+			}
+		}
+		m.highlightedMatch = highlightCandidate
+
 		m.refreshDisplayedContent()
 		m.scrollToSearchResult()
 	}

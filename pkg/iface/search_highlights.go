@@ -5,7 +5,6 @@ import (
 	"regexp"
 
 	"github.com/charmbracelet/x/ansi"
-	"github.com/corentindeboisset/tera/pkg/iface"
 )
 
 type sequence struct {
@@ -77,7 +76,7 @@ func findAllInSequence(r *regexp.Regexp, sequences []sequence) [][]int {
 	return originalMatches
 }
 
-func DecorateCmdOutput(r *regexp.Regexp, content []byte, highLightIdx int, theme iface.Theme) ([]byte, []int) {
+func DecorateCmdOutput(r *regexp.Regexp, content []byte, highLightIdx int, theme Theme) ([]byte, []int) {
 	sequences := prepareSequence(content)
 	matches := findAllInSequence(r, sequences)
 	if matches == nil {

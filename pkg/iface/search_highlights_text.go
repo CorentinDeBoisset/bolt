@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/corentindeboisset/tera/pkg/iface"
 	"github.com/muesli/termenv"
 	"github.com/stretchr/testify/assert"
 )
@@ -79,7 +78,7 @@ func TestDecorateOutput(t *testing.T) {
 	// Force colors
 	lipgloss.SetColorProfile(termenv.TrueColor)
 
-	theme := iface.Theme{
+	theme := Theme{
 		InvertedHighlightSurfaceStyle: lipgloss.NewStyle().Background(lipgloss.Color("2")),
 		InvertedAccentSurfaceStyle:    lipgloss.NewStyle().Background(lipgloss.Color("1")),
 	}

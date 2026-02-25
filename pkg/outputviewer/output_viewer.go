@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/corentindeboisset/tera/pkg/cmdrunr"
 	"github.com/corentindeboisset/tera/pkg/iface"
+	"github.com/corentindeboisset/tera/pkg/scrollbar"
 )
 
 var TopBlockBorder = lipgloss.Border{
@@ -377,23 +378,38 @@ func (m *Model) View() string {
 		Width(contentWidth).
 		Render(strings.Join(m.getVisibleLines(m.offset, contentHeight), "\n"))
 
+	offsetRatio := float64(m.offset) / float64(m.maxOffset())
+
 	if !m.showSearch {
-		return m.frameStyle.Border(lipgloss.RoundedBorder(), true).Render(content)
+		frameAndBorderStyle := m.frameStyle.Border(lipgloss.RoundedBorder(), true, false, true, true)
+		scrollBarContent := scrollbar.RenderScrollbar(len(m.displayedContent), contentHeight, offsetRatio, frameAndBorderStyle)
+
+		return lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			frameAndBorderStyle.Render(content),
+			scrollBarContent,
+		)
 	}
 
-	contentBlock := m.frameStyle.Border(TopBlockBorder, true, true, false, true).Render(content)
+	frameAndBorderStyle := m.frameStyle.Border(TopBlockBorder, true, false, false, true)
+	scrollBarContent := scrollbar.RenderScrollbar(len(m.displayedContent), contentHeight, offsetRatio, frameAndBorderStyle)
+	contentBlock := lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		frameAndBorderStyle.Render(content),
+		scrollBarContent,
+	)
 
 	var searchBlock string
 	if m.searchRegexp != nil {
 		resultBlock := fmt.Sprintf("%d / %d", m.highlightedMatch+1, len(m.searchResultLines))
-		searchBlockContent := m.searchBar.View(contentWidth - len(resultBlock) - m.frameStyle.GetHorizontalPadding() - 1) // the one if for the border
+		searchBlockContent := m.searchBar.View(contentWidth - len(resultBlock) - m.frameStyle.GetHorizontalPadding() - 1) // the one is to account for the inner border
 		searchBlock = lipgloss.JoinHorizontal(
 			lipgloss.Left,
 			m.frameStyle.Border(LeftBottomBlockBorder, true).Render(searchBlockContent),
 			m.frameStyle.Border(RightBottomBlockBorder, true, true, true, false).Render(resultBlock),
 		)
 	} else {
-		searchBlock = m.frameStyle.Border(LeftBottomBlockBorder, true).Render(m.searchBar.View(contentWidth))
+		searchBlock = m.frameStyle.Border(BottomBlockBorder, true).Render(m.searchBar.View(contentWidth))
 	}
 
 	return lipgloss.JoinVertical(lipgloss.Left, contentBlock, searchBlock)

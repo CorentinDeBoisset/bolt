@@ -1,4 +1,4 @@
-package cmdrunr
+package iface
 
 import (
 	"bytes"

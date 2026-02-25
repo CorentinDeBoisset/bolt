@@ -6,7 +6,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/term"
-	"github.com/corentindeboisset/bolt/pkg/cfg"
+	"github.com/corentindeboisset/tera/pkg/cfg"
 )
 
 type FormattableError interface {

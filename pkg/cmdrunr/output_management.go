@@ -5,7 +5,7 @@ import (
 	"regexp"
 
 	"github.com/charmbracelet/x/ansi"
-	"github.com/corentindeboisset/bolt/pkg/iface"
+	"github.com/corentindeboisset/tera/pkg/iface"
 )
 
 type sequence struct {

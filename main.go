@@ -7,10 +7,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/corentindeboisset/bolt/pkg/cfg"
-	"github.com/corentindeboisset/bolt/pkg/iface"
-	"github.com/corentindeboisset/bolt/pkg/jobexec"
-	"github.com/corentindeboisset/bolt/pkg/servicemgmt"
+	"github.com/corentindeboisset/tera/pkg/cfg"
+	"github.com/corentindeboisset/tera/pkg/iface"
+	"github.com/corentindeboisset/tera/pkg/jobexec"
+	"github.com/corentindeboisset/tera/pkg/servicemgmt"
 )
 
 //go:generate gotext -srclang=en update -out catalog.go -lang=fr,en
@@ -30,7 +30,7 @@ func init() {
 	}
 
 	rootCmd = &cobra.Command{
-		Use:     "bolt",
+		Use:     "tera",
 		Version: Version,
 		Short:   i18n.Sprintf("Script management that rides the lighting."),
 	}
@@ -39,7 +39,7 @@ func init() {
 		Use:   "version",
 		Short: i18n.Sprintf("Print version and exit"),
 		Run: func(cmd *cobra.Command, args []string) {
-			_, _ = i18n.Printf("bolt version %s\n", Version)
+			_, _ = i18n.Printf("tera version %s\n", Version)
 		},
 	}
 	rootCmd.AddCommand(versionCmd)
@@ -60,7 +60,7 @@ func init() {
 			return jobexec.ExecuteJob(confPath, jobToRun)
 		},
 	}
-	runCmd.Flags().StringVarP(&confPath, "config", "c", "", i18n.Sprintf("Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file"))
+	runCmd.Flags().StringVarP(&confPath, "config", "c", "", i18n.Sprintf("Path to a configuration file. If left empty, it will recursively search in the parent directories for a tera.yml file"))
 	_ = runCmd.MarkFlagFilename("config", "yaml", "yml")
 
 	rootCmd.AddCommand(runCmd)
@@ -80,7 +80,7 @@ func init() {
 			return err
 		},
 	}
-	serviceCmd.Flags().StringVarP(&confPath, "config", "c", "", i18n.Sprintf("Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file"))
+	serviceCmd.Flags().StringVarP(&confPath, "config", "c", "", i18n.Sprintf("Path to a configuration file. If left empty, it will recursively search in the parent directories for a tera.yml file"))
 	_ = serviceCmd.MarkFlagFilename("config", "yaml", "yml")
 
 	rootCmd.AddCommand(serviceCmd)

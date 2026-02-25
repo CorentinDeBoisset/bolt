@@ -2,7 +2,7 @@ package servicemgmt
 
 import (
 	"github.com/charmbracelet/lipgloss"
-	"github.com/corentindeboisset/bolt/pkg/iface"
+	"github.com/corentindeboisset/tera/pkg/iface"
 )
 
 const BRICK_MIN_WIDTH = 25

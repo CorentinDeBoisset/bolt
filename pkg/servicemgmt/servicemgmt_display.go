@@ -7,9 +7,9 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/corentindeboisset/bolt/pkg/iface"
-	"github.com/corentindeboisset/bolt/pkg/listviewport"
-	"github.com/corentindeboisset/bolt/pkg/outputviewer"
+	"github.com/corentindeboisset/tera/pkg/iface"
+	"github.com/corentindeboisset/tera/pkg/listviewport"
+	"github.com/corentindeboisset/tera/pkg/outputviewer"
 )
 
 type refreshStatusMsg time.Time

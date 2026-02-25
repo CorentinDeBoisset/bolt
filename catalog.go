@@ -47,7 +47,7 @@ var messageKeyToIndex = map[string]int{
 	"No job and no service is declared in the configuration": 26,
 	"No name is declared":                                    22,
 	"No step is declared in the job \"%s\"":                  13,
-	"Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file": 5,
+	"Path to a configuration file. If left empty, it will recursively search in the parent directories for a tera.yml file": 5,
 	"Print version and exit": 2,
 	"Run a job":              4,
 	"Script management that rides the lighting.":                                1,
@@ -71,7 +71,7 @@ var messageKeyToIndex = map[string]int{
 	"There are multiple jobs named \"%s\"":                                      28,
 	"There are multiple steps named \"%s\" in the job \"%s\"":                   15,
 	"There are multiple tasks named \"%s\" in the step \"%s\"in the job \"%s\"": 19,
-	"bolt version %s\n":                                                         3,
+	"tera version %s\n":                                                         3,
 	"unknown (built from source)":                                               0,
 	"💥 The command failed:":                                                     34,
 }
@@ -92,9 +92,9 @@ var enIndex = []uint32{ // 36 elements
 
 const enData string = "" + // Size: 1621 bytes
 	"\x02unknown (built from source)\x02Script management that rides the ligh" +
-	"ting.\x02Print version and exit\x04\x00\x01\x0a\x13\x02bolt version %[1]" +
+	"ting.\x02Print version and exit\x04\x00\x01\x0a\x13\x02tera version %[1]" +
 	"s\x02Run a job\x02Path to a configuration file. If left empty, it will r" +
-	"ecursively search in the parent directories for a bolt.yml file\x02Start" +
+	"ecursively search in the parent directories for a tera.yml file\x02Start" +
 	" the service management interface\x02An error occured calculating an abs" +
 	"olute path: %[1]s\x02An error occured when checking the path \x22%[1]s" +
 	"\x22:\x0a%[2]s\x02The path \x22%[1]s\x22 is a directory\x02Failed to rea" +
@@ -136,9 +136,9 @@ var frIndex = []uint32{ // 36 elements
 const frData string = "" + // Size: 1784 bytes
 	"\x02inconnue (compilation depuis les sources)\x02Lancez vos tâches plus " +
 	"vite que la lumière.\x02Afficher la version et quitter\x04\x00\x01\x0a" +
-	"\x13\x02bolt version %[1]s\x02Exécuter une séquence de tâches\x02Chemin " +
+	"\x13\x02tera version %[1]s\x02Exécuter une séquence de tâches\x02Chemin " +
 	"vers un fichier de configuration. Si aucune valeur n'est saisie, une rec" +
-	"herche dans les dossiers parents pour un fichier bolt.yml sera exécutée." +
+	"herche dans les dossiers parents pour un fichier tera.yml sera exécutée." +
 	"\x02Lancer l'interface de gestion de services\x02Une erreur est survenue" +
 	" à la récupération d'un chemin absolu : %[1]s\x02Une erreur est survenue" +
 	" en listant les propriétés du fichier \x22%[1]s\x22 :\x0a%[2]s\x02Le che" +
@@ -163,4 +163,4 @@ const frData string = "" + // Size: 1784 bytes
 	"s\x02La configuration n'est pas valide : %[1]s\x02Le contenu du fichier " +
 	"\x22%[1]s\x22 n'a pas pu être lu : %[2]s\x02💥 La commande a échoué :"
 
-	// Total table size 3741 bytes (3KiB); checksum: DCC9850C
+	// Total table size 3741 bytes (3KiB); checksum: D5B6733A

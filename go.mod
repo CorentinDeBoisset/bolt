@@ -1,4 +1,4 @@
-module github.com/corentindeboisset/bolt
+module github.com/corentindeboisset/tera
 
 go 1.26.0
 

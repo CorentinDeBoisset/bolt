@@ -3,7 +3,7 @@ package servicemgmt
 import (
 	"testing"
 
-	"github.com/corentindeboisset/bolt/pkg/cfg"
+	"github.com/corentindeboisset/tera/pkg/cfg"
 	"github.com/stretchr/testify/require"
 )
 

@@ -17,9 +17,9 @@
             "translation": "Afficher la version et quitter"
         },
         {
-            "id": "bolt version {Version}",
-            "message": "bolt version {Version}",
-            "translation": "bolt version {Version}",
+            "id": "tera version {Version}",
+            "message": "tera version {Version}",
+            "translation": "tera version {Version}",
             "placeholders": [
                 {
                     "id": "Version",
@@ -37,9 +37,9 @@
             "translation": "Exécuter une séquence de tâches"
         },
         {
-            "id": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
-            "message": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
-            "translation": "Chemin vers un fichier de configuration. Si aucune valeur n'est saisie, une recherche dans les dossiers parents pour un fichier bolt.yml sera exécutée."
+            "id": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a tera.yml file",
+            "message": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a tera.yml file",
+            "translation": "Chemin vers un fichier de configuration. Si aucune valeur n'est saisie, une recherche dans les dossiers parents pour un fichier tera.yml sera exécutée."
         },
         {
             "id": "Start the service management interface",

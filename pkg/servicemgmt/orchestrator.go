@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/corentindeboisset/bolt/pkg/cfg"
-	"github.com/corentindeboisset/bolt/pkg/cmdrunr"
+	"github.com/corentindeboisset/tera/pkg/cfg"
+	"github.com/corentindeboisset/tera/pkg/cmdrunr"
 )
 
 type ServiceState int

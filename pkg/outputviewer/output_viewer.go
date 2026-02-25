@@ -10,8 +10,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/corentindeboisset/bolt/pkg/cmdrunr"
-	"github.com/corentindeboisset/bolt/pkg/iface"
+	"github.com/corentindeboisset/tera/pkg/cmdrunr"
+	"github.com/corentindeboisset/tera/pkg/iface"
 )
 
 var TopBlockBorder = lipgloss.Border{

@@ -63,7 +63,7 @@ type CmdConfig struct {
 	// TODO: add a FailedWhen: a template calculated with the exit code, the stdout and stderr
 }
 
-// findConfig tries to find a configuration file. If no path is given in argument, it tries to find a bolt.yml file in the parent directories of the current working directory.
+// findConfig tries to find a configuration file. If no path is given in argument, it tries to find a tera.yml file in the parent directories of the current working directory.
 func findConfig(givenPath string) (ret string, err error) {
 	if len(givenPath) > 0 {
 		if filepath.IsAbs(givenPath) {
@@ -91,9 +91,9 @@ func findConfig(givenPath string) (ret string, err error) {
 		return "", newConfigError("Failed to read the current working directory: %s", err)
 	}
 	for {
-		stat, err := os.Stat(filepath.Join(curDir, "bolt.yml"))
+		stat, err := os.Stat(filepath.Join(curDir, "tera.yml"))
 		if err == nil && !stat.IsDir() {
-			return filepath.Join(curDir, "bolt.yml"), nil
+			return filepath.Join(curDir, "tera.yml"), nil
 		}
 
 		if curDir == filepath.Dir(curDir) {

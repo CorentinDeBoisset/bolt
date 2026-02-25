@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/corentindeboisset/bolt/pkg/cfg"
+	"github.com/corentindeboisset/tera/pkg/cfg"
 )
 
 func GetJobList(confPath string) []string {

@@ -6,8 +6,8 @@ import (
 	"syscall"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/corentindeboisset/bolt/pkg/cfg"
-	"github.com/corentindeboisset/bolt/pkg/iface"
+	"github.com/corentindeboisset/tera/pkg/cfg"
+	"github.com/corentindeboisset/tera/pkg/iface"
 )
 
 func StartServiceManagement(confPath string) error {

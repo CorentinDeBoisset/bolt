@@ -23,9 +23,9 @@
             "fuzzy": true
         },
         {
-            "id": "bolt version {Version}",
-            "message": "bolt version {Version}",
-            "translation": "bolt version {Version}",
+            "id": "tera version {Version}",
+            "message": "tera version {Version}",
+            "translation": "tera version {Version}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -47,9 +47,9 @@
             "fuzzy": true
         },
         {
-            "id": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
-            "message": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
-            "translation": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a bolt.yml file",
+            "id": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a tera.yml file",
+            "message": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a tera.yml file",
+            "translation": "Path to a configuration file. If left empty, it will recursively search in the parent directories for a tera.yml file",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },

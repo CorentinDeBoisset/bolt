@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/corentindeboisset/bolt/pkg/iface"
+	"github.com/corentindeboisset/tera/pkg/iface"
 	"github.com/google/uuid"
 )
 

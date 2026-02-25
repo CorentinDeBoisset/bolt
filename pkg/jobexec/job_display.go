@@ -12,8 +12,8 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/corentindeboisset/bolt/pkg/cfg"
-	"github.com/corentindeboisset/bolt/pkg/cmdrunr"
+	"github.com/corentindeboisset/tera/pkg/cfg"
+	"github.com/corentindeboisset/tera/pkg/cmdrunr"
 )
 
 var (

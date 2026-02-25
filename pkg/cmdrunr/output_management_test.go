@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/corentindeboisset/tera/pkg/iface"
 	"github.com/muesli/termenv"
 	"github.com/stretchr/testify/assert"
 )
@@ -78,30 +79,32 @@ func TestDecorateOutput(t *testing.T) {
 	// Force colors
 	lipgloss.SetColorProfile(termenv.TrueColor)
 
-	noticeableStyle := lipgloss.NewStyle().Background(lipgloss.Color("1"))
-	highlightStyle := lipgloss.NewStyle().Background(lipgloss.Color("2"))
+	theme := iface.Theme{
+		InvertedHighlightSurfaceStyle: lipgloss.NewStyle().Background(lipgloss.Color("2")),
+		InvertedAccentSurfaceStyle:    lipgloss.NewStyle().Background(lipgloss.Color("1")),
+	}
 
 	// Non-matching input
 	input := []byte("super")
 	re := regexp.MustCompile("xyz")
 	expected := "super"
-	output, matchLines := DecorateCmdOutput(re, input, -1, noticeableStyle, highlightStyle)
+	output, matchLines := DecorateCmdOutput(re, input, -1, theme)
 	assert.Equal(t, string(output), expected)
 	assert.Nil(t, matchLines)
 
 	// Simple input
 	input = []byte("Super content")
 	re = regexp.MustCompile("e.")
-	expected = "Sup\x1b[41me\x1b[0m\x1b[41mr\x1b[0m cont\x1b[41me\x1b[0m\x1b[41mn\x1b[0mt"
-	output, matchLines = DecorateCmdOutput(re, input, 2, noticeableStyle, highlightStyle)
+	expected = "Sup\x1b[41me\x1b[0m\x1b[41mr\x1b[0m cont\x1b[42me\x1b[0m\x1b[42mn\x1b[0mt"
+	output, matchLines = DecorateCmdOutput(re, input, 1, theme)
 	assert.Equal(t, string(output), expected)
 	assert.Equal(t, matchLines, []int{0, 0})
 
 	// Complex input
 	input = []byte("\x1b[31mHel\x1b[31mlo,\nbellissimo mundo! 🎉\x1b[0m")
 	re = regexp.MustCompile("ll.")
-	expected = "\x1b[31mHe\x1b[41ml\x1b[0m\x1b[31m\x1b[41ml\x1b[0m\x1b[41mo\x1b[0m,\nbe\x1b[41ml\x1b[0m\x1b[41ml\x1b[0m\x1b[41mi\x1b[0mssimo mundo! 🎉\x1b[0m"
-	output, matchLines = DecorateCmdOutput(re, input, 2, noticeableStyle, highlightStyle)
+	expected = "\x1b[31mHe\x1b[41ml\x1b[0m\x1b[31m\x1b[41ml\x1b[0m\x1b[41mo\x1b[0m,\nbe\x1b[42ml\x1b[0m\x1b[42ml\x1b[0m\x1b[42mi\x1b[0mssimo mundo! 🎉\x1b[0m"
+	output, matchLines = DecorateCmdOutput(re, input, 1, theme)
 	assert.Equal(t, string(output), expected)
 	assert.Equal(t, matchLines, []int{0, 1})
 }

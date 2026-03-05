@@ -8,8 +8,9 @@ import (
 	"sync"
 	"unicode"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/table"
+	"charm.land/lipgloss/v2"
+	"charm.land/lipgloss/v2/table"
+	"github.com/charmbracelet/colorprofile"
 	"github.com/charmbracelet/x/term"
 	"github.com/corentindeboisset/tera/pkg/cfg"
 	"github.com/spf13/cobra"
@@ -24,17 +25,12 @@ var width = sync.OnceValue(func() int {
 	return w
 })
 
-func RenderError(err error) {
+func RenderError(err error, theme HelpTheme) {
 	i18n := cfg.GetI18nPrinter()
 
-	errPrefix := lipgloss.NewStyle().
-		MarginBottom(1).
-		Background(lipgloss.Color("1")).
-		Foreground(lipgloss.AdaptiveColor{Dark: "15", Light: "0"}).
-		Padding(0, 1).
-		Render(i18n.Sprintf("ERROR"))
+	errPrefix := theme.ErrorTitle.MarginBottom(1).Padding(0, 1).Render(i18n.Sprintf("ERROR"))
 
-	_, _ = fmt.Fprintf(os.Stderr, "\n%s\n%s\n\n", errPrefix, err.Error())
+	_, _ = lipgloss.Fprintf(os.Stderr, "\n%s\n%s\n\n", errPrefix, err.Error())
 }
 
 func renderCommandPath(c *cobra.Command, cmdStyle, subcmdStyle lipgloss.Style) string {
@@ -181,7 +177,11 @@ func RenderUsage(cmd *cobra.Command) error {
 	cmd.InitDefaultVersionFlag()
 
 	theme := LoadHelpTheme()
-	output := cmd.OutOrStderr()
+
+	output := &colorprofile.Writer{
+		Forward: cmd.OutOrStderr(),
+		Profile: colorprofile.Detect(os.Stderr, os.Environ()),
+	}
 
 	fragments := make([]string, 0)
 
@@ -295,7 +295,10 @@ func RenderUsage(cmd *cobra.Command) error {
 func RenderHelp(cmd *cobra.Command, _ []string) {
 	// TODO: Add a sexy header
 
-	output := cmd.OutOrStdout()
+	output := &colorprofile.Writer{
+		Forward: cmd.OutOrStderr(),
+		Profile: colorprofile.Detect(os.Stderr, os.Environ()),
+	}
 
 	usage := cmd.Long
 	if len(usage) == 0 {
@@ -303,11 +306,11 @@ func RenderHelp(cmd *cobra.Command, _ []string) {
 	}
 	usage = strings.TrimRightFunc(usage, unicode.IsSpace)
 	if len(usage) > 0 {
-		fmt.Fprintln(output, usage)
-		fmt.Fprintln(output)
+		_, _ = fmt.Fprintln(output, usage)
+		_, _ = fmt.Fprintln(output)
 	}
 
 	if cmd.Runnable() || cmd.HasSubCommands() {
-		fmt.Fprintln(output, cmd.UsageString())
+		_, _ = fmt.Fprintln(output, cmd.UsageString())
 	}
 }

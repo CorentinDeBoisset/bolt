@@ -3,7 +3,7 @@ package scrollbar
 import (
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 func RenderScrollbar(scrollHeight, windowHeight int, offset float64, frameStyle lipgloss.Style) string {

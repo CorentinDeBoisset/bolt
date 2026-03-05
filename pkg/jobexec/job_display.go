@@ -6,12 +6,12 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/spinner"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/corentindeboisset/tera/pkg/cfg"
 	"github.com/corentindeboisset/tera/pkg/cmdrunr"
 )
@@ -108,7 +108,7 @@ func newModel(config *cfg.JobConfig, statuses []StepStatus) ifaceModel {
 			spinner.WithStyle(spinnerStyle),
 		),
 		stepPanel:   NewListViewportModel(15, 10),
-		outputPanel: viewport.New(30, 10),
+		outputPanel: viewport.New(viewport.WithWidth(30), viewport.WithHeight(10)),
 	}
 
 	m.updateKeyBindings()
@@ -172,7 +172,7 @@ func (m *ifaceModel) calculateMinPanelSize() {
 func (m *ifaceModel) updateSizes() {
 	// The height is fixed
 	panelsHeight := m.height - 5
-	m.outputPanel.Height = panelsHeight
+	m.outputPanel.SetHeight(panelsHeight)
 
 	stepPanelWidth := m.stepPanelWidth
 	if stepPanelWidth > (m.width/2 - 6) {
@@ -185,7 +185,7 @@ func (m *ifaceModel) updateSizes() {
 		m.stepPanel.Resize(m.width, panelsHeight)
 		return
 	}
-	m.outputPanel.Width = outputWidth
+	m.outputPanel.SetWidth(outputWidth)
 	m.stepPanel.Resize(stepPanelWidth, panelsHeight)
 }
 
@@ -299,7 +299,7 @@ func (m *ifaceModel) calculateTaskLine(taskIdx int) int {
 
 func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
@@ -392,7 +392,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case RefreshStatusMsg:
 		if !m.hideOutputPanel {
 			isAtBottom := m.outputPanel.AtBottom()
-			contentWidth := m.outputPanel.Width - m.outputPanel.Style.GetHorizontalFrameSize()
+			contentWidth := m.outputPanel.Width() - m.outputPanel.Style.GetHorizontalFrameSize()
 			m.outputPanel.SetContent(
 				lipgloss.NewStyle().Width(contentWidth).Render(string(m.taskIds[m.selectedTask].Output.Bytes())),
 			)
@@ -408,23 +408,21 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.stepPanel.SetContent(m.calculateStepPanelContent())
 
 		return m, cmd
-	case tea.MouseMsg:
-		if msg.Action == tea.MouseActionPress {
-			switch msg.Button {
-			case tea.MouseButtonWheelUp:
-				if m.focusOutput {
-					m.outputPanel.ScrollUp(3)
-				} else {
-					m.focusedTask = max(m.focusedTask-1, 0)
-					m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
-				}
-			case tea.MouseButtonWheelDown:
-				if m.focusOutput {
-					m.outputPanel.ScrollDown(3)
-				} else {
-					m.focusedTask = min(m.focusedTask+1, len(m.taskIds)-1)
-					m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
-				}
+	case tea.MouseWheelMsg:
+		switch msg.Button {
+		case tea.MouseWheelUp:
+			if m.focusOutput {
+				m.outputPanel.ScrollUp(3)
+			} else {
+				m.focusedTask = max(m.focusedTask-1, 0)
+				m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
+			}
+		case tea.MouseWheelDown:
+			if m.focusOutput {
+				m.outputPanel.ScrollDown(3)
+			} else {
+				m.focusedTask = min(m.focusedTask+1, len(m.taskIds)-1)
+				m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
 			}
 		}
 	}
@@ -432,7 +430,7 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m ifaceModel) View() string {
+func (m ifaceModel) View() tea.View {
 	help := m.help.FullHelpView([][]key.Binding{
 		{m.keymap.up, m.keymap.down},
 		{m.keymap.tab, m.keymap.enter, m.keymap.quit},
@@ -443,5 +441,11 @@ func (m ifaceModel) View() string {
 	if !m.hideOutputPanel {
 		views = append(views, m.outputPanel.View())
 	}
-	return lipgloss.JoinHorizontal(lipgloss.Top, views...) + "\n\n" + help
+
+	view := tea.NewView(lipgloss.JoinHorizontal(lipgloss.Top, views...) + "\n\n" + help)
+	view.AltScreen = true
+	view.KeyboardEnhancements.ReportEventTypes = true
+	view.MouseMode = tea.MouseModeCellMotion
+
+	return view
 }

@@ -1,11 +1,12 @@
 package iface
 
 import (
+	"image/color"
+	"os"
 	"sync"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 	"github.com/lucasb-eyer/go-colorful"
-	"github.com/muesli/termenv"
 )
 
 type HelpTheme struct {
@@ -32,14 +33,22 @@ type Theme struct {
 	InvertedHighlightSurfaceStyle          lipgloss.Style
 	InvertedUnfocusedHighlightSurfaceStyle lipgloss.Style
 
-	SeparatorColor           lipgloss.TerminalColor
-	BlurredOutputBorderColor lipgloss.TerminalColor
-	FocusedOutputBorderColor lipgloss.TerminalColor
+	SeparatorColor           color.Color
+	BlurredOutputBorderColor color.Color
+	FocusedOutputBorderColor color.Color
 }
 
 // This is the actual color of the background of the terminal
-var backgroundColor = sync.OnceValue(func() colorful.Color {
-	return termenv.ConvertToRGB(termenv.DefaultOutput().BackgroundColor())
+var BackgroundColor = sync.OnceValue(func() colorful.Color {
+	rawColor, err := lipgloss.BackgroundColor(os.Stdin, os.Stderr)
+	if err != nil || rawColor == nil {
+		return colorful.Hsl(0, 0, 0)
+	}
+	bgColor, ok := colorful.MakeColor(rawColor)
+	if !ok {
+		return colorful.Hsl(0, 0, 0)
+	}
+	return bgColor
 })
 
 // The base palette is available here: https://coolors.co/palette/264653-2a9d8f-e9c46a-f4a261-e76f51
@@ -47,7 +56,7 @@ var backgroundColor = sync.OnceValue(func() colorful.Color {
 var ErrorColor = lipgloss.Color("1")
 
 func LoadTheme() Theme {
-	bgH, bgS, bgL := backgroundColor().Hsl()
+	bgH, bgS, bgL := BackgroundColor().Hsl()
 
 	var noticeableSurfaceColor, unfocusedHighlightSurfaceColor, highlightSurfaceColor colorful.Color
 	var invertedUnfocusedHighlightSurfaceColor, invertedHighlightSurfaceColor colorful.Color
@@ -142,7 +151,8 @@ func LoadTheme() Theme {
 }
 
 func LoadHelpTheme() HelpTheme {
-	bgH, bgS, bgL := backgroundColor().Hsl()
+	bgH, bgS, bgL := BackgroundColor().Hsl()
+	lightDark := lipgloss.LightDark(bgL < 0.5)
 
 	var codeblockSurface colorful.Color
 	var codeblockForeground colorful.Color
@@ -170,7 +180,7 @@ func LoadHelpTheme() HelpTheme {
 
 	return HelpTheme{
 		BaseTitle:  lipgloss.NewStyle().Foreground(lipgloss.Color("#508000")),
-		ErrorTitle: lipgloss.NewStyle().Background(lipgloss.Color("#FF0000")),
+		ErrorTitle: lipgloss.NewStyle().Background(lipgloss.Red).Foreground(lightDark(lipgloss.BrightWhite, lipgloss.Black)),
 
 		Command:    lipgloss.NewStyle().Foreground(lipgloss.Color("#FF0000")),
 		SubCommand: lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFF00")),

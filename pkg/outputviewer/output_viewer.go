@@ -8,8 +8,8 @@ import (
 	"slices"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/corentindeboisset/tera/pkg/cmdrunr"
 	"github.com/corentindeboisset/tera/pkg/iface"
 	"github.com/corentindeboisset/tera/pkg/scrollbar"
@@ -415,7 +415,8 @@ func (m *Model) View() string {
 	return lipgloss.JoinVertical(lipgloss.Left, contentBlock, searchBlock)
 }
 
-func (m *Model) HandleKeyMsg(msg tea.KeyMsg) {
+func (m *Model) HandleKeyMsg(msg tea.KeyPressMsg) {
+	// TODO: handle ctrl-v
 	if m.showSearch && m.searchHasFocus {
 		switch msg.String() {
 		case "enter":
@@ -438,7 +439,7 @@ func (m *Model) HandleKeyMsg(msg tea.KeyMsg) {
 			m.PageUp()
 
 		case "pgdown":
-		case " ":
+		case "space":
 			m.PageDown()
 
 		case "home":

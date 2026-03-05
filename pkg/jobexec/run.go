@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 	"github.com/corentindeboisset/tera/pkg/cfg"
 )
 
@@ -57,7 +57,7 @@ func ExecuteJob(confPath string, jobToRun string) error {
 	// Run the job in a goroutine. The synchronisation is handled by the channels
 	go executeJob(ctx, config.BasePath, pickedJob, stepStatuses, readyToDisplay, jobDone)
 	<-readyToDisplay
-	program := tea.NewProgram(newModel(pickedJob, stepStatuses), tea.WithAltScreen(), tea.WithMouseCellMotion(), tea.WithoutSignalHandler())
+	program := tea.NewProgram(newModel(pickedJob, stepStatuses), tea.WithoutSignalHandler())
 
 	programErr := make(chan error)
 	go func() {

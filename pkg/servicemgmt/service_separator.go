@@ -3,7 +3,7 @@ package servicemgmt
 import (
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 	"github.com/corentindeboisset/tera/pkg/iface"
 	"github.com/google/uuid"
 )

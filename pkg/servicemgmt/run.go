@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 	"github.com/corentindeboisset/tera/pkg/cfg"
 	"github.com/corentindeboisset/tera/pkg/iface"
 )
@@ -25,7 +25,7 @@ func StartServiceManagement(confPath string) error {
 
 	theme := iface.LoadTheme()
 
-	program := tea.NewProgram(newModel(orchestrator, theme), tea.WithAltScreen(), tea.WithMouseCellMotion(), tea.WithoutSignalHandler())
+	program := tea.NewProgram(newModel(orchestrator, theme), tea.WithoutSignalHandler())
 
 	programErr := make(chan error)
 	go func() {

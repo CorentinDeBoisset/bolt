@@ -4,8 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/muesli/termenv"
+	"charm.land/lipgloss/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -74,9 +73,6 @@ func TestFindOutput(t *testing.T) {
 
 func TestDecorateOutput(t *testing.T) {
 	t.Parallel()
-
-	// Force colors
-	lipgloss.SetColorProfile(termenv.TrueColor)
 
 	theme := Theme{
 		InvertedHighlightSurfaceStyle:          lipgloss.NewStyle().Background(lipgloss.Color("2")),

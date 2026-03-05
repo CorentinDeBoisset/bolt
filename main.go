@@ -91,7 +91,7 @@ func init() {
 
 func main() {
 	if err := rootCmd.Execute(); err != nil {
-		iface.RenderError(err)
+		iface.RenderError(err, iface.LoadHelpTheme())
 		os.Exit(1)
 	}
 }

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/charmbracelet/bubbles/cursor"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/cursor"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 type SearchBarModel struct {
@@ -20,7 +20,7 @@ type SearchBarModel struct {
 	virtualCursor cursor.Model
 }
 
-func sanitize(input []rune) []rune {
+func sanitize(input string) []rune {
 	sanitized := make([]rune, 0, 2*len(input)) // worst case scenario: all characters must be escaped
 
 	for idx, r := range input {
@@ -88,7 +88,7 @@ func (m *SearchBarModel) Submit() *regexp.Regexp {
 	return reg
 }
 
-func (m *SearchBarModel) HandleKeyMsg(msg tea.KeyMsg) {
+func (m *SearchBarModel) HandleKeyMsg(msg tea.KeyPressMsg) {
 	switch msg.String() {
 	case "left":
 		m.moveCursor(-1)
@@ -108,12 +108,10 @@ func (m *SearchBarModel) HandleKeyMsg(msg tea.KeyMsg) {
 			m.currentSearch = slices.Concat(m.currentSearch[:m.cursorIdx], m.currentSearch[m.cursorIdx+1:])
 			m.moveCursor(0)
 		}
-	case " ":
-		m.insertRunes(msg.Runes)
 	default:
-		if msg.Type == tea.KeyRunes {
+		if len(msg.Text) > 0 {
 			// Important to sanitize, in case of a ctrl-v there are a lot of control characters (new lines, tabs...)
-			m.insertRunes(sanitize(msg.Runes))
+			m.insertRunes(sanitize(msg.Text))
 		}
 	}
 }
@@ -124,7 +122,7 @@ func (m *SearchBarModel) ToggleCursor(visible bool) {
 }
 
 func (m *SearchBarModel) SetCursorVisibility(focus bool) {
-	m.virtualCursor.Blink = !focus
+	m.virtualCursor.IsBlinked = !focus
 }
 
 func (m *SearchBarModel) Clear() {

@@ -3,10 +3,10 @@ package servicemgmt
 import (
 	"time"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/corentindeboisset/tera/pkg/iface"
 	"github.com/corentindeboisset/tera/pkg/listviewport"
 	"github.com/corentindeboisset/tera/pkg/outputviewer"
@@ -172,7 +172,7 @@ func (m *ifaceModel) updateFocusedTask(newTaskId int) {
 
 func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		msgStr := msg.String()
 
 		// Global (independent of the panel with focus)
@@ -192,7 +192,6 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if m.focusOutput {
 			m.outputPanel.HandleKeyMsg(msg)
-
 		} else {
 			switch msg.String() {
 			case "up", "k":
@@ -281,23 +280,21 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, tickReadOutputsMsg()
 
-	case tea.MouseMsg:
-		if msg.Action == tea.MouseActionPress {
-			switch msg.Button {
-			case tea.MouseButtonWheelUp:
-				if m.focusOutput {
-					m.outputPanel.ScrollUp(3)
-				} else {
-					m.updateFocusedTask(m.focusedTask - 1)
-					m.serviceListPanel.ScrollUp(1)
-				}
-			case tea.MouseButtonWheelDown:
-				if m.focusOutput {
-					m.outputPanel.ScrollDown(3)
-				} else {
-					m.updateFocusedTask(m.focusedTask + 1)
-					m.serviceListPanel.ScrollDown(1)
-				}
+	case tea.MouseWheelMsg:
+		switch msg.Button {
+		case tea.MouseWheelUp:
+			if m.focusOutput {
+				m.outputPanel.ScrollUp(3)
+			} else {
+				m.updateFocusedTask(m.focusedTask - 1)
+				m.serviceListPanel.ScrollUp(1)
+			}
+		case tea.MouseWheelDown:
+			if m.focusOutput {
+				m.outputPanel.ScrollDown(3)
+			} else {
+				m.updateFocusedTask(m.focusedTask + 1)
+				m.serviceListPanel.ScrollDown(1)
 			}
 		}
 	}
@@ -305,7 +302,11 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m ifaceModel) View() string {
+func (m ifaceModel) View() tea.View {
+	var view tea.View
+	view.AltScreen = true
+	view.MouseMode = tea.MouseModeCellMotion
+
 	panelsContent := lipgloss.NewStyle().Render(lipgloss.JoinHorizontal(
 		lipgloss.Top,
 		m.serviceListPanel.View(),
@@ -313,7 +314,8 @@ func (m ifaceModel) View() string {
 	)
 
 	if m.hideHelp {
-		return panelsContent
+		view.SetContent(panelsContent)
+		return view
 	}
 
 	help := m.help.FullHelpView([][]key.Binding{
@@ -321,7 +323,8 @@ func (m ifaceModel) View() string {
 		{m.keymap.standardStart, m.keymap.standardKill, m.keymap.standardRestart},
 	})
 
-	return panelsContent + "\n\n" + help
+	view.SetContent(panelsContent + "\n\n" + help)
+	return view
 }
 
 func (m *ifaceModel) focusBrickById(id string) {

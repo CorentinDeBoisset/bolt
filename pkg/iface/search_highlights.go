@@ -102,7 +102,7 @@ func DecorateCmdOutput(r *regexp.Regexp, content []byte, highLightIdx int, theme
 			if currentMatchIdx == highLightIdx {
 				output = append(output, []byte(theme.InvertedHighlightSurfaceStyle.Render(string(sequence.content)))...)
 			} else {
-				output = append(output, []byte(theme.InvertedAccentSurfaceStyle.Render(string(sequence.content)))...)
+				output = append(output, []byte(theme.InvertedUnfocusedHighlightSurfaceStyle.Render(string(sequence.content)))...)
 			}
 		} else {
 			output = append(output, sequence.content...)

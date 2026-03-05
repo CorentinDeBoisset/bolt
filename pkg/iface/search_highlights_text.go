@@ -79,8 +79,8 @@ func TestDecorateOutput(t *testing.T) {
 	lipgloss.SetColorProfile(termenv.TrueColor)
 
 	theme := Theme{
-		InvertedHighlightSurfaceStyle: lipgloss.NewStyle().Background(lipgloss.Color("2")),
-		InvertedAccentSurfaceStyle:    lipgloss.NewStyle().Background(lipgloss.Color("1")),
+		InvertedHighlightSurfaceStyle:          lipgloss.NewStyle().Background(lipgloss.Color("2")),
+		InvertedUnfocusedHighlightSurfaceStyle: lipgloss.NewStyle().Background(lipgloss.Color("1")),
 	}
 
 	// Non-matching input

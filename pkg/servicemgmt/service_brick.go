@@ -69,7 +69,7 @@ func (s *ServiceBrickModel) refreshStyles() {
 	brickStyle := s.theme.NoticeableSurfaceStyle
 	switch s.focusLevel {
 	case 1:
-		brickStyle = s.theme.AccentSurfaceStyle
+		brickStyle = s.theme.UnfocusedHighlightSurfaceStyle
 	case 2:
 		brickStyle = s.theme.HighlightSurfaceStyle
 	}

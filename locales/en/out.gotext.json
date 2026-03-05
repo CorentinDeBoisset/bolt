@@ -9,9 +9,23 @@
             "fuzzy": true
         },
         {
-            "id": "Script management that rides the lighting.",
-            "message": "Script management that rides the lighting.",
-            "translation": "Script management that rides the lighting.",
+            "id": "Boost your development workflow by at least 10^12.",
+            "message": "Boost your development workflow by at least 10^12.",
+            "translation": "Boost your development workflow by at least 10^12.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Display help information about the command",
+            "message": "Display help information about the command",
+            "translation": "Display help information about the command",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Display version information",
+            "message": "Display version information",
+            "translation": "Display version information",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -614,9 +628,99 @@
             "fuzzy": true
         },
         {
-            "id": "💥 The command failed:",
-            "message": "💥 The command failed:",
-            "translation": "💥 The command failed:",
+            "id": "ERROR",
+            "message": "ERROR",
+            "translation": "ERROR",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "[command]",
+            "message": "[command]",
+            "translation": "[command]",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "[--flags]",
+            "message": "[--flags]",
+            "translation": "[--flags]",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "{Title}:",
+            "message": "{Title}:",
+            "translation": "{Title}:",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Title",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "group.Title"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Additional Commands:",
+            "message": "Additional Commands:",
+            "translation": "Additional Commands:",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "(default {DefValue})",
+            "message": "(default {DefValue})",
+            "translation": "(default {DefValue})",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "DefValue",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "f.DefValue"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "USAGE",
+            "message": "USAGE",
+            "translation": "USAGE",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "ALIASES",
+            "message": "ALIASES",
+            "translation": "ALIASES",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "EXAMPLE",
+            "message": "EXAMPLE",
+            "translation": "EXAMPLE",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "COMMANDS",
+            "message": "COMMANDS",
+            "translation": "COMMANDS",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "ADDITIONNAL HELP",
+            "message": "ADDITIONNAL HELP",
+            "translation": "ADDITIONNAL HELP",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         }

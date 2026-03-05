@@ -7,9 +7,19 @@
             "translation": "inconnue (compilation depuis les sources)"
         },
         {
-            "id": "Script management that rides the lighting.",
-            "message": "Script management that rides the lighting.",
-            "translation": "Lancez vos tâches plus vite que la lumière."
+            "id": "Boost your development workflow by at least 10^12.",
+            "message": "Boost your development workflow by at least 10^12.",
+            "translation": "Démultipliez votre environnement de développement par au moins 10^12."
+        },
+        {
+            "id": "Display help information about the command",
+            "message": "Display help information about the command",
+            "translation": "Afficher l'information d'aide à propos de la commande"
+        },
+        {
+            "id": "Display version information",
+            "message": "Display version information",
+            "translation": "Afficher l'information de version"
         },
         {
             "id": "Print version and exit",
@@ -546,9 +556,79 @@
             ]
         },
         {
-            "id": "💥 The command failed:",
-            "message": "💥 The command failed:",
-            "translation": "💥 La commande a échoué :"
+            "id": "ERROR",
+            "message": "ERROR",
+            "translation": "ERREUR"
+        },
+        {
+            "id": "[command]",
+            "message": "[command]",
+            "translation": "[commande]"
+        },
+        {
+            "id": "[--flags]",
+            "message": "[--flags]",
+            "translation": "[--options]"
+        },
+        {
+            "id": "{Title}:",
+            "message": "{Title}:",
+            "translation": "{Title} :",
+            "placeholders": [
+                {
+                    "id": "Title",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "group.Title"
+                }
+            ]
+        },
+        {
+            "id": "Additional Commands:",
+            "message": "Additional Commands:",
+            "translation": "Autres commandes:"
+        },
+        {
+            "id": "(default {DefValue})",
+            "message": "(default {DefValue})",
+            "translation": "({DefValue} par défaut)",
+            "placeholders": [
+                {
+                    "id": "DefValue",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "f.DefValue"
+                }
+            ]
+        },
+        {
+            "id": "USAGE",
+            "message": "USAGE",
+            "translation": "USAGE"
+        },
+        {
+            "id": "ALIASES",
+            "message": "ALIASES",
+            "translation": "ALIAS"
+        },
+        {
+            "id": "EXAMPLE",
+            "message": "EXAMPLE",
+            "translation": "EXAMPLE"
+        },
+        {
+            "id": "COMMANDS",
+            "message": "COMMANDS",
+            "translation": "COMMANDES"
+        },
+        {
+            "id": "ADDITIONNAL HELP",
+            "message": "ADDITIONNAL HELP",
+            "translation": "AIDE SUPPLÉMENTAIRE"
         }
     ]
 }

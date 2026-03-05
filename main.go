@@ -1,8 +1,6 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -30,10 +28,19 @@ func init() {
 	}
 
 	rootCmd = &cobra.Command{
-		Use:     "tera",
-		Version: Version,
-		Short:   i18n.Sprintf("Script management that rides the lighting."),
+		Use:           "tera",
+		Version:       Version,
+		Short:         i18n.Sprintf("Boost your development workflow by at least 10^12."),
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
+
+	// Manually add the flags to add translation on the usage strings
+	rootCmd.PersistentFlags().BoolP("help", "h", false, i18n.Sprintf("Display help information about the command"))
+	rootCmd.Flags().BoolP("version", "v", false, i18n.Sprintf("Display version information"))
+
+	rootCmd.SetUsageFunc(iface.RenderUsage)
+	rootCmd.SetHelpFunc(iface.RenderHelp)
 
 	versionCmd := &cobra.Command{
 		Use:   "version",
@@ -45,7 +52,7 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 
 	runCmd := &cobra.Command{
-		Use:   "run [job-name]",
+		Use:   "run [job-name] [-c config]",
 		Short: i18n.Sprintf("Run a job"),
 		Args:  cobra.MaximumNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -66,28 +73,25 @@ func init() {
 	rootCmd.AddCommand(runCmd)
 
 	serviceCmd := &cobra.Command{
-		Use:   "services",
+		Use:   "services [-c config]",
 		Short: i18n.Sprintf("Start the service management interface"),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := servicemgmt.StartServiceManagement(confPath)
-			if formattableErr, ok := errors.AsType[iface.FormattableError](err); ok {
-				iface.PrintError(formattableErr)
-				fmt.Printf("\n")
-				os.Exit(1)
-				return nil
-			}
-
-			return err
+			return servicemgmt.StartServiceManagement(confPath)
 		},
 	}
 	serviceCmd.Flags().StringVarP(&confPath, "config", "c", "", i18n.Sprintf("Path to a configuration file. If left empty, it will recursively search in the parent directories for a tera.yml file"))
 	_ = serviceCmd.MarkFlagFilename("config", "yaml", "yml")
 
 	rootCmd.AddCommand(serviceCmd)
+
+	// Add translations to the default commands
+	rootCmd.InitDefaultHelpCmd()
+	rootCmd.InitDefaultCompletionCmd()
 }
 
 func main() {
 	if err := rootCmd.Execute(); err != nil {
+		iface.RenderError(err)
 		os.Exit(1)
 	}
 }

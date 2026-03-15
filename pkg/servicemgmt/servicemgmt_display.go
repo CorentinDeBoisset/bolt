@@ -166,7 +166,7 @@ func (m ifaceModel) Init() tea.Cmd {
 func (m *ifaceModel) updateFocusedTask(newTaskId int) {
 	m.serviceBricks[m.focusedTask].SetFocusLevel(0)
 	m.focusedTask = max(min(newTaskId, len(m.serviceBricks)-1), 0)
-	m.outputPanel.SetBuffer(&(m.serviceBricks[m.focusedTask].service.Output), true)
+	m.outputPanel.SetBuffer(&(m.serviceBricks[m.focusedTask].service.Output))
 	m.serviceBricks[m.focusedTask].SetFocusLevel(2)
 }
 

@@ -120,18 +120,15 @@ func (m *Model) ScrollPercent() float64 {
 	return math.Max(0.0, math.Min(1.0, v))
 }
 
-func (m *Model) SetBuffer(b *cmdrunr.SafeBuffer, goToBottom bool) {
+func (m *Model) SetBuffer(b *cmdrunr.SafeBuffer) {
 	m.buffer = b
 	m.rawOutput = nil
+	m.displayedContent = nil
 
 	m.clearSearch()
 	m.RefreshContent()
 
-	if goToBottom {
-		m.GoToBottom()
-	} else {
-		m.GoToTop()
-	}
+	m.GoToBottom()
 }
 
 func (m *Model) SetFocus(focused bool) {
@@ -163,6 +160,8 @@ func (m *Model) RefreshContent() {
 
 func (m *Model) recomputeDisplayedContent() {
 	if m.rawOutput == nil {
+		m.searchResultLines = nil
+		m.displayedContent = nil
 		return
 	}
 
@@ -209,8 +208,11 @@ func (m *Model) Resize(width, height int) {
 }
 
 func (m *Model) maxOffset() int {
-	// Manually add 2 to account for the borders
-	return max(0, m.ContentHeight()-m.height+m.frameStyle.GetVerticalFrameSize()+2)
+	innerFrameHeight := m.height - m.frameStyle.GetVerticalFrameSize()
+	if m.showSearch {
+		innerFrameHeight -= 2 // The search always has one line of content plus a border
+	}
+	return max(0, m.ContentHeight()-innerFrameHeight)
 }
 
 func (m *Model) SetOffset(n int) {

@@ -9,24 +9,15 @@ import (
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/spinner"
-	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/corentindeboisset/tera/pkg/cfg"
 	"github.com/corentindeboisset/tera/pkg/cmdrunr"
+	"github.com/corentindeboisset/tera/pkg/iface"
+	"github.com/corentindeboisset/tera/pkg/outputviewer"
 )
 
 var (
-	focusedBorderStyle = lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("111")).
-				Padding(0, 2)
-
-	blurredBorderStyle = lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("7")).
-				Padding(0, 2)
-
 	selectedTaskStyle           = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("111")).Inline(true)
 	focusedTaskStyle            = lipgloss.NewStyle().Underline(true).Inline(true)
 	focusedAndSelectedTaskStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("111")).Underline(true).Inline(true)
@@ -48,23 +39,25 @@ type registeredTask struct {
 }
 
 type ifaceModel struct {
-	width           int
-	height          int
-	keymap          keymap
-	help            help.Model
-	stepPanelWidth  int
-	hideOutputPanel bool
+	width  int
+	height int
+	theme  iface.Theme
 
-	focusOutput  bool
-	selectedTask int
-	focusedTask  int
-	spinner      spinner.Model
-	stepPanel    ListViewportModel
-	outputPanel  viewport.Model
+	keymap keymap
+	help   help.Model
 
 	jobConfig *cfg.JobConfig
 	statuses  []StepStatus
 	taskIds   []registeredTask
+
+	stepPanelWidth  int
+	focusOutput     bool
+	hideOutputPanel bool
+	selectedTask    int
+	focusedTask     int
+	spinner         spinner.Model
+	stepPanel       ListViewportModel
+	outputPanel     outputviewer.Model
 }
 
 func tickReadOutputsMsg() tea.Cmd {
@@ -73,9 +66,10 @@ func tickReadOutputsMsg() tea.Cmd {
 	})
 }
 
-func newModel(config *cfg.JobConfig, statuses []StepStatus) ifaceModel {
+func newModel(config *cfg.JobConfig, statuses []StepStatus, theme iface.Theme) ifaceModel {
 	m := ifaceModel{
-		help: help.New(),
+		help:  help.New(),
+		theme: theme,
 		keymap: keymap{
 			up: key.NewBinding(
 				key.WithKeys("k", "up"),
@@ -108,13 +102,16 @@ func newModel(config *cfg.JobConfig, statuses []StepStatus) ifaceModel {
 			spinner.WithStyle(spinnerStyle),
 		),
 		stepPanel:   NewListViewportModel(15, 10),
-		outputPanel: viewport.New(viewport.WithWidth(30), viewport.WithHeight(10)),
+		outputPanel: outputviewer.New(30, 10, theme, nil),
 	}
 
 	m.updateKeyBindings()
 	m.calculateMinPanelSize()
-	m.stepPanel.Style = focusedBorderStyle
-	m.outputPanel.Style = blurredBorderStyle
+	m.stepPanel.Style = lipgloss.NewStyle().
+		Padding(0, 2).
+		Border(lipgloss.RoundedBorder(), true).
+		BorderForeground(theme.FocusedOutputBorderColor)
+	m.outputPanel.SetFocus(false)
 
 	m.initializeTaskOutputs()
 
@@ -172,7 +169,6 @@ func (m *ifaceModel) calculateMinPanelSize() {
 func (m *ifaceModel) updateSizes() {
 	// The height is fixed
 	panelsHeight := m.height - 5
-	m.outputPanel.SetHeight(panelsHeight)
 
 	stepPanelWidth := m.stepPanelWidth
 	if stepPanelWidth > (m.width/2 - 6) {
@@ -185,7 +181,8 @@ func (m *ifaceModel) updateSizes() {
 		m.stepPanel.Resize(m.width, panelsHeight)
 		return
 	}
-	m.outputPanel.SetWidth(outputWidth)
+
+	m.outputPanel.Resize(outputWidth, panelsHeight)
 	m.stepPanel.Resize(stepPanelWidth, panelsHeight)
 }
 
@@ -300,87 +297,67 @@ func (m *ifaceModel) calculateTaskLine(taskIdx int) int {
 func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
+		// Global (independant of the panel with focus)
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
 
-		case "up", "k":
-			// Scroll up the focused panel
-			if m.focusOutput {
-				m.outputPanel.ScrollUp(3)
-			} else {
-				if m.focusedTask == 0 {
-					m.focusedTask = len(m.taskIds) - 1
-					m.stepPanel.GoToBottom()
+		case "tab":
+			if !m.hideOutputPanel {
+				m.focusOutput = !m.focusOutput
+				m.outputPanel.SetFocus(m.focusOutput)
+				m.updateKeyBindings()
+				if m.focusOutput {
+					m.stepPanel.Style = m.stepPanel.Style.BorderForeground(m.theme.BlurredOutputBorderColor)
 				} else {
-					m.focusedTask -= 1
-					m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
+					m.stepPanel.Style = m.stepPanel.Style.BorderForeground(m.theme.FocusedOutputBorderColor)
 				}
+			}
+		}
+
+		if m.focusOutput {
+			return m, m.outputPanel.Update(msg)
+		}
+
+		switch msg.String() {
+		case "up", "k":
+			if m.focusedTask == 0 {
+				m.focusedTask = len(m.taskIds) - 1
+				m.stepPanel.GoToBottom()
+			} else {
+				m.focusedTask -= 1
+				m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
 			}
 
 		case "down", "j":
-			// Scroll down the focused panel
-			if m.focusOutput {
-				m.outputPanel.ScrollDown(3)
+			if m.focusedTask == len(m.taskIds)-1 {
+				m.focusedTask = 0
+				m.stepPanel.GoToTop()
 			} else {
-				if m.focusedTask == len(m.taskIds)-1 {
-					m.focusedTask = 0
-					m.stepPanel.GoToTop()
-				} else {
-					m.focusedTask += 1
-					m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
-				}
+				m.focusedTask += 1
+				m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
 			}
 
 		// Other movement keys, not displayed in the help
 		case "pgup":
-			if m.focusOutput {
-				m.outputPanel.PageUp()
-			} else {
-				m.stepPanel.PageUp()
-			}
+			m.stepPanel.PageUp()
 
 		case "pgdown":
-			if m.focusOutput {
-				m.outputPanel.PageDown()
-			} else {
-				m.stepPanel.PageDown()
-			}
+			m.stepPanel.PageDown()
 
 		case "home":
-			if m.focusOutput {
-				m.outputPanel.GotoTop()
-			} else {
-				m.focusedTask = 0
-				m.stepPanel.GoToTop()
-			}
+			m.focusedTask = 0
+			m.stepPanel.GoToTop()
 
 		case "end":
-			if m.focusOutput {
-				m.outputPanel.GotoBottom()
-			} else {
-				m.focusedTask = len(m.taskIds) - 1
-				m.stepPanel.GoToBottom()
-			}
-
-		case "tab":
-			if !m.hideOutputPanel {
-				m.focusOutput = !m.focusOutput
-				m.updateKeyBindings()
-				if m.focusOutput {
-					m.stepPanel.Style = blurredBorderStyle
-					m.outputPanel.Style = focusedBorderStyle
-				} else {
-					m.stepPanel.Style = focusedBorderStyle
-					m.outputPanel.Style = blurredBorderStyle
-				}
-			}
+			m.focusedTask = len(m.taskIds) - 1
+			m.stepPanel.GoToBottom()
 
 		case "enter":
-			if !m.focusOutput {
-				m.selectedTask = m.focusedTask
-			}
+			m.selectedTask = m.focusedTask
+			m.outputPanel.SetBuffer(m.taskIds[m.selectedTask].Output)
 		}
+
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
@@ -391,15 +368,15 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case RefreshStatusMsg:
 		if !m.hideOutputPanel {
-			isAtBottom := m.outputPanel.AtBottom()
-			innerPanelWidth := m.outputPanel.Width() - m.outputPanel.Style.GetHorizontalFrameSize()
-			rawOutput := m.taskIds[m.selectedTask].Output.Content(0)
-			m.outputPanel.SetContent(lipgloss.NewStyle().Width(innerPanelWidth).Render(string(rawOutput.Content)))
-			if isAtBottom {
-				m.outputPanel.GotoBottom()
-			}
+			m.outputPanel.RefreshContent()
 		}
 		return m, tickReadOutputsMsg()
+
+	case tea.PasteMsg:
+		if m.focusOutput {
+			return m, m.outputPanel.Update(msg)
+		}
+
 	case spinner.TickMsg:
 		var cmd tea.Cmd
 		// Rebuild the side panel content with updated spinners
@@ -407,22 +384,19 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.stepPanel.SetContent(m.calculateStepPanelContent())
 
 		return m, cmd
+
 	case tea.MouseWheelMsg:
+		if m.focusOutput {
+			return m, m.outputPanel.Update(msg)
+		}
+
 		switch msg.Button {
 		case tea.MouseWheelUp:
-			if m.focusOutput {
-				m.outputPanel.ScrollUp(3)
-			} else {
-				m.focusedTask = max(m.focusedTask-1, 0)
-				m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
-			}
+			m.focusedTask = max(m.focusedTask-1, 0)
+			m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
 		case tea.MouseWheelDown:
-			if m.focusOutput {
-				m.outputPanel.ScrollDown(3)
-			} else {
-				m.focusedTask = min(m.focusedTask+1, len(m.taskIds)-1)
-				m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
-			}
+			m.focusedTask = min(m.focusedTask+1, len(m.taskIds)-1)
+			m.stepPanel.Focus(m.calculateTaskLine(m.focusedTask))
 		}
 	}
 

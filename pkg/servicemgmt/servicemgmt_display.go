@@ -187,7 +187,6 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.serviceBricks[m.focusedTask].SetFocusLevel(2)
 				}
-				return m, nil
 			}
 		}
 

@@ -9,6 +9,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/corentindeboisset/tera/pkg/cfg"
+	"github.com/corentindeboisset/tera/pkg/iface"
 )
 
 func GetJobList(confPath string) []string {
@@ -58,7 +59,8 @@ func ExecuteJob(confPath string, jobToRun string) error {
 	go executeJob(ctx, config.BasePath, pickedJob, stepStatuses, readyToDisplay, jobDone)
 	<-readyToDisplay
 
-	_, err = tea.NewProgram(newModel(pickedJob, stepStatuses), tea.WithContext(ctx), tea.WithoutSignalHandler()).Run()
+	theme := iface.LoadTheme()
+	_, err = tea.NewProgram(newModel(pickedJob, stepStatuses, theme), tea.WithContext(ctx), tea.WithoutSignalHandler()).Run()
 	if errors.Is(err, tea.ErrProgramKilled) {
 		err = nil
 	}

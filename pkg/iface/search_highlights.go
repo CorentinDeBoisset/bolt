@@ -30,8 +30,9 @@ func prepareSequence(input []byte) []sequence {
 
 func findAllInSequence(r *regexp.Regexp, sequences []sequence) [][]int {
 	filteredContent := make([]byte, 0)
+	linebreak := []byte("\n")
 	for _, seq := range sequences {
-		if seq.visible {
+		if seq.visible || bytes.Equal(seq.content, linebreak) {
 			filteredContent = append(filteredContent, seq.content...)
 		}
 	}
@@ -51,7 +52,7 @@ func findAllInSequence(r *regexp.Regexp, sequences []sequence) [][]int {
 		// Go forward as long as a skipped range is before the start of the match
 		for currentSeqIdx < len(sequences) && visibleLen < match[0] {
 			totalLen += sequences[currentSeqIdx].length
-			if sequences[currentSeqIdx].visible {
+			if sequences[currentSeqIdx].visible || bytes.Equal(sequences[currentSeqIdx].content, linebreak) {
 				visibleLen += sequences[currentSeqIdx].length
 			}
 			currentSeqIdx++
@@ -62,7 +63,7 @@ func findAllInSequence(r *regexp.Regexp, sequences []sequence) [][]int {
 		// Go forward as long as skipped ranges are before the end of the match
 		for currentSeqIdx < len(sequences) && visibleLen < match[1] {
 			totalLen += sequences[currentSeqIdx].length
-			if sequences[currentSeqIdx].visible {
+			if sequences[currentSeqIdx].visible || bytes.Equal(sequences[currentSeqIdx].content, linebreak) {
 				visibleLen += sequences[currentSeqIdx].length
 			}
 			currentSeqIdx++

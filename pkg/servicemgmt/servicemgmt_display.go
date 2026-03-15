@@ -307,6 +307,7 @@ func (m ifaceModel) View() tea.View {
 	var view tea.View
 	view.AltScreen = true
 	view.MouseMode = tea.MouseModeCellMotion
+	view.KeyboardEnhancements.ReportEventTypes = true
 
 	panelsContent := lipgloss.NewStyle().Render(lipgloss.JoinHorizontal(
 		lipgloss.Top,

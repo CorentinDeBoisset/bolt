@@ -465,7 +465,7 @@ func (m *Model) Update(msg tea.Msg) tea.Cmd {
 				if m.showSearch {
 					m.prevSearchResult()
 				}
-			case "N":
+			case "shift+enter", "N":
 				if m.showSearch {
 					m.nextSearchResult()
 				}

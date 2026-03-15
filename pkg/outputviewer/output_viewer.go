@@ -434,7 +434,7 @@ func (m *Model) Update(msg tea.Msg) tea.Cmd {
 	case tea.KeyPressMsg:
 		if m.showSearch && m.searchHasFocus {
 			switch msg.String() {
-			case "enter":
+			case "enter", "shift+enter":
 				m.executeSearch()
 			case "esc":
 				m.clearSearch()

@@ -159,8 +159,7 @@ func (o *Orchestrator) SortedServices() []*ManagedService {
 }
 
 // Kill all services, wait for all process to end and return.
-// If you call it in a goroutine, you can should a channel as an argument that will be closed once the shutdown is complete.
-func (o *Orchestrator) Shutdown(done chan any) {
+func (o *Orchestrator) Shutdown() {
 	o.cancel(cmdrunr.ErrPlannedKill)
 
 	// Wait for all services to be off
@@ -172,10 +171,6 @@ func (o *Orchestrator) Shutdown(done chan any) {
 		}
 
 		service.StateMtx.Unlock()
-	}
-
-	if done != nil {
-		close(done)
 	}
 }
 

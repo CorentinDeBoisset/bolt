@@ -2,8 +2,8 @@ package jobexec
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"os"
 	"os/signal"
 	"syscall"
 
@@ -52,40 +52,20 @@ func ExecuteJob(confPath string, jobToRun string) error {
 	readyToDisplay := make(chan struct{})
 	jobDone := make(chan struct{})
 
-	ctx, cancelJob := context.WithCancel(context.Background())
+	ctx, stopCtx := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
 
 	// Run the job in a goroutine. The synchronisation is handled by the channels
 	go executeJob(ctx, config.BasePath, pickedJob, stepStatuses, readyToDisplay, jobDone)
 	<-readyToDisplay
-	program := tea.NewProgram(newModel(pickedJob, stepStatuses), tea.WithoutSignalHandler())
 
-	programErr := make(chan error)
-	go func() {
-		_, err := program.Run()
-		if err != tea.ErrProgramKilled {
-			programErr <- err
-		}
-		close(programErr)
-	}()
-
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
-	defer signal.Stop(sigChan)
-
-	select {
-	case <-sigChan:
-		program.Quit()
-	case err = <-programErr:
-		// nothing to do, the program already quit
+	_, err = tea.NewProgram(newModel(pickedJob, stepStatuses), tea.WithContext(ctx), tea.WithoutSignalHandler()).Run()
+	if errors.Is(err, tea.ErrProgramKilled) {
+		err = nil
 	}
 
-	// Run the cleanup, and wait for all tasks to be done
-	cancelJob()
+	// Ensure the cleanup is called, and wait for all tasks to be done
+	stopCtx()
 	<-jobDone
-
-	// Ensure the program is finished before proceeding
-	for err = range programErr {
-	}
 
 	return err
 }

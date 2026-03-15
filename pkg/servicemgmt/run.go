@@ -1,7 +1,8 @@
 package servicemgmt
 
 import (
-	"os"
+	"context"
+	"errors"
 	"os/signal"
 	"syscall"
 
@@ -25,34 +26,16 @@ func StartServiceManagement(confPath string) error {
 
 	theme := iface.LoadTheme()
 
-	program := tea.NewProgram(newModel(orchestrator, theme), tea.WithoutSignalHandler())
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
+	defer stop()
 
-	programErr := make(chan error)
-	go func() {
-		_, err := program.Run()
-		if err != tea.ErrProgramKilled {
-			programErr <- err
-		}
-		close(programErr)
-	}()
-
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
-	defer signal.Stop(sigChan)
-
-	select {
-	case <-sigChan:
-		program.Quit()
-	case err = <-programErr:
-		// nothing to do, the program already quit
+	_, err = tea.NewProgram(newModel(orchestrator, theme), tea.WithContext(ctx), tea.WithoutSignalHandler()).Run()
+	if errors.Is(err, tea.ErrProgramKilled) {
+		err = nil
 	}
 
 	// Shutdown all services
-	orchestrator.Shutdown(nil)
-
-	// Ensure the program is finished before proceeding
-	for err = range programErr {
-	}
+	orchestrator.Shutdown()
 
 	return err
 }

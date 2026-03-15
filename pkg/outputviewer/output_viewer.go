@@ -427,59 +427,76 @@ func (m *Model) View() string {
 	return lipgloss.JoinVertical(lipgloss.Left, contentBlock, searchBlock)
 }
 
-func (m *Model) HandleKeyMsg(msg tea.KeyPressMsg) {
-	// TODO: handle ctrl-v
-	if m.showSearch && m.searchHasFocus {
-		switch msg.String() {
-		case "enter":
-			m.executeSearch()
-		case "esc":
-			m.clearSearch()
-		default:
-			// pass the input to the searchBar
-			m.searchBar.HandleKeyMsg(msg)
-		}
-	} else {
-		switch msg.String() {
-		case "up", "k":
-			m.ScrollUp(3)
-
-		case "down", "j":
-			m.ScrollDown(3)
-
-		case "pgup":
-			m.PageUp()
-
-		case "pgdown":
-		case "space":
-			m.PageDown()
-
-		case "home":
-			m.GoToTop()
-
-		case "end":
-			m.GoToBottom()
-
-		case "enter", "n":
-			if m.showSearch {
-				m.prevSearchResult()
-			}
-		case "N":
-			if m.showSearch {
-				m.nextSearchResult()
-			}
-		case "/":
-			if m.showSearch {
-				m.clearSearchResults()
-			} else {
-				m.setSearchVisibility(true)
-			}
-			m.searchHasFocus = true
-			m.searchBar.ToggleCursor(true)
-		case "esc":
-			if m.showSearch {
+func (m *Model) Update(msg tea.Msg) tea.Cmd {
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		if m.showSearch && m.searchHasFocus {
+			switch msg.String() {
+			case "enter":
+				m.executeSearch()
+			case "esc":
 				m.clearSearch()
+			default:
+				// pass the input to the searchBar
+				m.searchBar.HandleKeyMsg(msg)
 			}
+		} else {
+			switch msg.String() {
+			case "up", "k":
+				m.ScrollUp(3)
+
+			case "down", "j":
+				m.ScrollDown(3)
+
+			case "pgup":
+				m.PageUp()
+
+			case "pgdown":
+			case "space":
+				m.PageDown()
+
+			case "home":
+				m.GoToTop()
+
+			case "end":
+				m.GoToBottom()
+
+			case "enter", "n":
+				if m.showSearch {
+					m.prevSearchResult()
+				}
+			case "N":
+				if m.showSearch {
+					m.nextSearchResult()
+				}
+			case "/":
+				if m.showSearch {
+					m.clearSearchResults()
+				} else {
+					m.setSearchVisibility(true)
+				}
+				m.searchHasFocus = true
+				m.searchBar.ToggleCursor(true)
+			case "esc":
+				if m.showSearch {
+					m.clearSearch()
+				}
+			}
+		}
+
+	case tea.PasteMsg:
+		if m.searchHasFocus {
+			m.searchBar.InsertText(msg.String())
+		}
+
+	case tea.MouseWheelMsg:
+		switch msg.Button {
+		case tea.MouseWheelUp:
+			m.ScrollUp(3)
+		case tea.MouseWheelDown:
+			m.ScrollDown(3)
 		}
 	}
+
+	return nil
 }

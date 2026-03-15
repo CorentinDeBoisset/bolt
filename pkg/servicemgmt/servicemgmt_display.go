@@ -173,97 +173,97 @@ func (m *ifaceModel) updateFocusedTask(newTaskId int) {
 func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
-		msgStr := msg.String()
-
 		// Global (independent of the panel with focus)
-		if msgStr == "ctrl+c" {
+		switch msg.String() {
+		case "ctrl+c":
 			return m, tea.Quit
-		} else if msgStr == "tab" && !m.hideOutputPanel {
-			m.focusOutput = !m.focusOutput
-			// TODO: m.updateKeyBindings()
-			m.outputPanel.SetFocus(m.focusOutput)
-			if m.focusOutput {
-				m.serviceBricks[m.focusedTask].SetFocusLevel(1)
-			} else {
-				m.serviceBricks[m.focusedTask].SetFocusLevel(2)
+		case "tab":
+			if !m.hideOutputPanel {
+				m.focusOutput = !m.focusOutput
+				// TODO: m.updateKeyBindings()
+				m.outputPanel.SetFocus(m.focusOutput)
+				if m.focusOutput {
+					m.serviceBricks[m.focusedTask].SetFocusLevel(1)
+				} else {
+					m.serviceBricks[m.focusedTask].SetFocusLevel(2)
+				}
+				return m, nil
 			}
-			return m, nil
 		}
 
 		if m.focusOutput {
-			m.outputPanel.HandleKeyMsg(msg)
-		} else {
-			switch msg.String() {
-			case "up", "k":
-				if m.focusedTask <= 0 {
-					m.updateFocusedTask(len(m.serviceBricks) - 1)
-					m.serviceListPanel.GoToBottom()
-				} else {
-					m.updateFocusedTask(m.focusedTask - 1)
-					m.serviceListPanel.ScrollUp(1)
-				}
+			return m, m.outputPanel.Update(msg)
+		}
 
-			case "down", "j":
-				if m.focusedTask >= len(m.serviceBricks)-1 {
-					m.updateFocusedTask(0)
-					m.serviceListPanel.GoToTop()
-				} else {
-					m.updateFocusedTask(m.focusedTask + 1)
-					m.serviceListPanel.ScrollDown(1)
-				}
-
-			case "pgup":
-				itemId := m.serviceListPanel.PageUp()
-				m.focusBrickById(itemId)
-
-			case "pgdown":
-				itemId := m.serviceListPanel.PageDown()
-				m.focusBrickById(itemId)
-
-			case "home":
-				m.updateFocusedTask(0)
-				m.serviceListPanel.GoToTop()
-
-			case "end":
+		switch msg.String() {
+		case "up", "k":
+			if m.focusedTask <= 0 {
 				m.updateFocusedTask(len(m.serviceBricks) - 1)
 				m.serviceListPanel.GoToBottom()
-
-			case "Q":
-				go m.orchestrator.KillService(m.serviceBricks[m.focusedTask].id, true)
-
-			case "R":
-				go m.orchestrator.RestartService(
-					m.serviceBricks[m.focusedTask].id,
-					true,
-					m.outputPanel.InnerFrameWidth(),
-					m.outputPanel.InnerFrameHeight(),
-				)
-
-			case "q":
-				go m.orchestrator.KillService(m.serviceBricks[m.focusedTask].id, false)
-
-			case "r":
-				go m.orchestrator.RestartService(
-					m.serviceBricks[m.focusedTask].id,
-					false,
-					m.outputPanel.InnerFrameWidth(),
-					m.outputPanel.InnerFrameHeight(),
-				)
-
-			case "enter":
-				go func() {
-					m.orchestrator.StartService(
-						m.serviceBricks[m.focusedTask].id,
-						m.outputPanel.InnerFrameWidth(),
-						m.outputPanel.InnerFrameHeight(),
-					)
-					m.orchestrator.OpenService(m.serviceBricks[m.focusedTask].id)
-				}()
-
-			case "o":
-				go m.orchestrator.OpenService(m.serviceBricks[m.focusedTask].id)
-
+			} else {
+				m.updateFocusedTask(m.focusedTask - 1)
+				m.serviceListPanel.ScrollUp(1)
 			}
+
+		case "down", "j":
+			if m.focusedTask >= len(m.serviceBricks)-1 {
+				m.updateFocusedTask(0)
+				m.serviceListPanel.GoToTop()
+			} else {
+				m.updateFocusedTask(m.focusedTask + 1)
+				m.serviceListPanel.ScrollDown(1)
+			}
+
+		case "pgup":
+			itemId := m.serviceListPanel.PageUp()
+			m.focusBrickById(itemId)
+
+		case "pgdown":
+			itemId := m.serviceListPanel.PageDown()
+			m.focusBrickById(itemId)
+
+		case "home":
+			m.updateFocusedTask(0)
+			m.serviceListPanel.GoToTop()
+
+		case "end":
+			m.updateFocusedTask(len(m.serviceBricks) - 1)
+			m.serviceListPanel.GoToBottom()
+
+		case "Q":
+			go m.orchestrator.KillService(m.serviceBricks[m.focusedTask].id, true)
+
+		case "R":
+			go m.orchestrator.RestartService(
+				m.serviceBricks[m.focusedTask].id,
+				true,
+				m.outputPanel.InnerFrameWidth(),
+				m.outputPanel.InnerFrameHeight(),
+			)
+
+		case "q":
+			go m.orchestrator.KillService(m.serviceBricks[m.focusedTask].id, false)
+
+		case "r":
+			go m.orchestrator.RestartService(
+				m.serviceBricks[m.focusedTask].id,
+				false,
+				m.outputPanel.InnerFrameWidth(),
+				m.outputPanel.InnerFrameHeight(),
+			)
+
+		case "enter":
+			go func() {
+				m.orchestrator.StartService(
+					m.serviceBricks[m.focusedTask].id,
+					m.outputPanel.InnerFrameWidth(),
+					m.outputPanel.InnerFrameHeight(),
+				)
+				m.orchestrator.OpenService(m.serviceBricks[m.focusedTask].id)
+			}()
+
+		case "o":
+			go m.orchestrator.OpenService(m.serviceBricks[m.focusedTask].id)
 		}
 
 	case tea.WindowSizeMsg:
@@ -280,22 +280,23 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, tickReadOutputsMsg()
 
+	case tea.PasteMsg:
+		if m.focusOutput {
+			return m, m.outputPanel.Update(msg)
+		}
+
 	case tea.MouseWheelMsg:
+		if m.focusOutput {
+			return m, m.outputPanel.Update(msg)
+		}
+
 		switch msg.Button {
 		case tea.MouseWheelUp:
-			if m.focusOutput {
-				m.outputPanel.ScrollUp(3)
-			} else {
-				m.updateFocusedTask(m.focusedTask - 1)
-				m.serviceListPanel.ScrollUp(1)
-			}
+			m.updateFocusedTask(m.focusedTask - 1)
+			m.serviceListPanel.ScrollUp(1)
 		case tea.MouseWheelDown:
-			if m.focusOutput {
-				m.outputPanel.ScrollDown(3)
-			} else {
-				m.updateFocusedTask(m.focusedTask + 1)
-				m.serviceListPanel.ScrollDown(1)
-			}
+			m.updateFocusedTask(m.focusedTask + 1)
+			m.serviceListPanel.ScrollDown(1)
 		}
 	}
 

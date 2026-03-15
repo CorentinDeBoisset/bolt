@@ -111,9 +111,13 @@ func (m *SearchBarModel) HandleKeyMsg(msg tea.KeyPressMsg) {
 	default:
 		if len(msg.Text) > 0 {
 			// Important to sanitize, in case of a ctrl-v there are a lot of control characters (new lines, tabs...)
-			m.insertRunes(sanitize(msg.Text))
+			m.InsertText(msg.Text)
 		}
 	}
+}
+
+func (m *SearchBarModel) InsertText(input string) {
+	m.insertRunes(sanitize(input))
 }
 
 func (m *SearchBarModel) ToggleCursor(visible bool) {

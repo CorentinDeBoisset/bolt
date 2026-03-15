@@ -392,10 +392,9 @@ func (m ifaceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case RefreshStatusMsg:
 		if !m.hideOutputPanel {
 			isAtBottom := m.outputPanel.AtBottom()
-			contentWidth := m.outputPanel.Width() - m.outputPanel.Style.GetHorizontalFrameSize()
-			m.outputPanel.SetContent(
-				lipgloss.NewStyle().Width(contentWidth).Render(string(m.taskIds[m.selectedTask].Output.Bytes())),
-			)
+			innerPanelWidth := m.outputPanel.Width() - m.outputPanel.Style.GetHorizontalFrameSize()
+			rawOutput := m.taskIds[m.selectedTask].Output.Content(0)
+			m.outputPanel.SetContent(lipgloss.NewStyle().Width(innerPanelWidth).Render(string(rawOutput.Content)))
 			if isAtBottom {
 				m.outputPanel.GotoBottom()
 			}

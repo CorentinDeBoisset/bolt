@@ -67,7 +67,7 @@ type Model struct {
 
 	theme            iface.Theme
 	frameStyle       lipgloss.Style
-	rawOutput        []byte
+	rawOutput        *cmdrunr.SafeBufferOut
 	displayedContent []string
 	offset           int
 
@@ -122,6 +122,7 @@ func (m *Model) ScrollPercent() float64 {
 
 func (m *Model) SetBuffer(b *cmdrunr.SafeBuffer, goToBottom bool) {
 	m.buffer = b
+	m.rawOutput = nil
 
 	m.clearSearch()
 	m.RefreshContent()
@@ -148,18 +149,29 @@ func (m *Model) RefreshContent() {
 		return
 	}
 
-	m.rawOutput = bytes.ReplaceAll(m.buffer.Bytes(), []byte("\r\n"), []byte("\n")) // Normalize line endings
-	m.refreshDisplayedContent()
+	var lastRead int64 = 0
+	if m.rawOutput != nil {
+		lastRead = m.rawOutput.WriteTime
+	}
+
+	if output := m.buffer.Content(lastRead); output != nil {
+		m.rawOutput = output
+		m.rawOutput.Content = bytes.ReplaceAll(m.rawOutput.Content, []byte("\r\n"), []byte("\n")) // Normalize line endings
+		m.recomputeDisplayedContent()
+	}
 }
 
-func (m *Model) refreshDisplayedContent() {
-	wasAtBottom := m.AtBottom()
+func (m *Model) recomputeDisplayedContent() {
+	if m.rawOutput == nil {
+		return
+	}
 
+	wasAtBottom := m.AtBottom()
 	widthStyle := lipgloss.NewStyle().Width(m.InnerFrameWidth())
 
 	if m.searchRegexp != nil {
 		newLineNb := 0
-		decoratedOutput, searchResultLines := iface.DecorateCmdOutput(m.searchRegexp, m.rawOutput, m.highlightedMatch, m.theme)
+		decoratedOutput, searchResultLines := iface.DecorateCmdOutput(m.searchRegexp, m.rawOutput.Content, m.highlightedMatch, m.theme)
 		splitDecoratedOutput := bytes.Split(decoratedOutput, []byte("\n"))
 		resultLines := make([]string, 0)
 		searchResultLinesAfterFormat := make([]int, len(searchResultLines))
@@ -181,7 +193,7 @@ func (m *Model) refreshDisplayedContent() {
 		m.displayedContent = resultLines
 	} else {
 		m.searchResultLines = nil
-		m.displayedContent = strings.Split(widthStyle.Render(string(m.rawOutput)), "\n")
+		m.displayedContent = strings.Split(widthStyle.Render(string(m.rawOutput.Content)), "\n")
 	}
 
 	if wasAtBottom || m.offset > m.maxOffset() {
@@ -193,7 +205,7 @@ func (m *Model) Resize(width, height int) {
 	m.width = width
 	m.height = height
 
-	m.refreshDisplayedContent()
+	m.recomputeDisplayedContent()
 }
 
 func (m *Model) maxOffset() int {
@@ -299,7 +311,7 @@ func (m *Model) executeSearch() {
 
 	// We have to do a double refresh: once to calculate the results,
 	// then once to put the highlight at the right position
-	m.refreshDisplayedContent()
+	m.recomputeDisplayedContent()
 
 	if len(m.searchResultLines) > 0 {
 		highlightCandidate := len(m.searchResultLines) - 1
@@ -314,7 +326,7 @@ func (m *Model) executeSearch() {
 		}
 		m.highlightedMatch = highlightCandidate
 
-		m.refreshDisplayedContent()
+		m.recomputeDisplayedContent()
 		m.scrollToSearchResult()
 	}
 }
@@ -329,7 +341,7 @@ func (m *Model) nextSearchResult() {
 		m.highlightedMatch++
 	}
 
-	m.refreshDisplayedContent()
+	m.recomputeDisplayedContent()
 	m.scrollToSearchResult()
 }
 
@@ -343,7 +355,7 @@ func (m *Model) prevSearchResult() {
 		m.highlightedMatch--
 	}
 
-	m.refreshDisplayedContent()
+	m.recomputeDisplayedContent()
 	m.scrollToSearchResult()
 }
 

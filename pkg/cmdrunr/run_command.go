@@ -10,28 +10,40 @@ import (
 	"path/filepath"
 	"sync"
 	"syscall"
+	"time"
 )
 
 var ErrPlannedKill = errors.New("process planned to be killed")
 
+type SafeBufferOut struct {
+	Content   []byte
+	WriteTime int64
+}
+
 type SafeBuffer struct {
-	buf bytes.Buffer
-	mtx sync.RWMutex
+	buf       bytes.Buffer
+	mtx       sync.RWMutex
+	lastWrite int64
 }
 
 func (s *SafeBuffer) Write(p []byte) (n int, err error) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
+	s.lastWrite = time.Now().Unix()
 	return s.buf.Write(p)
 }
 
-func (s *SafeBuffer) Bytes() []byte {
+func (s *SafeBuffer) Content(lastRead int64) *SafeBufferOut {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 
+	if lastRead >= s.lastWrite {
+		return nil
+	}
+
 	output := make([]byte, s.buf.Len())
 	_ = copy(output, s.buf.Bytes())
-	return output
+	return &SafeBufferOut{output, s.lastWrite}
 }
 
 func getCmdPath(basePath, cmdPath string) string {
